@@ -1,0 +1,17 @@
+.sidebarItems:hover {
+    -fx-background-color: #672886;
+    -fx-border-color: white;
+    -fx-border-width: 0px 0px 0px 5px;
+}
+
+.sidebarItems:selected {
+    -fx-background-color: #4A1E6D; /* A darker shade of #672886 */
+    -fx-border-color: white;
+    -fx-border-width: 0px 0px 0px 5px;
+}
+/* #672886
+
+ */
+@font-face {
+    font-family: 'Roboto';
+}
