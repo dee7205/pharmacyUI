@@ -41,6 +41,10 @@ public class controller implements Initializable {
     @FXML private Button restockButton;
     @FXML private Button statisticsButton;
 
+    // dashboard
+    @FXML private Label beginningBalance;
+    @FXML private Label issuanceBalance;
+
     // restock
     @FXML private Button addRestockButton;
     @FXML Button updateRestockButton;
@@ -67,16 +71,6 @@ public class controller implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-//       // table view (items)
-//        itemNumber.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemNumber"));
-//        itemName.setCellValueFactory(new PropertyValueFactory<Item, String>("itemName"));
-//        itemType.setCellValueFactory(new PropertyValueFactory<Item, String>("itemType"));
-//        beginningQty.setCellValueFactory(new PropertyValueFactory<Item, Integer>("beginningQty"));
-//        unitCost.setCellValueFactory(new PropertyValueFactory<Item, Double>("unitCost"));
-//
-//        itemsTable.setItems(itemsList);
-//        // end of table view (items)
-
         exit.setOnMouseClicked(event -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Exit Confirmation");
@@ -89,12 +83,41 @@ public class controller implements Initializable {
             }
         }); // exit image, close program
 
-        slider.setTranslateX(-176);
+        slider.setTranslateX(-220);
 
         Menu.setOnMouseClicked(event -> toggleSideBar());
         MenuBack.setOnMouseClicked(event -> toggleSideBar());
     }
 
+    // Database connection details
+    private static final String URL = "jdbc:mysql://localhost:3307/trial_database";
+    private static final String USER = "dee";
+    private static final String PASSWORD = "shanna05";
+
+    public void toggleSideBar() {
+        TranslateTransition slide = new TranslateTransition();
+        slide.setDuration(Duration.seconds(0.4));
+        slide.setNode(slider);
+
+        if (isSideBarVisible) {
+            slide.setToX(-220);
+            slide.setOnFinished((ActionEvent e) -> {
+                Menu.setVisible(true);
+                MenuBack.setVisible(false);
+            });
+        } else {
+            slide.setToX(0);
+            slide.setOnFinished((ActionEvent e) -> {
+                Menu.setVisible(false);
+                MenuBack.setVisible(true);
+            });
+        }
+
+        slide.play();
+        isSideBarVisible = !isSideBarVisible;
+    }
+
+    // switching scenes
     public void switchScene(String fxmlFileName, ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource(fxmlFileName));
         stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -123,27 +146,22 @@ public class controller implements Initializable {
         switchScene("/home/pharmacists.fxml", event);
     }
 
-    public void toggleSideBar() {
-        TranslateTransition slide = new TranslateTransition();
-        slide.setDuration(Duration.seconds(0.4));
-        slide.setNode(slider);
-
-        if (isSideBarVisible) {
-            slide.setToX(-176);
-            slide.setOnFinished((ActionEvent e) -> {
-                Menu.setVisible(true);
-                MenuBack.setVisible(false);
-            });
-        } else {
-            slide.setToX(0);
-            slide.setOnFinished((ActionEvent e) -> {
-                Menu.setVisible(false);
-                MenuBack.setVisible(true);
-            });
-        }
-
-        slide.play();
-        isSideBarVisible = !isSideBarVisible;
+    public void switchToTransactions(ActionEvent event) throws IOException {
+        switchScene("/home/transaction.fxml", event);
     }
+
+    public void switchToItemType(ActionEvent event) throws IOException {
+        switchScene("/home/itemType.fxml", event);
+    }
+
+    public void switchToUnitType(ActionEvent event) throws IOException {
+        switchScene("/home/unitType.fxml", event);
+    }
+
+    public void switchToItemUnitType(ActionEvent event) throws IOException {
+        switchScene("/home/itemUnitType.fxml", event);
+    }
+
+
 
 }

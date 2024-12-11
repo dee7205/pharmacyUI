@@ -7,7 +7,6 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -37,7 +36,7 @@
                         <Image url="@images/gimatagicon.png" />
                      </image>
                   </ImageView>
-                  <Text fx:id="testText" fill="WHITE" layoutX="1101.0" layoutY="73.0" strokeType="OUTSIDE" strokeWidth="0.0" text="items" />
+                  <Text fx:id="testText" fill="WHITE" layoutX="1066.0" layoutY="73.0" strokeType="OUTSIDE" strokeWidth="0.0" text="transactions" />
                   <Label fx:id="Menu" layoutX="14.0" layoutY="47.0" text="MENU" textFill="WHITE">
                      <font>
                         <Font name="System Bold" size="15.0" />
@@ -70,7 +69,7 @@
                <children>
                   <VBox layoutX="26.0" layoutY="86.0" prefHeight="317.0" prefWidth="175.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="86.0">
                      <children>
-                        <Button fx:id="dashboardButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToDashboard" prefHeight="18.0" prefWidth="175.0" style="-fx-background-color: #C5ACF0; -fx-cursor: hand;" styleClass="sidebarItems" text="Dashboard" textFill="WHITE">
+                        <Button fx:id="dashboardButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToDashboard" prefHeight="18.0" prefWidth="175.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Dashboard" textFill="WHITE">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font>
@@ -82,7 +81,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="itemsButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToItems" onMouseClicked="#switchToItems" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0; -fx-cursor: hand;" styleClass="sidebarItems" text="Items" textFill="WHITE">
+                        <Button fx:id="itemsButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToItems" onMouseClicked="#switchToItems" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Items" textFill="WHITE">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font>
@@ -94,7 +93,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="pharmacistsButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToPharmacists" onMouseClicked="#switchToPharmacists" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0; -fx-cursor: hand;" styleClass="sidebarItems" text="Pharmacists" textFill="WHITE">
+                        <Button fx:id="pharmacistsButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToPharmacists" onMouseClicked="#switchToPharmacists" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Pharmacists" textFill="WHITE">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font>
@@ -106,7 +105,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="restockButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToRestock" onMouseClicked="#switchToRestock" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0; -fx-cursor: hand;" styleClass="sidebarItems" text="Restocks" textFill="WHITE">
+                        <Button fx:id="restockButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToRestock" onMouseClicked="#switchToRestock" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Restocks" textFill="WHITE">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font>
@@ -118,7 +117,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="transactionButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToTransactions" onMouseClicked="#switchToStatistics" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0; -fx-cursor: hand;" styleClass="sidebarItems" text="Transactions" textFill="WHITE">
+                        <Button fx:id="transactionButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToTransactions" onMouseClicked="#switchToStatistics" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Transactions" textFill="WHITE">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font>
@@ -130,7 +129,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="itemTypeButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToItemType" onMouseClicked="#switchToStatistics" prefHeight="44.0" prefWidth="188.0" style="-fx-background-color: #C5ACF0; -fx-cursor: hand;" styleClass="sidebarItems" text="Item Type" textFill="WHITE">
+                        <Button fx:id="itemTypeButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToItemType" onMouseClicked="#switchToStatistics" prefHeight="44.0" prefWidth="188.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Item Type" textFill="WHITE">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font>
@@ -142,7 +141,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="unitTypeButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToUnitType" onMouseClicked="#switchToStatistics" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0; -fx-cursor: hand;" styleClass="sidebarItems" text="Unit Type" textFill="WHITE">
+                        <Button fx:id="unitTypeButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToUnitType" onMouseClicked="#switchToStatistics" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Unit Type" textFill="WHITE">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font>
@@ -154,7 +153,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="itemUnitTypeButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToItemUnitType" onMouseClicked="#switchToStatistics" prefHeight="44.0" prefWidth="222.0" style="-fx-background-color: #C5ACF0; -fx-cursor: hand;" styleClass="sidebarItems" text="Item Unit Type" textFill="WHITE">
+                        <Button fx:id="itemUnitTypeButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToItemUnitType" onMouseClicked="#switchToStatistics" prefHeight="44.0" prefWidth="222.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Item Unit Type" textFill="WHITE">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font>
@@ -166,7 +165,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="statisticsButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToStatistics" onMouseClicked="#switchToStatistics" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0; -fx-cursor: hand;" styleClass="sidebarItems" text="Statistics" textFill="WHITE">
+                        <Button fx:id="statisticsButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToStatistics" onMouseClicked="#switchToStatistics" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Statistics" textFill="WHITE">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font>
@@ -207,69 +206,40 @@
          <center>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <TableView fx:id="itemTable" layoutX="14.0" layoutY="65.0" prefHeight="492.0" prefWidth="707.0" style="-fx-border-color: black;">
+                  <TableView fx:id="transactionTable" layoutX="14.0" layoutY="65.0" prefHeight="492.0" prefWidth="546.0">
                     <columns>
-                      <TableColumn prefWidth="75.0" text="Item ID" />
-                      <TableColumn prefWidth="75.0" text="Item Name" />
-                        <TableColumn prefWidth="75.0" text="Item Unit Type" />
-                        <TableColumn prefWidth="75.0" text="Quantity" />
-                        <TableColumn prefWidth="75.0" text="Unit Cost" />
-                        <TableColumn prefWidth="75.0" text="Movement" />
+                      <TableColumn editable="false" prefWidth="286.0" text="Transaction No." />
+                      <TableColumn editable="false" prefWidth="293.0" text="Pharmacist ID" />
+                        <TableColumn editable="false" prefWidth="286.0" text="Sold Quantity" />
+                        <TableColumn editable="false" prefWidth="286.0" text="Income" />
+                        <TableColumn editable="false" prefWidth="286.0" text="Transaction Date" />
                     </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <ChoiceBox layoutX="15.0" layoutY="30.0" prefWidth="150.0" style="-fx-border-color: black;" />
-                  <Label layoutX="15.0" layoutY="12.0" text="Filter">
+                  <TableView fx:id="itemsSoldTable" layoutX="576.0" layoutY="65.0" prefHeight="491.0" prefWidth="325.0">
+                     <columns>
+                        <TableColumn editable="false" prefWidth="286.0" text="Item Name" />
+                        <TableColumn editable="false" prefWidth="293.0" text="Sold Quantity" />
+                        <TableColumn editable="false" prefWidth="286.0" text="Unit Cost" />
+                        <TableColumn editable="false" prefWidth="286.0" text="Income" />
+                     </columns>
+                     <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                     </columnResizePolicy>
+                  </TableView>
+                  <ChoiceBox layoutX="14.0" layoutY="29.0" prefWidth="150.0" style="-fx-border-color: black;" />
+                  <Label layoutX="14.0" layoutY="11.0" text="Sort by">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <Button alignment="CENTER" contentDisplay="BOTTOM" layoutX="732.0" layoutY="378.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item">
+                  <Label layoutX="581.0" layoutY="34.0" text="Items Sold">
                      <font>
-                        <Font name="Nunito ExtraBold" size="16.0" />
-                     </font>
-                  </Button>
-                  <Button alignment="CENTER" layoutX="732.0" layoutY="426.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Update Item">
-                     <font>
-                        <Font name="Nunito ExtraBold" size="16.0" />
-                     </font>
-                  </Button>
-                  <Button alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item">
-                     <font>
-                        <Font name="Nunito ExtraBold" size="16.0" />
-                     </font>
-                  </Button>
-                  <Button alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Transaction History">
-                     <font>
-                        <Font name="Nunito ExtraBold" size="16.0" />
-                     </font>
-                  </Button>
-                  <Label layoutX="731.0" layoutY="73.0" text="Name">
-                     <font>
-                        <Font name="AauxNext-Bold" size="15.0" />
+                        <Font name="Nunito ExtraBold" size="22.0" />
                      </font>
                   </Label>
-                  <TextField layoutX="732.0" layoutY="91.0" prefHeight="29.0" prefWidth="177.0" style="-fx-border-color: black; -fx-border-radius: 0px;" />
-                  <Label layoutX="731.0" layoutY="137.0" text="Type">
-                     <font>
-                        <Font name="AauxNext-Bold" size="15.0" />
-                     </font>
-                  </Label>
-                  <ChoiceBox layoutX="732.0" layoutY="157.0" prefHeight="29.0" prefWidth="177.0" style="-fx-border-color: black;" />
-                  <ChoiceBox layoutX="732.0" layoutY="226.0" prefHeight="27.0" prefWidth="79.0" style="-fx-border-color: black;" />
-                  <Label layoutX="829.0" layoutY="207.0" text="Quantity">
-                     <font>
-                        <Font name="AauxNext-Bold" size="15.0" />
-                     </font>
-                  </Label>
-                  <Label layoutX="731.0" layoutY="207.0" text="Unit">
-                     <font>
-                        <Font name="AauxNext-Bold" size="15.0" />
-                     </font>
-                  </Label>
-                  <TextField layoutX="830.0" layoutY="226.0" prefHeight="27.0" prefWidth="79.0" style="-fx-border-color: black; -fx-border-radius: 0px;" />
                </children>
             </AnchorPane>
          </center>

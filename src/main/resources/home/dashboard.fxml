@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Rectangle2D?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="486.0" prefWidth="955.0" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="home.controller">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="647.0" prefWidth="1137.0" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="home.controller">
    <children>
       <BorderPane layoutX="278.0" layoutY="117.0" prefHeight="428.0" prefWidth="955.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <top>
@@ -19,19 +23,18 @@
                <children>
                   <Pane prefHeight="26.0" prefWidth="955.0" style="-fx-background-color: #C5ACF0;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
-                        <ImageView fx:id="exit" fitHeight="28.0" fitWidth="31.0" layoutX="922.0" layoutY="-1.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="exit" fitHeight="28.0" fitWidth="31.0" layoutX="1102.0" layoutY="-1.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@images/closeicon.png" />
                            </image>
                         </ImageView>
                      </children>
                   </Pane>
-                  <ImageView fitHeight="57.0" fitWidth="160.0" layoutX="406.0" layoutY="26.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fitHeight="57.0" fitWidth="160.0" layoutX="497.0" layoutY="23.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@images/gimatagicon.png" />
                      </image>
                   </ImageView>
-                  <Text fx:id="testText" fill="WHITE" layoutX="884.0" layoutY="74.0" strokeType="OUTSIDE" strokeWidth="0.0" text="dashboard" />
                   <Label fx:id="Menu" layoutX="14.0" layoutY="47.0" text="MENU" textFill="WHITE">
                      <font>
                         <Font name="System Bold" size="15.0" />
@@ -60,13 +63,12 @@
             </AnchorPane>
          </top>
          <left>
-            <AnchorPane fx:id="slider" prefHeight="333.0" prefWidth="168.0" style="-fx-background-color: #C5ACF0;" BorderPane.alignment="CENTER">
+            <AnchorPane fx:id="slider" prefHeight="564.0" prefWidth="219.0" style="-fx-background-color: #C5ACF0;" BorderPane.alignment="CENTER">
                <children>
                   <VBox layoutX="26.0" layoutY="86.0" prefHeight="317.0" prefWidth="175.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="86.0">
                      <children>
-                        <Button fx:id="dashboardButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToDashboard" prefHeight="18.0" prefWidth="175.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Dashboard" textFill="WHITE">
+                        <Button fx:id="dashboardButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToDashboard" prefHeight="44.0" prefWidth="220.0" style="-fx-background-color: #C5ACF0;" text="Dashboard" textFill="WHITE">
                            <font>
-                              <Font name="System Bold" size="20.0" />
                               <Font name="System Bold" size="20.0" />
                            </font>
                            <graphic>
@@ -76,6 +78,10 @@
                                  </image>
                               </ImageView>
                            </graphic>
+                           <styleClass>
+                              <String fx:value="sidebarItems" />
+                              <String fx:value="dashboardButton" />
+                           </styleClass>
                         </Button>
                         <Button fx:id="itemsButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToItems" onMouseClicked="#switchToItems" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Items" textFill="WHITE">
                            <font>
@@ -101,7 +107,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="restockButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToRestock" onMouseClicked="#switchToRestock" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Restock" textFill="WHITE">
+                        <Button fx:id="restockButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToRestock" onMouseClicked="#switchToRestock" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Restocks" textFill="WHITE">
                            <font>
                               <Font name="System Bold" size="20.0" />
                            </font>
@@ -109,6 +115,54 @@
                               <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@images/restockicon.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="transactionButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToTransactions" onMouseClicked="#switchToStatistics" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Transactions" textFill="WHITE">
+                           <font>
+                              <Font name="System Bold" size="20.0" />
+                           </font>
+                           <graphic>
+                              <ImageView fitHeight="20.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/transactionicon.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="itemTypeButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToItemType" onMouseClicked="#switchToStatistics" prefHeight="44.0" prefWidth="188.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Item Type" textFill="WHITE">
+                           <font>
+                              <Font name="System Bold" size="20.0" />
+                           </font>
+                           <graphic>
+                              <ImageView fitHeight="22.0" fitWidth="33.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/itemtypeicon.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="unitTypeButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToUnitType" onMouseClicked="#switchToStatistics" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Unit Type" textFill="WHITE">
+                           <font>
+                              <Font name="System Bold" size="20.0" />
+                           </font>
+                           <graphic>
+                              <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/unittypeicon.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="itemUnitTypeButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToItemUnitType" onMouseClicked="#switchToStatistics" prefHeight="44.0" prefWidth="222.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Item Unit Type" textFill="WHITE">
+                           <font>
+                              <Font name="System Bold" size="20.0" />
+                           </font>
+                           <graphic>
+                              <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/itemunittypeicon.png" />
                                  </image>
                               </ImageView>
                            </graphic>
@@ -125,11 +179,163 @@
                               </ImageView>
                            </graphic>
                         </Button>
+                        <Button fx:id="addButton" depthTest="DISABLE" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="219.0" style="-fx-background-color: #672886; -fx-background-radius: 0px;" textFill="WHITE">
+                           <opaqueInsets>
+                              <Insets top="5.0" />
+                           </opaqueInsets>
+                           <padding>
+                              <Insets top="5.0" />
+                           </padding>
+                           <VBox.margin>
+                              <Insets top="20.0" />
+                           </VBox.margin>
+                           <graphic>
+                              <ImageView fitHeight="40.0" fitWidth="46.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@images/addicon.png" />
+                                 </image>
+                                 <viewport>
+                                    <Rectangle2D />
+                                 </viewport>
+                              </ImageView>
+                           </graphic>
+                        </Button>
                      </children>
                   </VBox>
                </children>
             </AnchorPane>
          </left>
+         <center>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+               <children>
+                  <VBox id="pane" fx:id="pane" layoutX="40.0" layoutY="-1.0" prefHeight="187.0" prefWidth="829.0" style="-fx-background-color: #C5ACF0; -fx-background-radius: 0px 0px 30px 30px;" styleClass="pane" stylesheets="@css/style.css" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="49.0" AnchorPane.topAnchor="-1.0">
+                     <children>
+                        <HBox prefHeight="37.0" prefWidth="827.0">
+                           <children>
+                              <Label text="Dashboard" textFill="#672886">
+                                 <font>
+                                    <Font name="Nunito ExtraBold" size="18.0" />
+                                 </font>
+                              </Label>
+                              <Separator orientation="VERTICAL">
+                                 <HBox.margin>
+                                    <Insets left="10.0" right="10.0" />
+                                 </HBox.margin>
+                              </Separator>
+                              <Label layoutX="25.0" layoutY="25.0" text="Hello, welcome back!" textFill="#0a0000">
+                                 <font>
+                                    <Font name="Nunito ExtraBold" size="18.0" />
+                                 </font>
+                              </Label>
+                              <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="144.0" layoutY="25.0" maxWidth="1.7976931348623157E308" prefHeight="27.0" prefWidth="510.0" text="MARCH 17, 2024 " textFill="#0a0000">
+                                 <font>
+                                    <Font name="Nunito ExtraBold" size="18.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                           <padding>
+                              <Insets bottom="15.0" left="15.0" top="15.0" />
+                           </padding>
+                        </HBox>
+                        <HBox prefHeight="154.0" prefWidth="827.0" VBox.vgrow="ALWAYS">
+                           <VBox.margin>
+                              <Insets bottom="20.0" />
+                           </VBox.margin>
+                           <children>
+                              <VBox prefHeight="131.0" prefWidth="249.0">
+                                 <children>
+                                    <Label text="Beginning Balance:" textFill="#0a0000">
+                                       <font>
+                                          <Font name="Nunito ExtraBold" size="17.0" />
+                                       </font>
+                                    </Label>
+                                    <AnchorPane prefHeight="51.0" prefWidth="234.0" style="-fx-background-color: #672886; -fx-background-radius: 10px;">
+                                       <VBox.margin>
+                                          <Insets top="5.0" />
+                                       </VBox.margin>
+                                       <children>
+                                          <ImageView fitHeight="35.0" fitWidth="38.0" layoutX="14.0" layoutY="8.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="188.0" AnchorPane.topAnchor="8.0">
+                                             <image>
+                                                <Image url="@images/pesoicon.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Label fx:id="beginningBalance" layoutX="71.0" layoutY="8.0" text="30000.00" textFill="WHITE">
+                                             <font>
+                                                <Font size="24.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </AnchorPane>
+                                 </children>
+                                 <padding>
+                                    <Insets left="15.0" top="15.0" />
+                                 </padding>
+                              </VBox>
+                              <VBox prefHeight="131.0" prefWidth="249.0">
+                                 <children>
+                                    <Label text="Issuance Balance:" textFill="#0a0000">
+                                       <font>
+                                          <Font name="Nunito ExtraBold" size="17.0" />
+                                       </font>
+                                    </Label>
+                                    <AnchorPane prefHeight="51.0" prefWidth="234.0" style="-fx-background-color: #672886; -fx-background-radius: 10px;">
+                                       <children>
+                                          <Label fx:id="issuanceBalance" layoutX="71.0" layoutY="8.0" text="30000.00" textFill="WHITE">
+                                             <font>
+                                                <Font size="24.0" />
+                                             </font>
+                                          </Label>
+                                          <ImageView fitHeight="35.0" fitWidth="38.0" layoutX="14.0" layoutY="8.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="188.0" AnchorPane.topAnchor="8.0">
+                                             <image>
+                                                <Image url="@images/pesoicon.png" />
+                                             </image>
+                                          </ImageView>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets top="5.0" />
+                                       </VBox.margin>
+                                    </AnchorPane>
+                                 </children>
+                                 <padding>
+                                    <Insets left="15.0" top="15.0" />
+                                 </padding>
+                              </VBox>
+                              <VBox prefHeight="131.0" prefWidth="249.0">
+                                 <children>
+                                    <Label text="Beginning Balance:" textFill="#0a0000">
+                                       <font>
+                                          <Font name="Nunito ExtraBold" size="17.0" />
+                                       </font>
+                                    </Label>
+                                    <AnchorPane prefHeight="51.0" prefWidth="234.0" style="-fx-background-color: #672886; -fx-background-radius: 10px;">
+                                       <children>
+                                          <ImageView fitHeight="35.0" fitWidth="38.0" layoutX="14.0" layoutY="8.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="188.0" AnchorPane.topAnchor="8.0">
+                                             <image>
+                                                <Image url="@images/pesoicon.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Label layoutX="71.0" layoutY="8.0" text="30000.00" textFill="WHITE">
+                                             <font>
+                                                <Font size="24.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets top="5.0" />
+                                       </VBox.margin>
+                                    </AnchorPane>
+                                 </children>
+                                 <padding>
+                                    <Insets left="15.0" top="15.0" />
+                                 </padding>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </children>
+            </AnchorPane>
+         </center>
       </BorderPane>
    </children>
 </AnchorPane>
