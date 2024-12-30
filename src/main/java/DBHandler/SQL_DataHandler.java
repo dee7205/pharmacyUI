@@ -705,7 +705,7 @@ public class SQL_DataHandler {
 
             if (item.getItemID() != -1){
                 //TODO: Change the method, removing the info from the ItemUnitType Table
-                removeItemUnitType(item.getItemUnitTypeID(), REMOVE_ITEM_UNIT_ID);
+                removeItemUnitType(item.getItemUnitTypeID(), REMOVE_ITEM_UNIT_TYPE);
 
                 //TODO: Add condition to remove all items in Items_Sold table
                 //TODO: Add condition to remove all items in Restock table
@@ -1273,25 +1273,24 @@ public class SQL_DataHandler {
     //TODO: Add explanation for why these variables are made/used
     public static final int REMOVE_ITEM_TYPE = 6969;
     public static final int REMOVE_UNIT_TYPE = 9696;
-    public static final int REMOVE_ITEM_UNIT_ID = 9999;
+    public static final int REMOVE_ITEM_UNIT_TYPE = 9999;
 
     //TODO: Add comments
     public boolean removeItemUnitType(int id, int condition){
-        final String first = "DELETE FROM ItemUnitType WHERE itemType_ID = " + id;
-        final String second = "DELETE FROM ItemUnitType WHERE unitType_ID = " + id;
-        final String third = "DELETE FROM ItemUnitType WHERE item_unit_ID = " + id;
+        final String removeItemType = "DELETE FROM ItemUnitType WHERE itemType_ID = " + id;
+        final String removeUnitType = "DELETE FROM ItemUnitType WHERE unitType_ID = " + id;
+        final String removeItemUnitType = "DELETE FROM ItemUnitType WHERE item_unit_ID = " + id;
 
         if (connection == null)
             connection = prepareConnection();
 
         try(Statement stmt = connection.createStatement();){
-
             if (condition == REMOVE_ITEM_TYPE)
-                stmt.executeUpdate(first);
+                stmt.executeUpdate(removeItemType);
             else if (condition == REMOVE_UNIT_TYPE)
-                stmt.executeUpdate(second);
-            else if (condition == REMOVE_ITEM_UNIT_ID)
-                stmt.executeUpdate(third);
+                stmt.executeUpdate(removeUnitType);
+            else if (condition == REMOVE_ITEM_UNIT_TYPE)
+                stmt.executeUpdate(removeItemUnitType);
             else
                 return false;
 
@@ -1304,17 +1303,26 @@ public class SQL_DataHandler {
     }
 
 //======================================================================================================================================================================
+//Methods for the Restocks.
+
+    //TODO: Add methods for C, R, and D
+
+
+//======================================================================================================================================================================
 //Methods for the Transactions.
 
-    
 
-    //TODO: Add methods for transactions (CR & RS)
+
+    //TODO: Add methods for transactions (CR & RT)
 
 //======================================================================================================================================================================
 //Methods for the Sold Items.
     //TODO: Add methods for Sold Items (CR & RS)
 
-    //TODO: Add methods for Restocks (CR)
+
+//======================================================================================================================================================================
+//Methods for the Views.
+
 
     //TODO: Make views for the following...
 }
