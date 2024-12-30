@@ -52,4 +52,22 @@ public class ItemUnitType {
     public void setUnitTypeName(String unitTypeName) {
         this.unitTypeName = unitTypeName;
     }
+
+    public String [] getInfo(){
+        return new String [] {Integer.toString(getItemUnitTypeID()), Integer.toString(getItemTypeID()), Integer.toString(getUnitTypeID()),
+                              getItemTypeName(), getUnitTypeName()};
+    }
+
+    public static String [][] generateInfoTable(ItemUnitType [] list){
+        if (list == null || list.length == 0)
+            return null;
+
+        //Item ID, Item Name, Unit Cost
+        String [][] infoTable = new String[list.length][5];
+
+        for (int i = 0; i < list.length; i++)
+            infoTable[i] = list[i].getInfo();
+
+        return infoTable;
+    }
 }

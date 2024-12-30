@@ -68,23 +68,20 @@ public class Pharmacist {
         return getPharmacistID() + " " + getFirstName() + " " + getMiddleName() + " " + getLastName();
     }
 
-    public String [] getPharmacistInfo(){
+    public String [] getInfo(){
         return new String[]{Integer.toString(getPharmacistID()), getFirstName(), getMiddleName(), getLastName()};
     }
 
-    public static String [][] generatePharmacistTable(Pharmacist [] pharmacists){
+    public static String [][] generateInfoTable(Pharmacist [] pharmacists){
         if (pharmacists == null || pharmacists.length == 0)
             return null;
 
         //Pharmacist ID, First Name, Middle Name, Last Name
         String [][] infoTable = new String[pharmacists.length][4];
 
-        for (int i = 0; i < pharmacists.length; i++){
-            infoTable[i][0] = Integer.toString(pharmacists[i].getPharmacistID());
-            infoTable[i][1] = pharmacists[i].getFirstName();
-            infoTable[i][2] = pharmacists[i].getMiddleName();
-            infoTable[i][3] = pharmacists[i].getLastName();
-        }
+        for (int i = 0; i < pharmacists.length; i++)
+            infoTable[i] = pharmacists[i].getInfo();
+
 
         return infoTable;
     }

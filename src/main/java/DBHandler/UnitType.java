@@ -27,15 +27,18 @@ public class UnitType {
         this.unitTypeID = unitTypeID;
     }
 
-    public String [] getUnitTypeInfo(){
+    public String [] getInfo(){
         return new String [] {Integer.toString(getUnitTypeID()), getUnitType()};
     }
 
-    public static String [][] generateUnitTypeTable(UnitType [] list){
+    public static String [][] generateInfoTable(UnitType [] list){
+        if (list == null || list.length == 0)
+            return null;
+
         String [][] info = new String[list.length][2];
 
         for (int i = 0; i < list.length; i++)
-            info[i] = list[i].getUnitTypeInfo();
+            info[i] = list[i].getInfo();
         return info;
     }
 }

@@ -58,11 +58,12 @@ public class Item {
         this.itemUnitTypeID = itemUnitTypeID;
     }
 
-    public String [] getItemInfo(){
-        return new String [] {Integer.toString(getItemID()), getItemName(), Integer.toString(getItemUnitTypeID()), Double.toString(getUnitCost())};
+    public String [] getInfo(){
+        return new String [] {Integer.toString(getItemID()), getItemName(), Integer.toString(getItemUnitTypeID()),
+                              Double.toString(getUnitCost())};
     }
 
-    public static String [][] generateItemTable(Item [] items){
+    public static String [][] generateInfoTable(Item [] items){
         if (items == null || items.length == 0)
             return null;
 
@@ -70,7 +71,7 @@ public class Item {
         String [][] infoTable = new String[items.length][4];
 
         for (int i = 0; i < items.length; i++)
-            infoTable[i] = items[i].getItemInfo();
+            infoTable[i] = items[i].getInfo();
 
         return infoTable;
     }
