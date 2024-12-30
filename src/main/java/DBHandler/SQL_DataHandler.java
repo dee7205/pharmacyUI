@@ -3,10 +3,12 @@ package DBHandler;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
 
 public class SQL_DataHandler {
 
     private static Connection connection;
+    public static LocalDate currentDate;
 
     public static void main (String [] args){
         SQL_DataHandler handler = new SQL_DataHandler();
@@ -46,16 +48,28 @@ public class SQL_DataHandler {
     }
 
     public SQL_DataHandler(){
-        connection = prepareConnection();
+        prepareConnection();
+
+        String query = "SELECT CURRENT_DATE() AS \"Current Date\"";
+        try(Statement stmt = connection.createStatement()){
+            ResultSet set = stmt.executeQuery(query);
+
+            if (set.next()){
+                Date tempDate = set.getDate("Current Date");
+                currentDate = tempDate.toLocalDate();
+            }
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     //Makes a connection with the SQL server
     //Added to help with code readability
-    private Connection prepareConnection(){
-        Connection conn = DatabaseConnection.connect();
-        if (conn == null)
+    private void prepareConnection(){
+        connection = DatabaseConnection.connect();
+        if (connection == null)
             System.out.println("ERROR: Unable to prepare connection.");
-        return conn;
     }
 
 //======================================================================================================================================================================
@@ -73,7 +87,7 @@ public class SQL_DataHandler {
      */
     public boolean addPharmacist(int pharmaID, String firstName, String middleName, String lastName){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try{
             if (connection == null){
@@ -112,7 +126,7 @@ public class SQL_DataHandler {
         String query = "SELECT * FROM Pharmacists WHERE pharmacist_ID = " + pharmaID;
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(Statement stmt = connection.createStatement()){
 
@@ -150,7 +164,7 @@ public class SQL_DataHandler {
      */
     public int getPharmacistID(String fName, String mName, String lName){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try{
             if (!pharmacistExists(fName, mName, lName))
@@ -181,7 +195,7 @@ public class SQL_DataHandler {
      */
     public boolean pharmacistExists(int pharmacistID){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try{
             final String query = "SELECT COUNT(*) AS \"total\" FROM Pharmacists WHERE pharmacist_ID = " + pharmacistID;
@@ -206,7 +220,7 @@ public class SQL_DataHandler {
      */
     public boolean pharmacistExists(String fName, String mName, String lName){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try{
             final String query = "SELECT COUNT(*) AS \"total\" FROM Pharmacists WHERE fName = ? AND mName = ? AND lName = ? ";
@@ -233,7 +247,7 @@ public class SQL_DataHandler {
      */
     public void printPharmacist(int pharmaID) {
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try {
             String query = "SELECT * FROM Pharmacists WHERE pharmacist_ID = ?";
@@ -261,7 +275,7 @@ public class SQL_DataHandler {
      */
     public boolean removePharmacist(int pharmaID){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try{
             if (!pharmacistExists(pharmaID))
@@ -300,7 +314,7 @@ public class SQL_DataHandler {
                 """;
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         // Database connection and query execution
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -354,7 +368,7 @@ public class SQL_DataHandler {
             """;
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         // Database connection and query execution
         try (Statement stmt = connection.createStatement()) {
@@ -395,7 +409,7 @@ public class SQL_DataHandler {
      */
     public boolean updatePharmacist(Pharmacist pharmacist, int pharmaID, String fName, String mName, String lName){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try{
             if (!pharmacistExists(pharmacist.getPharmacistID())){
@@ -436,7 +450,7 @@ public class SQL_DataHandler {
      */
     public boolean removeAllPharmacists(){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try {
             final String query = "DELETE FROM Pharmacists WHERE pharmacist_ID > 0";
@@ -468,7 +482,7 @@ public class SQL_DataHandler {
         String query = "INSERT INTO Items (item_name, item_unit_ID, unit_cost) VALUES (?, ?, ?)";
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
 
@@ -502,7 +516,7 @@ public class SQL_DataHandler {
      */
     public boolean updateItem(String itemName, String newName, double unitCost){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try{
             //Checks if there is no existing item with this name
@@ -565,7 +579,7 @@ public class SQL_DataHandler {
         boolean isAdded = false;
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
 
@@ -627,7 +641,7 @@ public class SQL_DataHandler {
                 """;
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             if (!itemExists(itemName))
@@ -671,7 +685,7 @@ public class SQL_DataHandler {
      */
     public int getItemId(String itemName){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try {
             final String selectQuery = "SELECT i.item_ID FROM Items AS i WHERE i.item_name = ?";
@@ -698,7 +712,7 @@ public class SQL_DataHandler {
     //TODO: Alter the contents by adding the getItemID method.
     public boolean removeItem(String itemName){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try{
             Item item = getItem(itemName);
@@ -728,7 +742,7 @@ public class SQL_DataHandler {
      */
     public boolean removeAllItems(){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try {
             //TODO: Add condition to remove all items in Items_Sold table
@@ -761,7 +775,7 @@ public class SQL_DataHandler {
      */
     public boolean itemExists(String itemName){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try{
             final String query = "SELECT COUNT(*) AS \"total\" FROM Items WHERE item_Name = ?";
@@ -785,7 +799,7 @@ public class SQL_DataHandler {
      */
     public boolean itemExists(int itemID){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try{
             final String query = "SELECT COUNT(*) AS \"total\" FROM Items WHERE item_ID = ?";
@@ -812,7 +826,7 @@ public class SQL_DataHandler {
         final String query = "INSERT INTO ItemType (item_Type) VALUES (?)";
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
 
@@ -840,7 +854,7 @@ public class SQL_DataHandler {
             """;
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setString(1, itemTypeName);
@@ -867,7 +881,7 @@ public class SQL_DataHandler {
             """;
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, itemTypeID);
@@ -889,7 +903,7 @@ public class SQL_DataHandler {
         final String query = "SELECT * FROM ItemType AS it WHERE it.item_Type = ?";
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setString(1, itemTypeName);
@@ -910,8 +924,10 @@ public class SQL_DataHandler {
     public boolean itemTypeExists(String itemTypeName){
         final String query = "SELECT * FROM ItemType WHERE item_Type = ?";
 
-        try(Connection connection = prepareConnection();
-            PreparedStatement pstmt = connection.prepareStatement(query);){
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setString(1, itemTypeName);
             ResultSet set = pstmt.executeQuery();
             return set.next();
@@ -927,7 +943,7 @@ public class SQL_DataHandler {
         final String query = "SELECT * FROM ItemType WHERE itemType_ID = ?";
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, itemTypeID);
@@ -945,7 +961,7 @@ public class SQL_DataHandler {
         final String query = "UPDATE ItemType SET item_Type = ? WHERE itemType_ID = ?";
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setString(1, newItemTypeName);
@@ -962,7 +978,7 @@ public class SQL_DataHandler {
     //TODO: Add comments for this method
     public boolean removeItemType(String itemTypeName){
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         if (!itemTypeExists(itemTypeName))
             return false;
@@ -994,7 +1010,7 @@ public class SQL_DataHandler {
         final String query = "INSERT INTO UnitType (unit_Type) VALUES (?)";
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
 
@@ -1017,7 +1033,7 @@ public class SQL_DataHandler {
         final String query = "SELECT * FROM UnitType WHERE unit_Type = ?";
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setString(1, unitTypeName);
@@ -1034,7 +1050,7 @@ public class SQL_DataHandler {
         final String query = "SELECT * FROM UnitType WHERE unitType_ID = ?";
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, unitTypeID);
@@ -1061,7 +1077,7 @@ public class SQL_DataHandler {
                 """;
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             if (!unitTypeExists(unitTypeID))
@@ -1084,7 +1100,7 @@ public class SQL_DataHandler {
         final String query = "SELECT unitType_ID AS \"Unit Type ID\" FROM UnitType WHERE unit_Type = ?";
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setString(1, unitTypeName);
@@ -1103,8 +1119,10 @@ public class SQL_DataHandler {
     public boolean updateUnitType(int unitTypeID, String newUnitTypeName){
         final String query = "UPDATE UnitType SET unit_Type = ? WHERE unitType_ID = ?";
 
-        try(Connection connection = prepareConnection();
-            PreparedStatement pstmt = connection.prepareStatement(query);){
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setString(1, newUnitTypeName);
             pstmt.setInt(2, unitTypeID);
 
@@ -1120,11 +1138,13 @@ public class SQL_DataHandler {
     public boolean removeUnitType(int unitTypeID){
         final String query = "DELETE FROM UnitType WHERE item_id = ?";
 
+        if (connection == null)
+            prepareConnection();
+
         if (!removeItemUnitType(unitTypeID, REMOVE_UNIT_TYPE))
             return false;
 
-        try(Connection connection = prepareConnection();
-            PreparedStatement pstmt = connection.prepareStatement(query);){
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
             if (!unitTypeExists(unitTypeID))
                 return false;
 
@@ -1150,7 +1170,7 @@ public class SQL_DataHandler {
         final String query = "INSERT INTO ItemUnitType (itemType_ID, unitType_ID) VALUES (?, ?)";
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
 
@@ -1174,7 +1194,7 @@ public class SQL_DataHandler {
         final String query = "SELECT * FROM ItemUnitType WHERE item_unit_ID = ?";
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, itemUnitTypeID);
@@ -1192,7 +1212,7 @@ public class SQL_DataHandler {
         final String query = "SELECT * FROM ItemUnitType WHERE unitType_ID = ? AND itemType_ID = ?";
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, unitTypeID);
@@ -1221,8 +1241,10 @@ public class SQL_DataHandler {
             WHERE iut.unitType_ID = ? AND iut.itemType_ID = ?
             """;
 
-        try(Connection connection = prepareConnection();
-            PreparedStatement pstmt = connection.prepareStatement(query);){
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, unitTypeID);
             pstmt.setInt(2, itemTypeID);
             ResultSet set = pstmt.executeQuery(query);
@@ -1254,7 +1276,7 @@ public class SQL_DataHandler {
             """;
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, unitTypeID);
@@ -1282,7 +1304,7 @@ public class SQL_DataHandler {
         final String removeItemUnitType = "DELETE FROM ItemUnitType WHERE item_unit_ID = " + id;
 
         if (connection == null)
-            connection = prepareConnection();
+            prepareConnection();
 
         try(Statement stmt = connection.createStatement();){
             if (condition == REMOVE_ITEM_TYPE)
@@ -1307,11 +1329,149 @@ public class SQL_DataHandler {
 
     //TODO: Add methods for C, R, and D
 
+    //TODO: Add comments to this method
+    public boolean addRestock(int itemID, int startQuantity, Date expiryDate){
+        final String query = """
+            INSERT INTO Restocks (item_ID, start_Qty, sold_Qty, restock_Date, expiry_Date) 
+            VALUES (?, ?, 0, ?, ?)
+            """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query);
+            Statement stmt = connection.createStatement();){
+
+            //Checks if an item exists
+            if (!itemTypeExists(itemID)){
+                System.out.println("ERROR: Unable to add new Restock. \n Item via Item ID doesn't exist: " + itemID);
+                return false;
+            }
+
+            //Checks if the expiry date is on or after the current date
+            if (!Date.valueOf(currentDate).after(expiryDate) && !Date.valueOf(currentDate).equals(expiryDate))
+                return false;
+
+            pstmt.setInt(1, itemID);
+            pstmt.setInt(2, startQuantity);
+            pstmt.setDate(3, Date.valueOf(currentDate));
+            pstmt.setDate(2, expiryDate);
+            return pstmt.executeUpdate() > 0;
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //TODO: Finish Implementation
+//    public boolean reduceRestocks(int itemID, int soldQuantity){
+//        if (connection == null)
+//            prepareConnection();
+//
+//        int result = getRemainingStock(itemID);
+//        if (soldQuantity > result){
+//            System.out.println("ERROR: Unable to reduce restocks. \nSold quantity is above the current stock: " + soldQuantity);
+//            return false;
+//        }   else if (result == -1){
+//                System.out.println("ERROR: Unable to reduce restocks. \nItem under the item id doesn't exist: " + itemID);
+//                return false;
+//        }
+//
+//        Restocks [] currentStock = getCurrentStock(itemID);
+//
+//        if (currentStock == null || currentStock.length == 0){
+//            System.out.println("ERROR: Unable to reduce restocks. \nItem doesn't exist or no stock is found under this item");
+//            return false;
+//        }
+//
+//        final String query = "UPDATE Restocks SET sold_Qty = ? WHERE item_ID = ?";
+//
+//        for (Restocks stock : currentStock){
+//            try(PreparedStatement pstmt = connection.prepareStatement(query)){
+//                pstmt.setInt(2, itemID);
+//
+//
+//                if (soldQuantity >= stock.getRemainingQty()){                                           //Sold Quantity is more than the current restock in the array
+//                    soldQuantity -= stock.getRemainingQty();
+//                    pstmt.setInt(1, stock.getRemainingQty() + stock.getSoldQty());
+//                } else {                                                                                //Sold quantity is less than the current restock qty in the array
+//                    pstmt.setInt(1, soldQuantity + stock.getSoldQty());
+//                    soldQuantity = 0;
+//                }
+//
+//                pstmt.executeUpdate();
+//
+//                if (soldQuantity <= 0)
+//                    break;
+//
+//            }   catch (Exception e){
+//                e.printStackTrace();
+//                return false;
+//            }
+//        }
+//
+//        //Collect the totalRestocks through an array (Sort by ID ASC)
+//        //Slowly reduce-update then propagate along the restocks array
+//
+//
+//    }
+
+    //TODO: Implement this method
+//    public Restocks [] getCurrentStock(int itemID){
+//        String query = """
+//            SELECT
+//                r.restock_ID AS "Restock ID",
+//                r.item_ID AS "Item ID",
+//                r.start_Qty AS "Start Quantity",
+//                r.sold_Qty AS "Sold Quantity",
+//                r.restock_Date AS "Restock Date",
+//                r.expiry_Date AS "Expiry Date"
+//            FROM Restocks AS r
+//            WHERE r.expiry_Date >= CURRENT_DATE() AND r.start_Qty > r.sold_Qty AND r.item_ID = ?;
+//        """;
+//    }
+
+    /**
+     * Checks for the existence of an item and gets remaining stock for a specific item based from the SQL
+     * server
+     *
+     * @param itemID    integer representing the item_ID (primary key) of an item row found
+     *                  in the Items table (SQL)
+     * @return          An integer representing the remaining stock for an item
+     */
+    public int getRemainingStock(int itemID){
+        final String query = """
+            SELECT (SUM(r.start_Qty - r.sold_Qty)) AS "Total Quantity"
+            FROM Restocks AS r 
+            WHERE r.expiry_Date >= CURRENT_DATE() AND r.start_Qty > r.sold_Qty;
+        """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(Statement stmt = connection.prepareStatement(query);){
+
+            if (!itemExists(itemID)){
+                System.out.println("ERROR: Unable to get total quantity of item. \nItem with this item id doesn't exist: " + itemID);
+                return -1;
+            }
+
+            ResultSet set = stmt.executeQuery(query);
+            if (set.next())
+                return set.getInt("Total Quantity");
+
+            return -1;
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
 
 //======================================================================================================================================================================
 //Methods for the Transactions.
-
-
 
     //TODO: Add methods for transactions (CR & RT)
 

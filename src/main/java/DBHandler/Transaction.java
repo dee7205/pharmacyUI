@@ -1,10 +1,11 @@
 package DBHandler;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.sql.Date;
 
 public class Transaction {
     private int transactionID, pharmacistID;
-    private Date transactionDate;
+    private LocalDate transactionDate;
 
     public int getTransactionID() {
         return transactionID;
@@ -22,28 +23,24 @@ public class Transaction {
         this.pharmacistID = pharmacistID;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return transactionDate;
     }
 
-    public void setDate(Date transactionDate) {
+    public void setDate(LocalDate transactionDate) {
         this.transactionDate = transactionDate;
-    }
-
-    public String getDate_String(){
-        return transactionDate.getDay() + "-" + transactionDate.getMonth() + "-" + transactionDate.getYear();
     }
 
     public String [] getInfo(){
         return new String [] {Integer.toString(getTransactionID()), Integer.toString(getPharmacistID()),
-                              getDate_String()};
+                              Date.valueOf(getDate()).toString()};
     }
 
     public static String [][] getInfoTable(Transaction [] trans){
         if (trans == null || trans.length == 0)
             return null;
 
-        String [][] infoList = new String[trans.length][];
+        String [][] infoList = new String[trans.length][3];
         for (int i = 0; i < trans.length; i++)
             infoList[i] = trans[i].getInfo();
         return infoList;

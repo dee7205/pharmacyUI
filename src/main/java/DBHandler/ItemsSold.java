@@ -43,7 +43,7 @@ public class ItemsSold {
         if (soldItems == null || soldItems.length == 0)
             return null;
 
-        String [][] infoList = new String[soldItems.length][2];
+        String [][] infoList = new String[soldItems.length][3];
         for (int i = 0; i < soldItems.length; i++)
             infoList[i] = soldItems[i].getInfo();
         return infoList;

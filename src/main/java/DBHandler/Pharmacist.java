@@ -69,7 +69,8 @@ public class Pharmacist {
     }
 
     public String [] getInfo(){
-        return new String[]{Integer.toString(getPharmacistID()), getFirstName(), getMiddleName(), getLastName()};
+        return new String [] {Integer.toString(getPharmacistID()), getFirstName(), getMiddleName(),
+                              getLastName()};
     }
 
     public static String [][] generateInfoTable(Pharmacist [] pharmacists){
@@ -78,11 +79,8 @@ public class Pharmacist {
 
         //Pharmacist ID, First Name, Middle Name, Last Name
         String [][] infoTable = new String[pharmacists.length][4];
-
         for (int i = 0; i < pharmacists.length; i++)
             infoTable[i] = pharmacists[i].getInfo();
-
-
         return infoTable;
     }
 
