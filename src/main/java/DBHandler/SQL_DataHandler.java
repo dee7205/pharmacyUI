@@ -6,8 +6,14 @@ import java.util.List;
 
 public class SQL_DataHandler {
 
+    private static Connection connection;
+
     public static void main (String [] args){
         SQL_DataHandler handler = new SQL_DataHandler();
+
+        handler.addItemType("Medicine");
+        handler.addUnitType("Pills");
+        handler.addItemUnitType("Medicine", "Pills");
 
         handler.removeAllPharmacists();
         handler.addPharmacist(1, "Allan George", "Cajes", "Tagle");
@@ -23,9 +29,9 @@ public class SQL_DataHandler {
         System.out.println(handler.pharmacistExists(3));
 
 //        handler.removeAllItems();
-        handler.addItem("Paracetamol", "Medicine", 5.0);
-        handler.addItem("Biogesic", "Medicine", 4.0);
-        handler.addItem("Neozep", "Medicine", 6.0);
+        handler.addItem("Paracetamol", handler.getItemUnitTypeID("Medicine", "Pills"), 5.0);
+        handler.addItem("Biogesic", handler.getItemUnitTypeID("Medicine", "Pills"), 4.0);
+        handler.addItem("Neozep", handler.getItemUnitTypeID("Medicine", "Pills"), 6.0);
 
         Item [] items = handler.getItems(10, 12);
         for (Item item : items)
@@ -39,13 +45,17 @@ public class SQL_DataHandler {
         System.out.println(type.getUnitTypeID() + " " + type.getUnitType());
     }
 
+    public SQL_DataHandler(){
+        connection = prepareConnection();
+    }
+
     //Makes a connection with the SQL server
     //Added to help with code readability
     private Connection prepareConnection(){
-        Connection connection = DatabaseConnection.connect();
-        if (connection == null)
+        Connection conn = DatabaseConnection.connect();
+        if (conn == null)
             System.out.println("ERROR: Unable to prepare connection.");
-        return connection;
+        return conn;
     }
 
 //======================================================================================================================================================================
@@ -62,12 +72,8 @@ public class SQL_DataHandler {
      * @return boolean      Helps in identifying if the Pharmacist was successfully added to the database.
      */
     public boolean addPharmacist(int pharmaID, String firstName, String middleName, String lastName){
-        Connection connection;
-        try {
+        if (connection == null)
             connection = prepareConnection();
-        }   catch (Exception e){
-            return false;
-        }
 
         try{
             if (connection == null){
@@ -108,26 +114,28 @@ public class SQL_DataHandler {
      */
     public Pharmacist getPharmacist(int pharmaID){
         String query = "SELECT * FROM Pharmacists WHERE pharmacist_ID = " + pharmaID;
-        try(Connection conn = DatabaseConnection.connect()) {
-            assert conn != null;
-            try(Statement stmt = conn.createStatement()){
 
-                if (!pharmacistExists(pharmaID))
-                    return null;
+        if (connection == null)
+            connection = prepareConnection();
 
-                //Checks if the contents of the result set is not null.
-                //If not, returns the Pharmacist info array (Contains their name)
-                ResultSet set = stmt.executeQuery(query);
-                if (set.next()) {
-                    return new Pharmacist(
-                            set.getString("fName"),
-                            set.getString("mName"),
-                            set.getString("lName"),
-                            set.getInt("pharmacist_ID"));
-                } else
-                    return null;
+        try(Statement stmt = connection.createStatement()){
 
-            }
+            if (!pharmacistExists(pharmaID))
+                return null;
+
+            //Checks if the contents of the result set is not null.
+            //If not, returns the Pharmacist info array (Contains their name)
+            ResultSet set = stmt.executeQuery(query);
+            if (set.next()) {
+                return new Pharmacist(
+                        set.getString("fName"),
+                        set.getString("mName"),
+                        set.getString("lName"),
+                        set.getInt("pharmacist_ID"));
+            } else
+                return null;
+
+
         } catch (SQLException e){
             e.printStackTrace();
             return null;
@@ -145,13 +153,8 @@ public class SQL_DataHandler {
      *                  was established.
      */
     public int getPharmacistID(String fName, String mName, String lName){
-        Connection connection;
-
-        try{
+        if (connection == null)
             connection = prepareConnection();
-        } catch (Exception e){
-            return -1;
-        }
 
         try{
             if (!pharmacistExists(fName, mName, lName))
@@ -181,13 +184,8 @@ public class SQL_DataHandler {
      * <br> Checks if a specific pharmacist exists in the database given their pharmacistID
      */
     public boolean pharmacistExists(int pharmacistID){
-        Connection connection;
-
-        try{
+        if (connection == null)
             connection = prepareConnection();
-        }   catch (Exception e){
-            return false;
-        }
 
         try{
             final String query = "SELECT COUNT(*) AS \"total\" FROM Pharmacists WHERE pharmacist_ID = " + pharmacistID;
@@ -214,13 +212,8 @@ public class SQL_DataHandler {
      * <br> Checks if a specific pharmacist exists in the database given their first, middle, and last name
      */
     public boolean pharmacistExists(String fName, String mName, String lName){
-        Connection connection;
-
-        try{
+        if (connection == null)
             connection = prepareConnection();
-        }   catch (Exception e){
-            return false;
-        }
 
         try{
             final String query = "SELECT COUNT(*) AS \"total\" FROM Pharmacists WHERE fName = ? AND mName = ? AND lName = ? ";
@@ -230,10 +223,10 @@ public class SQL_DataHandler {
             pstmt.setString(3, lName);
             ResultSet set = pstmt.executeQuery();
 
-            set.next();
-            int numOfRows = set.getInt("total");
-            connection.close();
-            return (numOfRows > 0);
+            if (set.next())
+                return set.getInt("total") > 0;
+            else
+                return false;
         }   catch (Exception e){
             e.printStackTrace();
             return false;
@@ -246,12 +239,8 @@ public class SQL_DataHandler {
      * @param pharmaID      The primary key of the Pharmacist in the database
      */
     public void printPharmacist(int pharmaID) {
-        Connection connection;
-        try {
+        if (connection == null)
             connection = prepareConnection();
-        } catch (Exception e) {
-            return;
-        }
 
         try {
             String query = "SELECT * FROM Pharmacists WHERE pharmacist_ID = ?";
@@ -262,10 +251,8 @@ public class SQL_DataHandler {
             if (set.next()) {
                 System.out.println("Pharma ID: " + pharmaID + "\nPharmacist Name: " + set.getString("fName") + " " + set.getString("mName") +
                         " " + set.getString("lName"));
-                connection.close();
             } else {
                 System.out.println("Pharmacist with ID: " + pharmaID + ", does not exist.");
-                connection.close();
             }
 
         } catch (SQLException e) {
@@ -280,13 +267,8 @@ public class SQL_DataHandler {
      *                  or is not removed successfully
      */
     public boolean removePharmacist(int pharmaID){
-        Connection connection;
-
-        try{
+        if (connection == null)
             connection = prepareConnection();
-        } catch (Exception e) {
-            return false;
-        }
 
         try{
             if (!pharmacistExists(pharmaID))
@@ -294,9 +276,7 @@ public class SQL_DataHandler {
 
             Statement stmt = connection.createStatement();
             final String query = "DELETE FROM Pharmacists WHERE pharmacist_ID = " + pharmaID;
-            int count = stmt.executeUpdate(query);
-            connection.close();
-            return (count > 0);
+            return stmt.executeUpdate(query) > 0;
 
         } catch(SQLException e){
             e.printStackTrace();
@@ -326,9 +306,11 @@ public class SQL_DataHandler {
                 WHERE p.pharmacist_ID >= ? AND p.pharmacist_ID <= ?;
                 """;
 
+        if (connection == null)
+            connection = prepareConnection();
+
         // Database connection and query execution
-        try (Connection conn = DatabaseConnection.connect();
-        PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
             if (pharmaID1 > pharmaID2){     //Made to ensure that there will be a set of IDs (ID1, ... ,  ID2)
                 int temp = pharmaID1;       //where ID1 is <= ID2 to form the set pharmacists to be taken
                 pharmaID1 = pharmaID2;
@@ -491,12 +473,12 @@ public class SQL_DataHandler {
     /**
      * Method used to add an item to the database, together with its item type and unit cost (price)
      *
-     * @param itemName      The name of the item to be added to the database
-     * @param itemType      The type of item to be added (Limited to the drop-down GUI)
-     * @param unitCost      The price for one unit of an item (xxxx.xx)
-     * @return              true if the item and item type is added to the database, false if not
+     * @param itemName              The name of the item to be added to the database
+     * @param itemUnitTypeID        The id of the type of item & its unit (Limited to the drop-down GUI)
+     * @param unitCost              The price for one unit of an item (xxxx.xx)
+     * @return                      true if the item and item type is added to the database, false if not
      */
-    public boolean addItem(String itemName, String itemType, double unitCost){
+    public boolean addItem(String itemName, int itemUnitTypeID, double unitCost){
         //Add the item to the database
         String query = "INSERT INTO Items (item_name, unit_cost) VALUES (?, ?)";
 
@@ -505,29 +487,14 @@ public class SQL_DataHandler {
 
             //Checks if there is no existing item with this name
             if (itemExists(itemName)){
-                System.out.println("ERROR: Unable to add new item as, " + itemName + " " + itemType + " " + unitCost + ", already exists in the database");
+                System.out.println("ERROR: Unable to add new item as, " + itemName + " " + itemUnitTypeID + " " + unitCost + ", already exists in the database");
                 return false;
             }
 
             pstmt.setString(1, itemName);
             pstmt.setDouble(2, unitCost);
 
-            int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected <= 0)
-                return false;
-
-            //Use the item ID to add it to the Item Type table
-            String secondQuery = """
-                INSERT INTO ItemType (item_ID, item_Type) VALUES 
-                    ((SELECT i.item_ID FROM Item AS i WHERE i.item_Name = ?), ?)
-                """;
-            PreparedStatement secondPstmt = connection.prepareStatement(secondQuery);
-            secondPstmt.setString(1, itemName);
-            secondPstmt.setString(2, itemType);
-            rowsAffected = secondPstmt.executeUpdate();
-            connection.close();
-
-            return rowsAffected > 0;
+            return pstmt.executeUpdate() > 0;
 
         }   catch (SQLException e){
             e.printStackTrace();
@@ -611,7 +578,7 @@ public class SQL_DataHandler {
                     i.item_ID AS "Item ID", 
                     i.item_name AS "Item Name",
                     i.unit_cost AS "Unit Cost",
-                    it.item_type AS "Item Type"
+                    it.item_unit_ID AS "Item Unit ID"
                 FROM Items AS i
                 JOIN ItemType AS it ON i.item_ID = it.item_ID
                 WHERE i.item_ID >= ? AND i.item_ID <= ?
@@ -640,7 +607,7 @@ public class SQL_DataHandler {
 
             while(set.next()){
                 Item item = new Item(set.getInt("Item ID"), set.getString("Item Name"),
-                                     set.getString("Item Type"),  set.getDouble("Unit Cost"));
+                                     set.getInt("Item Unit ID"),  set.getDouble("Unit Cost"));
                 list.add(item);
                 isAdded = true;
             }
@@ -673,7 +640,7 @@ public class SQL_DataHandler {
                     i.item_ID AS "Item ID", 
                     i.item_name AS "Item Name",
                     i.unit_cost AS "Unit Cost",
-                    it.item_type AS "Item Type"
+                    it.item_unit_ID AS "Item Unit ID"
                 FROM Items AS i
                 JOIN ItemType AS it ON i.item_ID = it.item_ID
                 WHERE item_ID >= ? AND item_ID <= ?
@@ -705,7 +672,7 @@ public class SQL_DataHandler {
             Item item = new Item(
                     set.getInt("Item ID"),
                     set.getString("Item Name"),
-                    set.getString("Item Type"),
+                    set.getInt("Item Unit ID"),
                     set.getDouble("Unit Cost"));
 
             connection.close();
@@ -1187,6 +1154,12 @@ public class SQL_DataHandler {
 //Methods for the ItemUnitType.
 
     //TODO: Add comments
+    public boolean addItemUnitType(String itemTypeName, String unitTypeName){
+        int itemTypeID = getItemTypeID(itemTypeName);
+        int unitTypeID = getUnitTypeID(unitTypeName);
+        return addItemUnitType(itemTypeID, unitTypeID);
+    }
+
     public boolean addItemUnitType(int itemTypeID, int unitTypeID){
         final String query = "INSERT INTO ItemUnitType (itemType_ID, unitType_ID) VALUES (?, ?)";
         try(Connection connection = prepareConnection();
@@ -1240,14 +1213,66 @@ public class SQL_DataHandler {
         }
     }
 
-    //TODO: Finish Implementation
-    public ItemUnitType getItemUnitType(){
+    //TODO: Add comments to this method
+    public ItemUnitType getItemUnitType(int itemTypeID, int unitTypeID){
+        final String query = """
+            SELECT
+                 iut.item_unit_ID AS "Item Unit ID",
+                 iut.itemType_ID AS "Item Type ID",
+                 iut.unitType_ID AS "Unit Type ID",
+                 it.item_Type AS "Item Type Name",
+                 ut.unit_Type AS "Unit Type Name"
+            FROM ItemUnitType AS iut
+            JOIN ItemType AS it ON iut.itemType_ID = it.itemType_ID
+            JOIN UnitType AS ut ON iut.unitType_ID = it.unitType_ID
+            WHERE iut.unitType_ID = ? AND iut.itemType_ID = ?
+            """;
 
+        try(Connection connection = prepareConnection();
+            PreparedStatement pstmt = connection.prepareStatement(query);){
+            pstmt.setInt(1, unitTypeID);
+            pstmt.setInt(2, itemTypeID);
+            ResultSet set = pstmt.executeQuery(query);
+            if (set.next())
+                return new ItemUnitType(set.getInt("Item Unit ID"), itemTypeID,
+                                        unitTypeID, set.getString("Item Type Name"), set.getString("Unit Type Name"));
+
+            return null;
+        }   catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    //TODO: Finish Implementation
-    public int getItemUnitTypeID(int itemTypeID, int unitTypeID){
+    //TODO: Add comments to this method
+    public int getItemUnitTypeID(String itemTypeName, String unitTypeName){
+        int itemTypeID = getItemTypeID(itemTypeName);
+        int unitTypeID = getUnitTypeID(unitTypeName);
+        return getItemUnitTypeID(itemTypeID, unitTypeID);
+    }
 
+    //TODO: Add comments to this method
+    public int getItemUnitTypeID(int itemTypeID, int unitTypeID){
+        final String query = """
+            SELECT
+                 iut.item_unit_ID AS "Item Unit ID",
+            FROM ItemUnitType AS iut
+            WHERE iut.unitType_ID = ? AND iut.itemType_ID = ?
+            """;
+
+        try(Connection connection = prepareConnection();
+            PreparedStatement pstmt = connection.prepareStatement(query);){
+            pstmt.setInt(1, unitTypeID);
+            pstmt.setInt(2, itemTypeID);
+            ResultSet set = pstmt.executeQuery(query);
+            if (set.next())
+                return set.getInt("Item Unit ID");
+
+            return -1;
+        }   catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     //TODO: Add explanation for why these variables are made/used
