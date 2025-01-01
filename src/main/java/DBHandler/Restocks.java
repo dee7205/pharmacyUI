@@ -75,10 +75,16 @@ public class Restocks {
 
     //
     public String [] getInfo(){
-        return new String [] {Integer.toString(getItemID()), Integer.toString(getRestockID()), Integer.toString(getStartQty()), Integer.toString(getRemainingQty()),
+        return new String [] {Integer.toString(getRestockID()), Integer.toString(getItemID()), Integer.toString(getStartQty()), Integer.toString(getRemainingQty()),
                               Integer.toString(getSoldQty()), Date.valueOf(getRestockDate()).toString(), Date.valueOf(getExpiryDate()).toString()};
     }
 
+
+    /**
+     * Returns a 2d String array, where each row contains the information of a specific element under the Restock table
+     * <br> The Row in the 2d String array contains the following in this order: Restock ID, Item ID, Start Qty, Remaining
+     *      Qty, Sold Qty, Restock Date, and Expiry Date
+     */
     public static String [][] generateInfoTable(Restocks [] list){
         if (list == null || list.length == 0)
             return null;
@@ -87,5 +93,12 @@ public class Restocks {
         for (int i = 0; i < list.length; i++)
             infoList[i] = list[i].getInfo();
         return infoList;
+    }
+
+    public void printInfo(){
+        String [] info = getInfo();
+        for (String i : info)
+            System.out.print(i + " ");
+        System.out.println();
     }
 }

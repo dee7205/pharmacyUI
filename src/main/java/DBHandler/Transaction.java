@@ -7,6 +7,13 @@ public class Transaction {
     private int transactionID, pharmacistID;
     private LocalDate transactionDate;
 
+    public Transaction(){ this(0, 0, null); }
+    public Transaction(int transactionID, int pharmacistID, LocalDate transactionDate){
+        setTransactionID(transactionID);
+        setPharmacistID(pharmacistID);
+        setDate(transactionDate);
+    }
+
     public int getTransactionID() {
         return transactionID;
     }

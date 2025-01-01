@@ -8,7 +8,6 @@ import java.time.LocalDate;
 public class SQL_DataHandler {
 
     private static Connection connection;
-    public static LocalDate currentDate;
 
     public static void main (String [] args){
         SQL_DataHandler handler = new SQL_DataHandler();
@@ -45,31 +44,19 @@ public class SQL_DataHandler {
         handler.addUnitType("Packet");
         UnitType type = handler.getUnitType(handler.getUnitTypeID("Packet"));
             System.out.println(type.getUnitTypeID() + " " + type.getUnitType());
+
+        System.out.println("Add Restock: " + handler.addRestock(1, 30, Date.valueOf(LocalDate.of(2025, 1, 15))));
+        handler.reduceRestocks(1, 30);
+
+        Restocks [] list = handler.getCurrentStock(1);
+        for (Restocks i : list)
+            i.printInfo();
+
+        System.out.println("Remaining stock for " + handler.getItem("Paracetamol").getItemName() + ": " + handler.getRemainingStockQuantity(handler.getItemId("Paracetamol")));
     }
 
     public SQL_DataHandler(){
         prepareConnection();
-
-        String query = "SELECT CURRENT_DATE() AS \"Current Date\"";
-        try(Statement stmt = connection.createStatement()){
-            ResultSet set = stmt.executeQuery(query);
-
-            if (set.next()){
-                Date tempDate = set.getDate("Current Date");
-                currentDate = tempDate.toLocalDate();
-            }
-
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    //Makes a connection with the SQL server
-    //Added to help with code readability
-    private void prepareConnection(){
-        connection = DatabaseConnection.connect();
-        if (connection == null)
-            System.out.println("ERROR: Unable to prepare connection.");
     }
 
 //======================================================================================================================================================================
@@ -634,42 +621,31 @@ public class SQL_DataHandler {
                     i.item_ID AS "Item ID", 
                     i.item_name AS "Item Name",
                     i.unit_cost AS "Unit Cost",
-                    it.item_unit_ID AS "Item Unit ID"
+                    iut.item_unit_ID AS "Item Unit ID"
                 FROM Items AS i
-                JOIN ItemType AS it ON i.item_ID = it.item_ID
-                WHERE item_ID >= ? AND item_ID <= ?
+                JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
+                WHERE i.item_Name = ?;
                 """;
 
         if (connection == null)
             prepareConnection();
 
-        try(PreparedStatement pstmt = connection.prepareStatement(query);){
-            if (!itemExists(itemName))
-                return null;
+        if (!itemExists(itemName))
+            return null;
 
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setString(1, itemName);
             ResultSet set = pstmt.executeQuery();
-            if (set.next()){
-                return null;
-            }
 
-            //Gets the item's item_type from the ItemType table
-            String otherQuery = "SELECT item_type FROM ItemType WHERE item_id = " + set.getInt("item_ID");
-            Statement stmt = connection.createStatement();
-            ResultSet otherSet = stmt.executeQuery(otherQuery);
-
-            if (!otherSet.next()){
+            if (!set.next())
                 return null;
-            }
 
             //Prepares the item's info into a String array
-            Item item = new Item(
+            return new Item(
                     set.getInt("Item ID"),
                     set.getString("Item Name"),
                     set.getInt("Item Unit ID"),
                     set.getDouble("Unit Cost"));
-
-            return item;
 
         }   catch (Exception e){
             e.printStackTrace();
@@ -778,13 +754,12 @@ public class SQL_DataHandler {
             prepareConnection();
 
         try{
-            final String query = "SELECT COUNT(*) AS \"total\" FROM Items WHERE item_Name = ?";
+            final String query = "SELECT * FROM Items WHERE item_Name = ?";
             PreparedStatement pstmt = connection.prepareStatement(query);
             pstmt.setString(1, itemName);
             ResultSet set = pstmt.executeQuery();
 
-            set.next();
-            return set.getInt("total") > 0;
+            return set.next();
         }   catch (Exception e){
             e.printStackTrace();
             return false;
@@ -1327,7 +1302,7 @@ public class SQL_DataHandler {
 //======================================================================================================================================================================
 //Methods for the Restocks.
 
-    //TODO: Add methods for C, R, and D
+    //TODO: Add methods for Creating, Retrieving and Updating
 
     //TODO: Add comments to this method
     public boolean addRestock(int itemID, int startQuantity, Date expiryDate){
@@ -1349,13 +1324,13 @@ public class SQL_DataHandler {
             }
 
             //Checks if the expiry date is on or after the current date
-            if (!Date.valueOf(currentDate).after(expiryDate) && !Date.valueOf(currentDate).equals(expiryDate))
+            if (!Date.valueOf(getCurrentDate()).before(expiryDate) && !Date.valueOf(getCurrentDate()).equals(expiryDate))
                 return false;
 
             pstmt.setInt(1, itemID);
             pstmt.setInt(2, startQuantity);
-            pstmt.setDate(3, Date.valueOf(currentDate));
-            pstmt.setDate(2, expiryDate);
+            pstmt.setDate(3, Date.valueOf(getCurrentDate()));
+            pstmt.setDate(4, expiryDate);
             return pstmt.executeUpdate() > 0;
 
         }   catch (Exception e){
@@ -1365,72 +1340,131 @@ public class SQL_DataHandler {
     }
 
     //TODO: Finish Implementation
-//    public boolean reduceRestocks(int itemID, int soldQuantity){
-//        if (connection == null)
-//            prepareConnection();
-//
-//        int result = getRemainingStock(itemID);
-//        if (soldQuantity > result){
-//            System.out.println("ERROR: Unable to reduce restocks. \nSold quantity is above the current stock: " + soldQuantity);
-//            return false;
-//        }   else if (result == -1){
-//                System.out.println("ERROR: Unable to reduce restocks. \nItem under the item id doesn't exist: " + itemID);
-//                return false;
-//        }
-//
-//        Restocks [] currentStock = getCurrentStock(itemID);
-//
-//        if (currentStock == null || currentStock.length == 0){
-//            System.out.println("ERROR: Unable to reduce restocks. \nItem doesn't exist or no stock is found under this item");
-//            return false;
-//        }
-//
-//        final String query = "UPDATE Restocks SET sold_Qty = ? WHERE item_ID = ?";
-//
-//        for (Restocks stock : currentStock){
-//            try(PreparedStatement pstmt = connection.prepareStatement(query)){
-//                pstmt.setInt(2, itemID);
-//
-//
-//                if (soldQuantity >= stock.getRemainingQty()){                                           //Sold Quantity is more than the current restock in the array
-//                    soldQuantity -= stock.getRemainingQty();
-//                    pstmt.setInt(1, stock.getRemainingQty() + stock.getSoldQty());
-//                } else {                                                                                //Sold quantity is less than the current restock qty in the array
-//                    pstmt.setInt(1, soldQuantity + stock.getSoldQty());
-//                    soldQuantity = 0;
-//                }
-//
-//                pstmt.executeUpdate();
-//
-//                if (soldQuantity <= 0)
-//                    break;
-//
-//            }   catch (Exception e){
-//                e.printStackTrace();
-//                return false;
-//            }
-//        }
-//
-//        //Collect the totalRestocks through an array (Sort by ID ASC)
-//        //Slowly reduce-update then propagate along the restocks array
-//
-//
-//    }
+    //  Make this method private
+    public boolean reduceRestocks(int itemID, int soldQuantity){
+        if (connection == null)
+            prepareConnection();
 
-    //TODO: Implement this method
-//    public Restocks [] getCurrentStock(int itemID){
-//        String query = """
-//            SELECT
-//                r.restock_ID AS "Restock ID",
-//                r.item_ID AS "Item ID",
-//                r.start_Qty AS "Start Quantity",
-//                r.sold_Qty AS "Sold Quantity",
-//                r.restock_Date AS "Restock Date",
-//                r.expiry_Date AS "Expiry Date"
-//            FROM Restocks AS r
-//            WHERE r.expiry_Date >= CURRENT_DATE() AND r.start_Qty > r.sold_Qty AND r.item_ID = ?;
-//        """;
-//    }
+        int result = getRemainingStockQuantity(itemID);
+        if (soldQuantity > result){
+            System.out.println("ERROR: Unable to reduce restocks. \nSold quantity is above the current stock: " + soldQuantity);
+            return false;
+        }   else if (result == -1){
+                System.out.println("ERROR: Unable to reduce restocks. \nItem under the item id doesn't exist: " + itemID);
+                return false;
+        }
+
+        //Collect the totalRestocks through an array (Sort by ID ASC)
+        Restocks [] currentStock = getCurrentStock(itemID);
+
+        if (currentStock == null || currentStock.length == 0){
+            System.out.println("ERROR: Unable to reduce restocks. \nItem doesn't exist or no stock is found under this item");
+            return false;
+        }
+
+        final String query = "UPDATE Restocks SET sold_Qty = ? WHERE restock_ID = ?";
+
+        //Slowly reduce-update then propagate along the restocks array
+        for (Restocks stock : currentStock){
+            try(PreparedStatement pstmt = connection.prepareStatement(query)){
+                pstmt.setInt(2, stock.getRestockID());
+
+                if (soldQuantity >= stock.getRemainingQty()){                                           //Sold Quantity is more than the current restock in the array
+                    soldQuantity -= stock.getRemainingQty();
+                    pstmt.setInt(1, stock.getRemainingQty() + stock.getSoldQty());
+                } else {                                                                                //Sold quantity is less than the current restock qty in the array
+                    pstmt.setInt(1, soldQuantity + stock.getSoldQty());
+                    soldQuantity = 0;
+                }
+
+                pstmt.executeUpdate();
+
+                if (soldQuantity <= 0)
+                    break;
+
+            }   catch (Exception e){
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public Restocks getRestock(int restockID){
+        String query = """
+            SELECT
+                r.restock_ID AS "Restock ID",
+                r.item_ID AS "Item ID",
+                r.start_Qty AS "Start Quantity",
+                r.sold_Qty AS "Sold Quantity",
+                r.restock_Date AS "Restock Date",
+                r.expiry_Date AS "Expiry Date"
+            FROM Restocks AS r
+            WHERE r.restock_ID = ?;
+        """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            pstmt.setInt(1, restockID);
+            ResultSet set = pstmt.executeQuery();
+
+            if (set.next()){
+                return (new Restocks(set.getInt("Item ID"), set.getInt("Restock ID"), set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
+                        set.getDate("Restock Date").toLocalDate(), set.getDate("Expiry Date").toLocalDate()));
+            } else
+                return null;
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    //TODO: Add comments to this method
+    public Restocks [] getCurrentStock(int itemID){
+        String query = """
+            SELECT
+                r.restock_ID AS "Restock ID",
+                r.item_ID AS "Item ID",
+                r.start_Qty AS "Start Quantity",
+                r.sold_Qty AS "Sold Quantity",
+                r.restock_Date AS "Restock Date",
+                r.expiry_Date AS "Expiry Date"
+            FROM Restocks AS r
+            WHERE r.expiry_Date >= CURRENT_DATE() AND r.start_Qty > r.sold_Qty AND r.item_ID = ?
+            ORDER BY r.restock_ID ASC;
+        """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            pstmt.setInt(1, itemID);
+            ResultSet set = pstmt.executeQuery();
+            boolean isAdded = false;
+
+            List<Restocks> list = new ArrayList<>();
+            while(set.next()){
+                list.add(new Restocks(set.getInt("Item ID"), set.getInt("Restock ID"), set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
+                                      set.getDate("Restock Date").toLocalDate(), set.getDate("Expiry Date").toLocalDate()));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                Restocks [] array = new Restocks[list.size()];
+                return list.toArray(array);
+            }   else
+                return null;
+
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     /**
      * Checks for the existence of an item and gets remaining stock for a specific item based from the SQL
@@ -1440,7 +1474,7 @@ public class SQL_DataHandler {
      *                  in the Items table (SQL)
      * @return          An integer representing the remaining stock for an item
      */
-    public int getRemainingStock(int itemID){
+    public int getRemainingStockQuantity(int itemID){
         final String query = """
             SELECT (SUM(r.start_Qty - r.sold_Qty)) AS "Total Quantity"
             FROM Restocks AS r 
@@ -1475,9 +1509,276 @@ public class SQL_DataHandler {
 
     //TODO: Add methods for transactions (CR & RT)
 
+    public boolean addTransaction(int pharmacistID){
+        if (connection == null)
+            prepareConnection();
+
+        String query = "INSERT INTO Transactions (pharmacist_ID, transaction_date) VALUES (?, ?)";
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            pstmt.setInt(1, pharmacistID);
+            pstmt.setDate(2, Date.valueOf(getCurrentDate()));
+            return pstmt.executeUpdate() > 0;
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //TODO: Add comments for this method
+    public Transaction getTransaction (int transactionID){
+        String query = """
+            SELECT
+                t.transaction_ID AS "Transaction ID",
+                t.pharmacist_ID AS "Pharmacist ID",
+                t.transaction_date AS "Transaction Date"
+            FROM Transactions AS t
+            WHERE t.transaction_ID ?
+            ORDER BY r.transaction_ID ASC;
+        """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            pstmt.setInt(1, transactionID);
+            ResultSet set = pstmt.executeQuery();
+
+            if (set.next()){
+                return new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),
+                        set.getDate("Transaction Date").toLocalDate());
+            } else
+                return null;
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    //TODO: Add comments to this method
+    public Transaction [] getTransactions(Date referenceDate, boolean isAscending){
+        String first = """
+            SELECT
+                t.transaction_ID AS "Transaction ID",
+                t.pharmacist_ID AS "Pharmacist ID", 
+                t.transaction_date AS "Transaction Date"
+            FROM Transactions AS t
+            WHERE t.transaction_date ?
+            ORDER BY r.transaction_ID ASC;
+        """;
+
+        String second = """
+            SELECT
+                t.transaction_ID AS "Transaction ID",
+                t.pharmacist_ID AS "Pharmacist ID", 
+                t.transaction_date AS "Transaction Date"
+            FROM Transactions AS t
+            WHERE t.transaction_date ?
+            ORDER BY r.transaction_ID DESC;
+        """;
+
+        String finalQuery;
+
+        if (isAscending)
+            finalQuery = first;
+        else
+            finalQuery = second;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(finalQuery)){
+            pstmt.setDate(1, referenceDate);
+            ResultSet set = pstmt.executeQuery();
+            boolean isAdded = false;
+
+            List<Transaction> list = new ArrayList<>();
+            while(set.next()){
+                list.add(new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),
+                                         set.getDate("Transaction Date").toLocalDate()));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                Transaction [] array = new Transaction[list.size()];
+                return list.toArray(array);
+            }   else
+                return null;
+
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    //TODO: Add comments to this method
+    public Transaction [] getAllTransactions(boolean isAscending){
+        String first = """
+            SELECT
+                t.transaction_ID AS "Transaction ID",
+                t.pharmacist_ID AS "Pharmacist ID", 
+                t.transaction_date AS "Transaction Date"
+            FROM Transactions AS t
+            ORDER BY r.transaction_ID ASC;
+        """;
+
+        String second = """
+            SELECT
+                t.transaction_ID AS "Transaction ID",
+                t.pharmacist_ID AS "Pharmacist ID", 
+                t.transaction_date AS "Transaction Date"
+            FROM Transactions AS t
+            ORDER BY r.transaction_ID DESC;
+        """;
+
+        String finalQuery;
+
+        if (isAscending)
+            finalQuery = first;
+        else
+            finalQuery = second;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(Statement stmt = connection.createStatement()){
+            ResultSet set = stmt.executeQuery(finalQuery);
+            boolean isAdded = false;
+
+            List<Transaction> list = new ArrayList<>();
+            while(set.next()){
+                list.add(new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),
+                        set.getDate("Transaction Date").toLocalDate()));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                Transaction [] array = new Transaction[list.size()];
+                return list.toArray(array);
+            }   else
+                return null;
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 //======================================================================================================================================================================
-//Methods for the Sold Items.
+//Methods for the Items Sold
+
     //TODO: Add methods for Sold Items (CR & RS)
+
+    //TODO: Add comments for this method
+    public boolean addItemsSold(int transactionID, int itemID, int itemQty){
+        if (connection == null)
+            prepareConnection();
+
+        if (!getTransaction(transactionID).getDate().isEqual(getCurrentDate())){
+            System.out.println("ERROR: Unable to add Item to Item Sold. \nReference Transaction and Item Sold found to have different dates");
+            return false;
+        }
+
+        if (!reduceRestocks(itemID, itemQty))
+            return false;
+
+        String query = """
+            INSERT INTO ItemsSold (transaction_ID, item_ID, item_qty, transaction_date) VALUES
+            (?, ?, ?, CURRENT_DATE())
+        """;
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query)){
+            pstmt.setInt(1, transactionID);
+            pstmt.setInt(2, itemID);
+            pstmt.setInt(3, itemQty);
+
+            return pstmt.executeUpdate() > 0;
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //TODO: Add comments to the method
+    public ItemsSold [] getItemsSold_Transaction(int transactionID){
+        String query = """
+            SELECT
+                i.transaction_ID AS "Transaction ID",
+                i.item_ID AS "Item ID",
+                i.item_qty AS "Item Quantity",
+                i.transaction_date AS "Transaction Date"
+            FROM ItemsSold AS i
+            WHERE i.transaction_ID = ?
+            ORDER BY i.item_ID DESC;
+        """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            pstmt.setInt(1, transactionID);
+            ResultSet set = pstmt.executeQuery();
+            boolean isAdded = false;
+
+            List<ItemsSold> list = new ArrayList<>();
+            while(set.next()){
+                list.add(new ItemsSold(set.getInt("Transaction ID"), set.getInt("Item ID"), set.getInt("Item Quantity"),
+                                       set.getDate("Transaction Date").toLocalDate()));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                ItemsSold [] array = new ItemsSold[list.size()];
+                return list.toArray(array);
+            }   else
+                return null;
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public ItemsSold [] getItemsSold_Item(int itemID){
+        String query = """
+            SELECT
+                i.transaction_ID AS "Transaction ID",
+                i.item_ID AS "Item ID",
+                i.item_qty AS "Item Quantity",
+                i.transaction_date AS "Transaction Date"
+            FROM ItemsSold AS i
+            WHERE i.item_ID = ?
+            ORDER BY i.transaction_ID DESC;
+        """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            pstmt.setInt(1, itemID);
+            ResultSet set = pstmt.executeQuery();
+            boolean isAdded = false;
+
+            List<ItemsSold> list = new ArrayList<>();
+            while(set.next()){
+                list.add(new ItemsSold(set.getInt("Transaction ID"), set.getInt("Item ID"), set.getInt("Item Quantity"),
+                        set.getDate("Transaction Date").toLocalDate()));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                ItemsSold [] array = new ItemsSold[list.size()];
+                return list.toArray(array);
+            }   else
+                return null;
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
 
 
 //======================================================================================================================================================================
@@ -1485,4 +1786,57 @@ public class SQL_DataHandler {
 
 
     //TODO: Make views for the following...
+
+//======================================================================================================================================================================
+//Helper Methods
+
+    //TODO: Add comments to this method
+    public static String [][] reduceInfoArray(String [][] refArray, boolean isSorted, int... colIncluded){
+        //Checks if the columns to be included is within the column size of the refArray
+        for (int i : colIncluded){
+            if (i >= refArray[0].length){
+                System.out.println("Column Index: " + i + ", is larger than the column size of the array");
+                return null;
+            }
+        }
+
+        //Creates the new reduced array based on the specified length
+        String [][] reducedArray = new String[refArray.length][colIncluded.length];
+        for (int i = 0; i < refArray.length; i++){
+            for (int j = 0; j < colIncluded.length; j++){
+                reducedArray[i][j] = refArray[i][j];
+            }
+        }
+
+        return reducedArray;
+    }
+
+    //TODO: Add comments to this method
+    //Recursive method that establishes a connection with the SQL server
+    //Added to help with code readability
+    private void prepareConnection(){
+        connection = DatabaseConnection.connect();
+        if (connection == null){
+            System.out.println("ERROR: Unable to prepare connection.");
+            prepareConnection();
+        }
+    }
+
+    //TODO: Add comments for this method
+    public LocalDate getCurrentDate(){
+        String query = "SELECT CURRENT_DATE() AS \"Current Date\"";
+        try(Statement stmt = connection.createStatement()){
+            ResultSet set = stmt.executeQuery(query);
+
+            if (set.next()){
+                Date tempDate = set.getDate("Current Date");
+                return tempDate.toLocalDate();
+            } else
+                return getCurrentDate();
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return getCurrentDate();
+        }
+    }
 }
