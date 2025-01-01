@@ -1471,8 +1471,6 @@ public class SQL_DataHandler {
 //======================================================================================================================================================================
 //Methods for the Restocks.
 
-    //TODO: Add methods for Creating, Retrieving and Updating
-
     //TODO: Add comments to this method
     public boolean addRestock(int itemID, int startQuantity, Date expiryDate){
         final String query = """
