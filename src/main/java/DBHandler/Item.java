@@ -3,11 +3,8 @@ package DBHandler;
 public class Item {
     private int itemID, itemUnitTypeID;
     private double unitCost;
-    private String itemName;
-
-    public static final String MEDICINE = "Medicine";
-    public static final String EQUIPMENT = "Equipment";
-    public static final String SUPPLIES = "Supplies";
+    private String itemName, itemUnitType;
+    private int quantity;
 
     public Item(){ this(0, "", 0, 0); }
 
@@ -56,6 +53,22 @@ public class Item {
 
     public void setItemUnitTypeID(int itemUnitTypeID) {
         this.itemUnitTypeID = itemUnitTypeID;
+    }
+
+    public String getItemUnitType() {
+        return itemUnitType;
+    }
+
+    public void setItemUnitType(String itemUnitType) {
+        this.itemUnitType = itemUnitType;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
     public String [] getInfo(){

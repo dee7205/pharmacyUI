@@ -1533,7 +1533,7 @@ public class SQL_DataHandler {
                 t.pharmacist_ID AS "Pharmacist ID",
                 t.transaction_date AS "Transaction Date"
             FROM Transactions AS t
-            WHERE t.transaction_ID ?
+            WHERE t.transaction_ID = ?
             ORDER BY r.transaction_ID ASC;
         """;
 
@@ -1564,7 +1564,7 @@ public class SQL_DataHandler {
                 t.pharmacist_ID AS "Pharmacist ID", 
                 t.transaction_date AS "Transaction Date"
             FROM Transactions AS t
-            WHERE t.transaction_date ?
+            WHERE t.transaction_date = ?
             ORDER BY r.transaction_ID ASC;
         """;
 
@@ -1574,7 +1574,7 @@ public class SQL_DataHandler {
                 t.pharmacist_ID AS "Pharmacist ID", 
                 t.transaction_date AS "Transaction Date"
             FROM Transactions AS t
-            WHERE t.transaction_date ?
+            WHERE t.transaction_date =  ?
             ORDER BY r.transaction_ID DESC;
         """;
 
@@ -1618,18 +1618,26 @@ public class SQL_DataHandler {
         String first = """
             SELECT
                 t.transaction_ID AS "Transaction ID",
-                t.pharmacist_ID AS "Pharmacist ID", 
-                t.transaction_date AS "Transaction Date"
+                t.pharmacist_ID AS "Pharmacist ID",
+                t.transaction_date AS "Transaction Date",
+                (SUM(isd.item_qty * i.unit_cost)) AS "Total Sales",
+                (SUM(isd.item_qty)) AS "Sold Quantity"
             FROM Transactions AS t
+            JOIN Items_Sold AS isd ON isd.transaction_ID = t.transaction_ID
+            JOIN Items AS i ON i.item_ID = isd.item_ID
             ORDER BY r.transaction_ID ASC;
         """;
 
         String second = """
             SELECT
                 t.transaction_ID AS "Transaction ID",
-                t.pharmacist_ID AS "Pharmacist ID", 
-                t.transaction_date AS "Transaction Date"
+                t.pharmacist_ID AS "Pharmacist ID",
+                t.transaction_date AS "Transaction Date",
+                (SUM(isd.item_qty * i.unit_cost)) AS "Total Sales",
+                (SUM(isd.item_qty)) AS "Sold Quantity"
             FROM Transactions AS t
+            JOIN Items_Sold AS isd ON isd.transaction_ID = t.transaction_ID
+            JOIN Items AS i ON i.item_ID = isd.item_ID
             ORDER BY r.transaction_ID DESC;
         """;
 
@@ -1650,7 +1658,7 @@ public class SQL_DataHandler {
             List<Transaction> list = new ArrayList<>();
             while(set.next()){
                 list.add(new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),
-                        set.getDate("Transaction Date").toLocalDate()));
+                                         set.getInt("Sold Quantity"), set.getInt("Total Sales"), set.getDate("Transaction Date").toLocalDate()));
                 isAdded = true;
             }
 
@@ -1685,7 +1693,7 @@ public class SQL_DataHandler {
             return false;
 
         String query = """
-            INSERT INTO ItemsSold (transaction_ID, item_ID, item_qty, transaction_date) VALUES
+            INSERT INTO Items_Sold (transaction_ID, item_ID, item_qty, transaction_date) VALUES
             (?, ?, ?, CURRENT_DATE())
         """;
 
@@ -1709,7 +1717,7 @@ public class SQL_DataHandler {
                 i.item_ID AS "Item ID",
                 i.item_qty AS "Item Quantity",
                 i.transaction_date AS "Transaction Date"
-            FROM ItemsSold AS i
+            FROM Items_Sold AS i
             WHERE i.transaction_ID = ?
             ORDER BY i.item_ID DESC;
         """;
@@ -1741,6 +1749,7 @@ public class SQL_DataHandler {
         }
     }
 
+    //TODO: Add comments to the method
     public ItemsSold [] getItemsSold_Item(int itemID){
         String query = """
             SELECT
@@ -1748,7 +1757,7 @@ public class SQL_DataHandler {
                 i.item_ID AS "Item ID",
                 i.item_qty AS "Item Quantity",
                 i.transaction_date AS "Transaction Date"
-            FROM ItemsSold AS i
+            FROM Items_Sold AS i
             WHERE i.item_ID = ?
             ORDER BY i.transaction_ID DESC;
         """;

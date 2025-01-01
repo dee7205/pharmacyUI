@@ -75,7 +75,7 @@ public class Restocks {
 
     //
     public String [] getInfo(){
-        return new String [] {Integer.toString(getRestockID()), Integer.toString(getItemID()), Integer.toString(getStartQty()), Integer.toString(getRemainingQty()),
+        return new String [] {Integer.toString(getRestockID()), Integer.toString(getItemID()), Integer.toString(getStartQty()),
                               Integer.toString(getSoldQty()), Date.valueOf(getRestockDate()).toString(), Date.valueOf(getExpiryDate()).toString()};
     }
 
@@ -89,7 +89,7 @@ public class Restocks {
         if (list == null || list.length == 0)
             return null;
 
-        String [][] infoList = new String[list.length][7];
+        String [][] infoList = new String[list.length][6];
         for (int i = 0; i < list.length; i++)
             infoList[i] = list[i].getInfo();
         return infoList;

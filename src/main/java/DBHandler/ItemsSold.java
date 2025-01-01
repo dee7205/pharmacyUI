@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public class ItemsSold {
     private int transactionID, itemID, itemQty;
+    String itemName;
     LocalDate transactionDate;
 
     public ItemsSold(){ this(0, 0, 0, null); }

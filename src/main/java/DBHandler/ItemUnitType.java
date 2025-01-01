@@ -54,8 +54,8 @@ public class ItemUnitType {
     }
 
     public String [] getInfo(){
-        return new String [] {Integer.toString(getItemUnitTypeID()), Integer.toString(getItemTypeID()), Integer.toString(getUnitTypeID()),
-                              getItemTypeName(), getUnitTypeName()};
+        return new String [] {Integer.toString(getItemUnitTypeID()), Integer.toString(getItemTypeID()), getItemTypeName(),
+                              Integer.toString(getUnitTypeID()), getUnitTypeName()};
     }
 
     public static String [][] generateInfoTable(ItemUnitType [] list){
