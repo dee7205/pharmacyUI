@@ -8,42 +8,45 @@ import java.time.LocalDate;
 public class SQL_DataHandler {
 
     private static Connection connection;
+    public static int balance = 800000;
 
-    public static void main (String [] args){
+    public static void main (String [] args) {
         SQL_DataHandler handler = new SQL_DataHandler();
 
-        handler.addItemType("Medicine");
-        handler.addUnitType("Pills");
-        handler.addItemUnitType("Medicine", "Pills");
-
-        handler.removeAllPharmacists();
+//        handler.removeAllPharmacists();
         handler.addPharmacist(1, "Allan George", "Cajes", "Tagle");
         handler.addPharmacist(2, "Waken Cean", "Cruz", "Maclang");
         handler.addPharmacist(3, "Dave Shanna", "Marie", "Gigawin");
         handler.addPharmacist(4, "John Marcellin", "Espanyol", "Tan");
 
-        Pharmacist [] pharmacists = handler.getPharmacists(1, 4);
+        Pharmacist[] pharmacists = handler.getPharmacists(1, 4);
         for (Pharmacist pharmacist : pharmacists)
-            System.out.println(pharmacist.getPharmacistID() + " " +  pharmacist.getFirstName() + " " + pharmacist.getMiddleName() + " " + pharmacist.getLastName());
+            System.out.println(pharmacist.getPharmacistID() + " " + pharmacist.getFirstName() + " " + pharmacist.getMiddleName() + " " + pharmacist.getLastName());
 
         handler.removePharmacist(3);
         System.out.println(handler.pharmacistExists(3));
+
+        handler.addItemType("Medicine");
+        handler.addUnitType("Pills");
+        handler.addItemUnitType("Medicine", "Pills");
+
+        handler.addUnitType("Packet");
+        UnitType type = handler.getUnitType(handler.getUnitTypeID("Packet"));
+        System.out.println(type.getUnitTypeID() + " " + type.getUnitType());
+
+
 
 //        handler.removeAllItems();
         handler.addItem("Paracetamol", handler.getItemUnitTypeID("Medicine", "Pills"), 5.0);
         handler.addItem("Biogesic", handler.getItemUnitTypeID("Medicine", "Pills"), 4.0);
         handler.addItem("Neozep", handler.getItemUnitTypeID("Medicine", "Pills"), 6.0);
 
-        Item [] items = handler.getItems(1, 3);
-        for (Item item : items)
-            System.out.println(item.getItemID() + " " + item.getItemName() + " " + item.getUnitCost());
-
-//        handler.removeItem("Biogesic");
-//        System.out.println(handler.itemExists("Biogesic"));
-
-        handler.addUnitType("Packet");
-        UnitType type = handler.getUnitType(handler.getUnitTypeID("Packet"));
-            System.out.println(type.getUnitTypeID() + " " + type.getUnitType());
+        Item[] items = handler.getItems(1, 3);
+        for (Item item : items){
+            for (String info : item.getInfo())
+                System.out.print(info + " ");
+            System.out.println();
+        }
 
         System.out.println("Add Restock: " + handler.addRestock(1, 30, Date.valueOf(LocalDate.of(2025, 1, 15))));
         handler.reduceRestocks(1, 30);
@@ -554,14 +557,25 @@ public class SQL_DataHandler {
      */
     public Item [] getItems(int itemID1, int itemID2){
         final String query = """
-                SELECT 
-                    i.item_ID AS "Item ID", 
-                    i.item_name AS "Item Name",
-                    i.unit_cost AS "Unit Cost",
-                    iut.item_unit_ID AS "Item Unit ID"
+                SELECT
+                	i.item_ID AS "Item ID",
+                	i.item_name AS "Item Name",
+                	ut.unit_Type AS "Unit Type",
+                	it.item_Type AS "Item Type",
+                	iut.item_unit_ID AS "Item Unit ID",
+                	(SUM(COALESCE(r.start_qty - r.sold_qty, 0))) AS "Item Quantity",
+                	i.unit_cost AS "Unit Cost",
+                    ((SUM(COALESCE(isd.item_qty * i.unit_cost, 0))) / 800000) * 100 AS "Movement"
                 FROM Items AS i
                 JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
+                JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
+                JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
+                LEFT JOIN Items_Sold AS isd ON isd.item_ID = i.item_ID
+                LEFT JOIN Restocks AS r ON r.item_ID = i.item_ID
+                	AND r.expiry_Date >= CURRENT_DATE()
+                    AND r.start_Qty > r.sold_Qty
                 WHERE i.item_ID >= ? AND i.item_ID <= ?
+                GROUP BY i.item_ID;
                 """;
         boolean isAdded = false;
 
@@ -589,7 +603,63 @@ public class SQL_DataHandler {
 
             while(set.next()){
                 Item item = new Item(set.getInt("Item ID"), set.getString("Item Name"),
-                                     set.getInt("Item Unit ID"),  set.getDouble("Unit Cost"));
+                                     set.getInt("Item Unit ID"), (set.getString("Item Type") + "-" +
+                                     set.getString("Unit Type")), set.getInt("Item Quantity"),
+                                     set.getDouble("Unit Cost"), set.getDouble("Movement"));
+                list.add(item);
+                isAdded = true;
+            }
+
+            if (isAdded){
+                Item [] newList = new Item[list.size()];
+                return list.toArray(newList);
+            } else {
+                System.out.println("Unable to generate Item list");
+                return null;
+            }
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    //TODO: Add comments for this method
+    public Item [] getAllItems(int limit){
+        final String query = """
+                SELECT
+                	i.item_ID AS "Item ID",
+                	i.item_name AS "Item Name",
+                	ut.unit_Type AS "Unit Type",
+                	it.item_Type AS "Item Type",
+                	(SUM(COALESCE(r.start_qty - r.sold_qty, 0))) AS "Item Quantity",
+                	i.unit_cost AS "Unit Cost"
+                FROM Items AS i
+                JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
+                JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
+                JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
+                LEFT JOIN Restocks AS r ON r.item_ID = i.item_ID
+                	AND r.expiry_Date >= CURRENT_DATE()
+                    AND r.start_Qty > r.sold_Qty
+                GROUP BY i.item_ID
+                LIMIT ?;
+                """;
+
+        boolean isAdded = false;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
+            List<Item> list = new ArrayList<>();
+            pstmt.setInt(1, limit);
+            ResultSet set = pstmt.executeQuery();
+
+            while(set.next()){
+                Item item = new Item(set.getInt("Item ID"), set.getString("Item Name"),
+                        set.getInt("Item Unit ID"), (set.getString("Item Type") + "-" +
+                        set.getString("Unit Type")), set.getInt("Item Quantity"),
+                        set.getDouble("Unit Cost"), 0);
                 list.add(item);
                 isAdded = true;
             }
@@ -609,22 +679,90 @@ public class SQL_DataHandler {
     }
 
     /**
+     * Gets the detail of an item given its item id
+     *
+     * @param itemID    The id of the item to be looked up in the Items table
+     * @return          An Item object containing the details of the item (ID, Name, Type, Quantity, Price, and Movement)
+     */
+    public Item getItem(int itemID){
+        //Gets the item's details from the Item table
+        final String query = """
+                SELECT
+                	i.item_ID AS "Item ID",
+                	i.item_name AS "Item Name",
+                	ut.unit_Type AS "Unit Type",
+                	it.item_Type AS "Item Type",
+                	iut.item_unit_ID AS "Item Unit ID",
+                	(SUM(COALESCE(r.start_qty - r.sold_qty, 0))) AS "Item Quantity",
+                	i.unit_cost AS "Unit Cost",
+                    ((SUM(COALESCE(isd.item_qty * i.unit_cost, 0))) / 800000) * 100 AS "Movement"
+                FROM Items AS i
+                JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
+                JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
+                JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
+                LEFT JOIN Items_Sold AS isd ON isd.item_ID = i.item_ID
+                LEFT JOIN Restocks AS r ON r.item_ID = i.item_ID
+                	AND r.expiry_Date >= CURRENT_DATE()
+                    AND r.start_Qty > r.sold_Qty
+                WHERE i.item_ID = ?;
+                """;
+
+        if (connection == null)
+            prepareConnection();
+
+        if (!itemExists(itemID))
+            return null;
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
+            pstmt.setInt(1, itemID);
+            ResultSet set = pstmt.executeQuery();
+
+            if (!set.next())
+                return null;
+
+            //Prepares the item's info into a String array
+            return new Item(
+                    set.getInt("Item ID"),
+                    set.getString("Item Name"),
+                    set.getInt("Item Unit ID"),
+                    (set.getString("Item Type") + "-" + set.getString("Unit Type")),
+                    set.getInt("Item Quantity"),
+                    set.getDouble("Unit Cost"),
+                    0);
+        }   catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
      * Gets the detail of an item given its item name
      *
      * @param itemName  The name of the item to be looked up in the Items table
-     * @return          An Item object containing the details of the item (ID, Name, Type, and Price)
+     * @return          An Item object containing the details of the item (ID, Name, Type, Quantity, Price, and Movement)
      */
     public Item getItem(String itemName){
         //Gets the item's details from the Item table
         final String query = """
-                SELECT 
-                    i.item_ID AS "Item ID", 
-                    i.item_name AS "Item Name",
-                    i.unit_cost AS "Unit Cost",
-                    iut.item_unit_ID AS "Item Unit ID"
+                SELECT
+                	i.item_ID AS "Item ID",
+                	i.item_name AS "Item Name",
+                	ut.unit_Type AS "Unit Type",
+                	it.item_Type AS "Item Type",
+                	iut.item_unit_ID AS "Item Unit ID",
+                	(SUM(COALESCE(r.start_qty - r.sold_qty, 0))) AS "Item Quantity",
+                	i.unit_cost AS "Unit Cost",
+                    ((SUM(COALESCE(isd.item_qty * i.unit_cost, 0))) / 800000) * 100 AS "Movement"
                 FROM Items AS i
                 JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
-                WHERE i.item_Name = ?;
+                JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
+                JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
+                LEFT JOIN Items_Sold AS isd ON isd.item_ID = i.item_ID
+                LEFT JOIN Restocks AS r ON r.item_ID = i.item_ID
+                	AND r.expiry_Date >= CURRENT_DATE()
+                    AND r.start_Qty > r.sold_Qty
+                WHERE i.item_name = ?
+                GROUP BY i.item_ID;
                 """;
 
         if (connection == null)
@@ -645,8 +783,10 @@ public class SQL_DataHandler {
                     set.getInt("Item ID"),
                     set.getString("Item Name"),
                     set.getInt("Item Unit ID"),
-                    set.getDouble("Unit Cost"));
-
+                    (set.getString("Item Type") + "-" + set.getString("Unit Type")),
+                    set.getInt("Item Quantity"),
+                    set.getDouble("Unit Cost"),
+                    0);
         }   catch (Exception e){
             e.printStackTrace();
             return null;
@@ -665,7 +805,6 @@ public class SQL_DataHandler {
 
         try {
             final String selectQuery = "SELECT i.item_ID FROM Items AS i WHERE i.item_name = ?";
-            assert connection != null;
             PreparedStatement pstmt = connection.prepareStatement(selectQuery);
             pstmt.setString(1, itemName);
 
@@ -683,22 +822,21 @@ public class SQL_DataHandler {
     }
 
     /**
-     * Removes one item from the database given its name
+     * Removes one item from the database given its id
      */
     //TODO: Alter the contents by adding the getItemID method.
-    public boolean removeItem(String itemName){
+    public boolean removeItem(int itemID){
         if (connection == null)
             prepareConnection();
 
         try{
-            Item item = getItem(itemName);
+            Item item = getItem(itemID);
 
             if (item.getItemID() != -1){
-                //TODO: Change the method, removing the info from the ItemUnitType Table
+                //Remove rows from tables with item_ID as their foreign keys
                 removeItemUnitType(item.getItemUnitTypeID(), REMOVE_ITEM_UNIT_TYPE);
-
-                //TODO: Add condition to remove all items in Items_Sold table
-                //TODO: Add condition to remove all items in Restock table
+                removeRestock(itemID, REMOVE_BY_ITEM_ID);
+                removeItemsSold(itemID);
             }   else
                 return false;
 
@@ -754,7 +892,7 @@ public class SQL_DataHandler {
             prepareConnection();
 
         try{
-            final String query = "SELECT * FROM Items WHERE item_Name = ?";
+            final String query = "SELECT * FROM Items WHERE item_name = ?";
             PreparedStatement pstmt = connection.prepareStatement(query);
             pstmt.setString(1, itemName);
             ResultSet set = pstmt.executeQuery();
@@ -1134,7 +1272,7 @@ public class SQL_DataHandler {
 //======================================================================================================================================================================
 //Methods for the ItemUnitType.
 
-    //TODO: Add comments
+    //TODO: Add comments to this method
     public boolean addItemUnitType(String itemTypeName, String unitTypeName){
         int itemTypeID = getItemTypeID(itemTypeName);
         int unitTypeID = getUnitTypeID(unitTypeName);
@@ -1182,7 +1320,7 @@ public class SQL_DataHandler {
         }
     }
 
-    //TODO: Add comments
+    //TODO: Add comments to this method
     public boolean itemUnitTypeExists(int itemTypeID, int unitTypeID){
         final String query = "SELECT * FROM ItemUnitType WHERE unitType_ID = ? AND itemType_ID = ?";
 
@@ -1192,6 +1330,31 @@ public class SQL_DataHandler {
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, unitTypeID);
             pstmt.setInt(2, itemTypeID);
+            ResultSet set = pstmt.executeQuery(query);
+            return (set.next());
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //TODO: Add comments to this method
+    public boolean itemUnitTypeExists(String itemTypeName, String unitTypeName){
+        final String query = """
+            SELECT * 
+            FROM ItemUnitType AS iut
+            JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
+            JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID 
+            WHERE it.item_Type = ? AND ut.unit_Type = ?;
+            """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
+            pstmt.setString(1, itemTypeName);
+            pstmt.setString(2, unitTypeName);
             ResultSet set = pstmt.executeQuery(query);
             return (set.next());
 
@@ -1503,6 +1666,79 @@ public class SQL_DataHandler {
         }
     }
 
+    public static final int SEARCH_BY_ITEM_ID = 3000;
+    public static final int SEARCH_BY_RESTOCK_ID = 4000;
+
+    //TODO: Add comments for this method
+    public boolean restockExists(int id, int condition){
+        if (connection == null)
+            prepareConnection();
+
+        String first = "SELECT * FROM Restocks AS r WHERE r.item_ID = ?";
+        String second = "SELECT * FROM Restocks AS r WHERE r.restock_ID = ?";
+        String finalQuery;
+
+        if (condition == REMOVE_BY_RESTOCK_ID)
+            finalQuery = second;
+        else if (condition == REMOVE_BY_ITEM_ID)
+            finalQuery = first;
+        else {
+            System.out.println("ERROR: Unable to remove restock. \nInvalid restock removal condition used.");
+            return false;
+        }
+
+        try(PreparedStatement pstmt = connection.prepareStatement(finalQuery);){
+            pstmt.setInt(1, id);
+            return pstmt.executeUpdate() > 0;
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static final int REMOVE_BY_ITEM_ID = 1000;
+    public static final int REMOVE_BY_RESTOCK_ID = 2000;
+
+    //TODO: Add comment for this method
+    public boolean removeRestock(int id, int condition){
+        if (connection == null)
+            prepareConnection();
+
+        String first = "DELETE FROM Restocks AS r WHERE r.item_ID = ?";
+        String second = "DELETE FROM Restocks AS r WHERE r.restock_ID = ?";
+        String finalQuery;
+
+        if (condition == REMOVE_BY_RESTOCK_ID)
+            finalQuery = second;
+        else if (condition == REMOVE_BY_ITEM_ID)
+            finalQuery = first;
+        else {
+            System.out.println("ERROR: Unable to remove restock. \nInvalid restock removal condition used.");
+            return false;
+        }
+
+        try(PreparedStatement pstmt = connection.prepareStatement(finalQuery);
+            Statement stmt = connection.createStatement();){
+
+            //Checks if an item exists
+            if (condition == REMOVE_BY_ITEM_ID && !itemTypeExists(id)){
+                System.out.println("ERROR: Unable to remove from Restock. \n Item via Item ID doesn't exist: " + id);
+                return false;
+            }   else if (condition == REMOVE_BY_RESTOCK_ID && !restockExists(id, SEARCH_BY_RESTOCK_ID)){
+                System.out.println("ERROR: Unable to remove from Restock. \n Restock ID doesn't exist: " + id);
+                return false;
+            }
+
+            pstmt.setInt(1, id);
+            return pstmt.executeUpdate() > 0;
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
 //======================================================================================================================================================================
 //Methods for the Transactions.
@@ -1786,6 +2022,31 @@ public class SQL_DataHandler {
         } catch (Exception e){
             e.printStackTrace();
             return null;
+        }
+    }
+
+    //TODO: Add comments to the method
+    public boolean removeItemsSold(int itemID){
+        final String query = "DELETE FROM Items_Sold AS isd WHERE isd.item_ID = ?";
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query);
+            Statement stmt = connection.createStatement();){
+
+            //Checks if an item exists
+            if (!itemTypeExists(itemID)){
+                System.out.println("ERROR: Unable to remove from Item Sold table. \n Item via Item ID doesn't exist: " + itemID);
+                return false;
+            }
+
+            pstmt.setInt(1, itemID);
+            return pstmt.executeUpdate() > 0;
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return false;
         }
     }
 

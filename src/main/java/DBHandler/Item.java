@@ -1,26 +1,26 @@
 package DBHandler;
 
 public class Item {
-    private int itemID, itemUnitTypeID;
+    private int itemID, itemUnitTypeID, quantity;
     private double unitCost;
     private String itemName, itemUnitType;
-    private int quantity;
+    private double movement;
 
-    public Item(){ this(0, "", 0, 0); }
+    public Item(){ this(0, "", 0, "", 0, 0, 0); }
 
     public Item(Item otherItem){
-        this(otherItem.getItemID(), otherItem.getItemName(), otherItem.getItemUnitTypeID(), otherItem.getUnitCost());
+        this(otherItem.getItemID(), otherItem.getItemName(), otherItem.getItemUnitTypeID(), otherItem.getItemUnitType(),
+             otherItem.getQuantity(), otherItem.getUnitCost(), otherItem.getMovement());
     }
 
-    public Item(String [] info){
-        this(Integer.parseInt(info[0]), info[1], Integer.parseInt(info[2]), Double.parseDouble(info[3]));
-    }
-
-    public Item(int itemID, String itemName, int itemUnitTypeID, double unitCost){
+    public Item(int itemID, String itemName, int itemUnitTypeID, String itemUnitType, int quantity, double unitCost, double movement){
         setItemID(itemID);
         setItemName(itemName);
         setItemUnitTypeID(itemUnitTypeID);
+        setItemUnitType(itemUnitType);
+        setQuantity(quantity);
         setUnitCost(unitCost);
+        setMovement(movement);
     }
 
     public int getItemID() {
@@ -71,9 +71,18 @@ public class Item {
         this.quantity = quantity;
     }
 
+    public double getMovement() {
+        return movement;
+    }
+
+    public void setMovement(double movement) {
+        this.movement = movement;
+    }
+
     public String [] getInfo(){
         return new String [] {Integer.toString(getItemID()), getItemName(), Integer.toString(getItemUnitTypeID()),
-                              Double.toString(getUnitCost())};
+                              getItemUnitType(), Integer.toString(getQuantity()), Double.toString(getUnitCost()),
+                              Double.toString(getMovement()) };
     }
 
     public static String [][] generateInfoTable(Item [] items){
@@ -81,7 +90,7 @@ public class Item {
             return null;
 
         //Item ID, Item Name, Unit Cost
-        String [][] infoTable = new String[items.length][4];
+        String [][] infoTable = new String[items.length][7];
 
         for (int i = 0; i < items.length; i++)
             infoTable[i] = items[i].getInfo();
@@ -89,7 +98,7 @@ public class Item {
         return infoTable;
     }
 
-    //Finds an item given an array of items
+    //Finds an item given an array of items and an itemID
     public static Item findItem(Item [] items, int itemID){
         for (Item item : items) {
             if (item.getItemID() == itemID)
@@ -98,6 +107,7 @@ public class Item {
         return null;
     }
 
+    //Finds an item given an array of items and an itemName
     public static Item findItem(Item [] items, String itemName){
         for (Item item : items){
             if (item.getItemName().equals(itemName))
