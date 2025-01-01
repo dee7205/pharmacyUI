@@ -1,4 +1,0 @@
-Explanation on how the Database Connection functions:
-
-SQL_DataHandler
-1.
