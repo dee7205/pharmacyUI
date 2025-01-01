@@ -6,12 +6,15 @@ public class ItemsSold {
     private int transactionID, itemID, itemQty;
     String itemName;
     LocalDate transactionDate;
+    double unitCost, income;
 
-    public ItemsSold(){ this(0, 0, 0, null); }
-    public ItemsSold(int transactionID, int itemID, int itemQty, LocalDate transactionDate){
+    public ItemsSold(){ this(0, 0, 0, 0, 0, null); }
+    public ItemsSold(int transactionID, int itemID, double unitCost, int itemQty, double income, LocalDate transactionDate){
         setTransactionID(transactionID);
         setItemID(itemID);
+        setUnitCost(unitCost);
         setItemQty(itemQty);
+        setIncome(income);
         setTransactionDate(transactionDate);
     }
 
@@ -45,6 +48,30 @@ public class ItemsSold {
 
     public void setTransactionDate(LocalDate transactionDate){
         this.transactionDate = transactionDate;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
+
+    public double getIncome() {
+        return income;
+    }
+
+    public void setIncome(double income) {
+        this.income = income;
+    }
+
+    public double getUnitCost() {
+        return unitCost;
+    }
+
+    public void setUnitCost(double unitCost) {
+        this.unitCost = unitCost;
     }
 
     public String [] getInfo(){

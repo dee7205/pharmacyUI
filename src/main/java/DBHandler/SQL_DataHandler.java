@@ -105,10 +105,6 @@ public class SQL_DataHandler {
         }
     }
 
-    public boolean updatePharmacist(String firstName, String middleName, String lastName){
-        return false;
-    }
-
     /**
      * Finds a specific pharmacist based on their whole name based from the parameters @param firstName, @param middleName, and @param lastName.
      */
@@ -403,7 +399,12 @@ public class SQL_DataHandler {
 
         try{
             if (!pharmacistExists(pharmacist.getPharmacistID())){
-                System.out.println("Pharmacist with the ID " + pharmacist.getPharmacistID() + ", doesn't exist.");
+                System.out.println("ERROR: Unable to update pharmacist. \nThe pharmacist you wish to update doesn't exist in the database: " + pharmacist.getPharmacistID());
+                return false;
+            }
+
+            if (pharmacistExists(pharmaID)){
+                System.out.println("ERROR: Unable to update pharmacist. \nAnother pharmacist with the ID " + pharmacist.getPharmacistID() + " exists in the database.");
                 return false;
             }
 
@@ -1670,7 +1671,7 @@ public class SQL_DataHandler {
     public static final int SEARCH_BY_RESTOCK_ID = 4000;
 
     //TODO: Add comments for this method
-    public boolean restockExists(int id, int condition){
+    public boolean restocksExists(int id, int condition){
         if (connection == null)
             prepareConnection();
 
@@ -1725,7 +1726,7 @@ public class SQL_DataHandler {
             if (condition == REMOVE_BY_ITEM_ID && !itemTypeExists(id)){
                 System.out.println("ERROR: Unable to remove from Restock. \n Item via Item ID doesn't exist: " + id);
                 return false;
-            }   else if (condition == REMOVE_BY_RESTOCK_ID && !restockExists(id, SEARCH_BY_RESTOCK_ID)){
+            }   else if (condition == REMOVE_BY_RESTOCK_ID && !restocksExists(id, SEARCH_BY_RESTOCK_ID)){
                 System.out.println("ERROR: Unable to remove from Restock. \n Restock ID doesn't exist: " + id);
                 return false;
             }
@@ -1754,6 +1755,25 @@ public class SQL_DataHandler {
             pstmt.setInt(1, pharmacistID);
             pstmt.setDate(2, Date.valueOf(getCurrentDate()));
             return pstmt.executeUpdate() > 0;
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //TODO: Add comments to this method
+    public boolean transactionExists(int transactionID){
+        String query = "SELECT * FROM Transactions AS t WHERE t.transaction_ID = ?";
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            pstmt.setInt(1, transactionID);
+            ResultSet set = pstmt.executeQuery();
+
+            return (set.next());
 
         } catch (Exception e){
             e.printStackTrace();
@@ -1949,17 +1969,23 @@ public class SQL_DataHandler {
     public ItemsSold [] getItemsSold_Transaction(int transactionID){
         String query = """
             SELECT
-                i.transaction_ID AS "Transaction ID",
-                i.item_ID AS "Item ID",
-                i.item_qty AS "Item Quantity",
-                i.transaction_date AS "Transaction Date"
-            FROM Items_Sold AS i
+                isd.transaction_ID AS "Transaction ID",
+                isd.item_ID AS "Item ID",
+                i.unit_cost AS "Unit Cost",
+                isd.item_qty AS "Item Quantity",
+                (isd.item_qty * i.unit_cost) AS "Income",
+                isd.transaction_date AS "Transaction Date"
+            FROM Items_Sold AS isd
+            JOIN Items AS i ON isd.item_ID = i.item_ID
             WHERE i.transaction_ID = ?
             ORDER BY i.item_ID DESC;
         """;
 
         if (connection == null)
             prepareConnection();
+
+        if (!transactionExists(transactionID))
+            return null;
 
         try(PreparedStatement pstmt = connection.prepareStatement(query)){
             pstmt.setInt(1, transactionID);
@@ -1968,7 +1994,11 @@ public class SQL_DataHandler {
 
             List<ItemsSold> list = new ArrayList<>();
             while(set.next()){
-                list.add(new ItemsSold(set.getInt("Transaction ID"), set.getInt("Item ID"), set.getInt("Item Quantity"),
+                list.add(new ItemsSold(set.getInt("Transaction ID"),
+                                       set.getInt("Item ID"),
+                                       set.getDouble("Unit Cost"),
+                                       set.getInt("Item Quantity"),
+                                       set.getDouble("Income"),
                                        set.getDate("Transaction Date").toLocalDate()));
                 isAdded = true;
             }
@@ -1989,17 +2019,23 @@ public class SQL_DataHandler {
     public ItemsSold [] getItemsSold_Item(int itemID){
         String query = """
             SELECT
-                i.transaction_ID AS "Transaction ID",
-                i.item_ID AS "Item ID",
-                i.item_qty AS "Item Quantity",
-                i.transaction_date AS "Transaction Date"
-            FROM Items_Sold AS i
+                isd.transaction_ID AS "Transaction ID",
+                isd.item_ID AS "Item ID",
+                i.unit_cost AS "Unit Cost",
+                isd.item_qty AS "Item Quantity",
+                (isd.item_qty * i.unit_cost) AS "Income",
+                isd.transaction_date AS "Transaction Date"
+            FROM Items_Sold AS isd
+            JOIN Items AS i ON isd.item_ID = i.item_ID
             WHERE i.item_ID = ?
-            ORDER BY i.transaction_ID DESC;
+            ORDER BY i.item_ID DESC;
         """;
 
         if (connection == null)
             prepareConnection();
+
+        if (!itemExists(itemID))
+            return null;
 
         try(PreparedStatement pstmt = connection.prepareStatement(query)){
             pstmt.setInt(1, itemID);
@@ -2008,7 +2044,11 @@ public class SQL_DataHandler {
 
             List<ItemsSold> list = new ArrayList<>();
             while(set.next()){
-                list.add(new ItemsSold(set.getInt("Transaction ID"), set.getInt("Item ID"), set.getInt("Item Quantity"),
+                list.add(new ItemsSold(set.getInt("Transaction ID"),
+                        set.getInt("Item ID"),
+                        set.getDouble("Unit Cost"),
+                        set.getInt("Item Quantity"),
+                        set.getDouble("Income"),
                         set.getDate("Transaction Date").toLocalDate()));
                 isAdded = true;
             }
