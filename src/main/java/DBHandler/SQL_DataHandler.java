@@ -2163,7 +2163,6 @@ public class SQL_DataHandler {
         connection = DatabaseConnection.connect();
         if (connection == null){
             System.out.println("ERROR: Unable to prepare connection.");
-            prepareConnection();
         }
     }
 
