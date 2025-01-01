@@ -8,10 +8,11 @@ public class ItemsSold {
     LocalDate transactionDate;
     double unitCost, income;
 
-    public ItemsSold(){ this(0, 0, 0, 0, 0, null); }
-    public ItemsSold(int transactionID, int itemID, double unitCost, int itemQty, double income, LocalDate transactionDate){
+    public ItemsSold(){ this(0, 0, "", 0, 0, 0, null); }
+    public ItemsSold(int transactionID, int itemID, String itemName, double unitCost, int itemQty, double income, LocalDate transactionDate){
         setTransactionID(transactionID);
         setItemID(itemID);
+        setItemName(itemName);
         setUnitCost(unitCost);
         setItemQty(itemQty);
         setIncome(income);

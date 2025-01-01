@@ -48,7 +48,7 @@ public class SQL_DataHandler {
             System.out.println();
         }
 
-        System.out.println("Add Restock: " + handler.addRestock(1, 30, Date.valueOf(LocalDate.of(2025, 1, 15))));
+        System.out.println("Add Restock: " + handler.addRestock(1, 50, Date.valueOf(LocalDate.of(2025, 1, 15))));
         handler.reduceRestocks(1, 30);
 
         Restocks [] list = handler.getCurrentStock(1);
@@ -56,6 +56,18 @@ public class SQL_DataHandler {
             i.printInfo();
 
         System.out.println("Remaining stock for " + handler.getItem("Paracetamol").getItemName() + ": " + handler.getRemainingStockQuantity(handler.getItemId("Paracetamol")));
+
+//        handler.addTransaction(1);
+        handler.addItemsSold(1, 1, 20);
+        ItemsSold [] sold = handler.getItemsSold_Transaction(1);
+
+        if (sold != null && sold.length > 0){
+            for (ItemsSold i : sold){
+                for (String j : i.getInfo())
+                    System.out.print(j + " ");
+                System.out.println();
+            }
+        }
     }
 
     public SQL_DataHandler(){
@@ -1793,7 +1805,7 @@ public class SQL_DataHandler {
                 t.transaction_date AS "Transaction Date"
             FROM Transactions AS t
             WHERE t.transaction_ID = ?
-            ORDER BY r.transaction_ID ASC;
+            ORDER BY t.transaction_ID ASC;
         """;
 
         if (connection == null)
@@ -1993,13 +2005,14 @@ public class SQL_DataHandler {
             SELECT
                 isd.transaction_ID AS "Transaction ID",
                 isd.item_ID AS "Item ID",
+                i.item_name AS "Item Name",
                 i.unit_cost AS "Unit Cost",
                 isd.item_qty AS "Item Quantity",
                 (isd.item_qty * i.unit_cost) AS "Income",
                 isd.transaction_date AS "Transaction Date"
             FROM Items_Sold AS isd
             JOIN Items AS i ON isd.item_ID = i.item_ID
-            WHERE i.transaction_ID = ?
+            WHERE isd.transaction_ID = ?
             ORDER BY i.item_ID DESC;
         """;
 
@@ -2018,6 +2031,7 @@ public class SQL_DataHandler {
             while(set.next()){
                 list.add(new ItemsSold(set.getInt("Transaction ID"),
                                        set.getInt("Item ID"),
+                                       set.getString("Item Name"),
                                        set.getDouble("Unit Cost"),
                                        set.getInt("Item Quantity"),
                                        set.getDouble("Income"),
@@ -2049,6 +2063,7 @@ public class SQL_DataHandler {
             SELECT
                 isd.transaction_ID AS "Transaction ID",
                 isd.item_ID AS "Item ID",
+                i.item_name AS "Item Name",
                 i.unit_cost AS "Unit Cost",
                 isd.item_qty AS "Item Quantity",
                 (isd.item_qty * i.unit_cost) AS "Income",
@@ -2074,6 +2089,7 @@ public class SQL_DataHandler {
             while(set.next()){
                 list.add(new ItemsSold(set.getInt("Transaction ID"),
                         set.getInt("Item ID"),
+                        set.getString("Item Name"),
                         set.getDouble("Unit Cost"),
                         set.getInt("Item Quantity"),
                         set.getDouble("Income"),
