@@ -16,7 +16,7 @@ public class Statistics {
     public Statistics(double beginningBalance, double soldBalance, LocalDate date){
         setBeginningBalance(beginningBalance);
         setSoldBalance(soldBalance);
-        setEndingBalance(getBeginningBalance() + getSoldBalance());
+        setEndingBalance(getSoldBalance() - getBeginningBalance());
         setDate(date);
     }
 

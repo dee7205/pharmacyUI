@@ -1293,6 +1293,11 @@ public class SQL_DataHandler {
                 return false;
             }
 
+            if (itemUnitTypeExists(itemTypeID, unitTypeID)){
+                System.out.println("ERROR: Unable to add new Item-Unit Type. \n This Item Unit Type already exists.");
+                return false;
+            }
+
             pstmt.setInt(1, itemTypeID);
             pstmt.setInt(2, unitTypeID);
             return pstmt.executeUpdate() > 0;
@@ -1331,7 +1336,7 @@ public class SQL_DataHandler {
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, unitTypeID);
             pstmt.setInt(2, itemTypeID);
-            ResultSet set = pstmt.executeQuery(query);
+            ResultSet set = pstmt.executeQuery();
             return (set.next());
 
         }   catch (Exception e){
@@ -1869,7 +1874,13 @@ public class SQL_DataHandler {
         }
     }
 
-    //TODO: Add comments to this method
+    /**
+     * Gets all transactions saved in the database
+     *
+     * @param isAscending   boolean parameter to determine the order of the transactions taken from
+     *                      the database (Ascending if true or Descending if false)
+     * @return              An array of Transactions that is ordered based from their
+     */
     public Transaction [] getAllTransactions(boolean isAscending){
         String first = """
             SELECT
@@ -1933,9 +1944,13 @@ public class SQL_DataHandler {
 //======================================================================================================================================================================
 //Methods for the Items Sold
 
-    //TODO: Add methods for Sold Items (CR & RS)
-
-    //TODO: Add comments for this method
+    /**
+     * Adds an item sold based from a specific transaction made
+     *
+     * @param transactionID     The ID serving as the reference to which transaction the item is sold to
+     * @param itemID            The ID of the item sold. Reference to the Items Table
+     * @param itemQty           The amount of units sold
+     */
     public boolean addItemsSold(int transactionID, int itemID, int itemQty){
         if (connection == null)
             prepareConnection();
@@ -1965,7 +1980,13 @@ public class SQL_DataHandler {
         }
     }
 
-    //TODO: Add comments to the method
+    /**
+     * Gets all the items sold based from a specific transaction
+     *
+     * @param transactionID     The ID of a specific transaction
+     * @return                  An array of Items_Sold under the same transaction ID, may contain
+     *                          a combination of different items with different quantities
+     */
     public ItemsSold [] getItemsSold_Transaction(int transactionID){
         String query = """
             SELECT
@@ -2015,7 +2036,13 @@ public class SQL_DataHandler {
         }
     }
 
-    //TODO: Add comments to the method
+    /**
+     * Gets all the items sold based from a specific item
+     *
+     * @param itemID            The ID of a specific item
+     * @return                  An array of Items_Sold under the itemID, used to get the total sales
+     *                          of an item for all transactions
+     */
     public ItemsSold [] getItemsSold_Item(int itemID){
         String query = """
             SELECT
@@ -2065,7 +2092,13 @@ public class SQL_DataHandler {
         }
     }
 
-    //TODO: Add comments to the method
+    /**
+     * Method used to remove records of sold items based on the itemID
+     *
+     * @param itemID    ID of the item used as reference to specify which records will be removed form
+     *                  the database
+     * @return          True if the records are removed successfully, False if the item doesn't exist
+     */
     public boolean removeItemsSold(int itemID){
         final String query = "DELETE FROM Items_Sold AS isd WHERE isd.item_ID = ?";
 
@@ -2092,10 +2125,11 @@ public class SQL_DataHandler {
 
 
 //======================================================================================================================================================================
-//Methods for the Views.
-
+//Methods for the View / Statistics.
 
     //TODO: Make views for the following...
+
+
 
 //======================================================================================================================================================================
 //Helper Methods
