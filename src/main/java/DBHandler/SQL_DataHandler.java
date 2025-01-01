@@ -1817,7 +1817,9 @@ public class SQL_DataHandler {
         }
     }
 
-    //TODO: Add comments to this method
+    /**
+     * Gets all transactions based on a specific date
+     */
     public Transaction [] getTransactions(Date referenceDate, boolean isAscending){
         String first = """
             SELECT
@@ -1879,7 +1881,8 @@ public class SQL_DataHandler {
      *
      * @param isAscending   boolean parameter to determine the order of the transactions taken from
      *                      the database (Ascending if true or Descending if false)
-     * @return              An array of Transactions that is ordered based from their
+     * @return              An array of Transactions that is ordered in Ascending or Descending manner base on the
+     *                      transaction ID
      */
     public Transaction [] getAllTransactions(boolean isAscending){
         String first = """
