@@ -80,8 +80,8 @@ public class Item {
     }
 
     public String [] getInfo(){
-        return new String [] {Integer.toString(getItemID()), getItemName(), Integer.toString(getItemUnitTypeID()),
-                              getItemUnitType(), Integer.toString(getQuantity()), Double.toString(getUnitCost()),
+        return new String [] {Integer.toString(getItemID()), getItemName(), getItemUnitType(),
+                              Integer.toString(getQuantity()), Double.toString(getUnitCost()),
                               Double.toString(getMovement()) };
     }
 
@@ -90,7 +90,7 @@ public class Item {
             return null;
 
         //Item ID, Item Name, Unit Cost
-        String [][] infoTable = new String[items.length][7];
+        String [][] infoTable = new String[items.length][6];
 
         for (int i = 0; i < items.length; i++)
             infoTable[i] = items[i].getInfo();

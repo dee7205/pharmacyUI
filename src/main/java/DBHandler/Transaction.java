@@ -5,7 +5,7 @@ import java.sql.Date;
 
 public class Transaction {
     private int transactionID, pharmacistID, soldQty;
-    private double totalSales;
+    private double income;
     private LocalDate transactionDate;
 
     public Transaction(){ this(0, 0, 0, 0, null); }
@@ -14,10 +14,10 @@ public class Transaction {
         this(transactionID, pharmacistID, 0, 0, transactionDate);
     }
 
-    public Transaction(int transactionID, int pharmacistID, int soldQty, int totalSales, LocalDate transactionDate){
+    public Transaction(int transactionID, int pharmacistID, int soldQty, int income, LocalDate transactionDate){
         setTransactionID(transactionID);
         setPharmacistID(pharmacistID);
-        setTotalSales(totalSales);
+        setIncome(income);
         setSoldQty(soldQty);
         setDate(transactionDate);
     }
@@ -46,12 +46,12 @@ public class Transaction {
         this.transactionDate = transactionDate;
     }
 
-    public double getTotalSales(){
-        return totalSales;
+    public double getIncome(){
+        return income;
     }
 
-    public void setTotalSales(double totalSales){
-        this.totalSales = totalSales;
+    public void setIncome(double income){
+        this.income = income;
     }
 
     public int getSoldQty(){
@@ -64,7 +64,7 @@ public class Transaction {
 
     public String [] getInfo(){
         return new String [] {Integer.toString(getTransactionID()), Integer.toString(getPharmacistID()),
-                              Integer.toString(getSoldQty()), Double.toString(getTotalSales()),
+                              Integer.toString(getSoldQty()), Double.toString(getIncome()),
                               Date.valueOf(getDate()).toString()};
     }
 

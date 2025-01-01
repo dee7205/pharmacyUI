@@ -75,8 +75,8 @@ public class ItemsSold {
     }
 
     public String [] getInfo(){
-        return new String []{Integer.toString(getTransactionID()), Integer.toString(getItemID()),
-                             Integer.toString(getItemQty()), Date.valueOf(transactionDate).toString()};
+        return new String []{getItemName(), Integer.toString(getItemQty()),
+                             Double.toString(getUnitCost()), Double.toString(getIncome())};
     }
 
     public static String [][] generateInfoTable(ItemsSold [] soldItems){
