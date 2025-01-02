@@ -1372,6 +1372,39 @@ public class SQL_DataHandler {
         }
     }
 
+    /**
+     * Method to get number of items (count) using the list of Unit Types
+     *
+     * @param list      List of UnitTypes
+     */
+    public int getAffectedItems(UnitType [] list){
+        if (connection == null)
+            prepareConnection();
+
+        String query = """
+            SELECT 
+                COUNT(i.item_ID) AS "Item Count"
+            FROM UnitType AS ut
+            JOIN itemUnitType AS iut ON ut.unitType_ID = iut.unitType_ID
+            JOIN Items AS i ON i.item_unit_ID = iut.item_unit_ID
+            WHERE ut.unitType_ID = ?
+        """;
+
+        int itemCount = 0;
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            for (UnitType unitType : list){
+                pstmt.setInt(1, unitType.getUnitTypeID());
+                ResultSet set = pstmt.executeQuery();
+                if (set.next())
+                    itemCount += set.getInt("Item Count");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return itemCount;
+    }
+
 //======================================================================================================================================================================
 //Methods for the ItemUnitType.
 
@@ -1545,6 +1578,12 @@ public class SQL_DataHandler {
 
     //TODO: Add comments
     public boolean removeItemUnitType(int id, int condition){
+        //First set of queries to delete items who uses the following item_unit_ID or itemType_ID or unitType_ID
+        final String firstA = "DELETE FROM Items WHERE (SELECT item_unit_ID FROM ItemUnitType WHERE itemType_ID = " + id + ")";
+        final String firstB = "DELETE FROM Items WHERE (SELECT item_unit_ID FROM ItemUnitType WHERE unitType_ID = " + id + ")";
+        final String firstC = "DELETE FROM Items WHERE (SELECT item_unit_ID FROM ItemUnitType WHERE item_unit_ID = " + id + ")";
+
+        //Second set of queries to remove the item_unit_type IDs
         final String removeItemType = "DELETE FROM ItemUnitType WHERE itemType_ID = " + id;
         final String removeUnitType = "DELETE FROM ItemUnitType WHERE unitType_ID = " + id;
         final String removeItemUnitType = "DELETE FROM ItemUnitType WHERE item_unit_ID = " + id;
@@ -1553,13 +1592,16 @@ public class SQL_DataHandler {
             prepareConnection();
 
         try(Statement stmt = connection.createStatement();){
-            if (condition == REMOVE_ITEM_TYPE)
+            if (condition == REMOVE_ITEM_TYPE){
+                stmt.executeUpdate(firstA);
                 stmt.executeUpdate(removeItemType);
-            else if (condition == REMOVE_UNIT_TYPE)
+            } else if (condition == REMOVE_UNIT_TYPE){
+                stmt.executeUpdate(firstB);
                 stmt.executeUpdate(removeUnitType);
-            else if (condition == REMOVE_ITEM_UNIT_TYPE)
+            } else if (condition == REMOVE_ITEM_UNIT_TYPE){
+                stmt.executeUpdate(firstC);
                 stmt.executeUpdate(removeItemUnitType);
-            else
+            } else
                 return false;
 
         }   catch (Exception e){

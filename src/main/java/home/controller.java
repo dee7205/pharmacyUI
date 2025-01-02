@@ -239,7 +239,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "shanna05");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "maclang@2023-00570");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -307,7 +307,7 @@ public class controller implements Initializable {
     }
 
     @FXML
-    void deleteItemType(ActionEvent event) { //DELETE ITEM TYPE
+    void deleteItemType(ActionEvent event) {
         //Gets the item type selected (Can be null if no item is selected)
         int index = itemTypeTable.getSelectionModel().getSelectedIndex();
         if (index == -1){
@@ -340,6 +340,7 @@ public class controller implements Initializable {
         }
     }
 
+    //Sets the itemTypeNameColumn edit-ability
     private void itemTypeEditData(){
         itemTypeNameColumn.setEditable(true);
         itemTypeNameColumn.setCellFactory(TextFieldTableCell.<ItemType>forTableColumn());
