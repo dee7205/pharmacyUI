@@ -666,7 +666,7 @@ public class SQL_DataHandler {
             prepareConnection();
 
         if (limit == -1)
-            limit = 100;
+            limit = 1000;
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             List<Item> list = new ArrayList<>();
