@@ -62,6 +62,32 @@ public class controller implements Initializable {
     @FXML private Button deletePharmacistsButton;
     @FXML private Button pharmacistTransactHistButton;
 
+
+    //===================================ITEM METHODS========================================
+    @FXML TableView<Item> itemTable;
+    @FXML private TableColumn<Item, Double> itemUnitCost_col;
+    @FXML private TableColumn<Item, String> itemName_col;
+    @FXML private TableColumn<Item, Integer> itemID_col;
+    @FXML private TableColumn<Item, Integer> itemQuantity_col;
+    @FXML private TableColumn<Item, String> itemUnitType_col;
+    @FXML private TableColumn<Item, Double> itemMovement_col;
+
+    public ObservableList<Item> initialItemData(){
+        SQL_DataHandler handler = new SQL_DataHandler();
+        Item [] types = handler.getAllItems(-1);
+        return FXCollections.<Item> observableArrayList(types);
+    }
+
+    //TODO: Make cells editable
+    private void itemEditData(){
+//        //Makes the specific columns editable
+//        itemTypeNameColumn.setCellFactory(TextFieldTableCell.<ItemType>forTableColumn());
+//        itemTypeNameColumn.setOnEditCommit(event ->{
+//            ItemType itemType = event.getTableView().getItems().get(event.getTablePosition().getRow());
+//            itemType.setItemTypeName(event.getNewValue());
+//        });
+    }
+
     // items
     @FXML private Button addItemButton;
     @FXML private Button updateItemButton;
@@ -70,16 +96,6 @@ public class controller implements Initializable {
     @FXML private ComboBox<?> item_TypeCb;
     @FXML private ComboBox<?> item_filterCb;
     @FXML private ComboBox<?> item_unitCb;
-
-
-    // items table
-    @FXML TableView<Item> itemTable;
-    @FXML private TableColumn<Item, Double> itemUnitCost_col;
-    @FXML private TableColumn<Item, String> itemName_col;
-    @FXML private TableColumn<Item, Integer> itemID_col;
-    @FXML private TableColumn<Item, String> itemType_col;
-    @FXML private TableColumn<Item, Integer> itemUnitType_col;
-    @FXML private TableColumn<Item, ?> itemMovement_col;
 
     int index = -1;
 
@@ -132,24 +148,21 @@ public class controller implements Initializable {
     @FXML private Button deleteItemTypeButton;
 
 
-    ObservableList<ItemType> initialItemTypeData(){
-
+    public ObservableList<ItemType> initialItemTypeData(){
         SQL_DataHandler handler = new SQL_DataHandler();
-        DBHandler.ItemType [] types = handler.getAllItemTypes();
-
-        List<ItemType> list = new ArrayList<>();
-        for (DBHandler.ItemType type : types){
-            list.add(new ItemType(type.getItemTypeID(), type.getItemTypeName()));
-        }
-
-        return FXCollections.<ItemType> observableArrayList(list);
+        ItemType [] types = handler.getAllItemTypes();
+        return FXCollections.<ItemType> observableArrayList(types);
     }
 
     @FXML
     void addItemType(ActionEvent event) { //ADD ITEM TYPE
-        ItemType tempItemType = new ItemType(6,itemTypeNameTextField.getText());
-        itemTypeTable.getItems().add(tempItemType);
-        itemTypeNameTextField.clear();
+        SQL_DataHandler handler = new SQL_DataHandler();
+        String itemTypeName = itemTypeNameTextField.getText();
+        if (handler.addItemType(itemTypeName)){
+            ItemType type = handler.getItemType(itemTypeName);
+            itemTypeTable.getItems().add(type); //Adds item type to the table
+            itemTypeNameTextField.clear();
+        }
     }
 
     @FXML
@@ -233,7 +246,17 @@ public class controller implements Initializable {
             itemTypeEditData();
         }
 
-
+        //Initialize ITEM
+        if (itemTable != null){
+            itemID_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemID"));
+            itemName_col.setCellValueFactory(new PropertyValueFactory<Item,String>("itemName"));
+            itemUnitType_col.setCellValueFactory(new PropertyValueFactory<Item,String>("itemUnitType"));
+            itemQuantity_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("quantity"));
+            itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<Item,Double>("unitCost"));
+            itemMovement_col.setCellValueFactory(new PropertyValueFactory<Item,Double>("movement"));
+            itemTable.setItems(initialItemData());
+            itemEditData();
+        }
 
     }
 

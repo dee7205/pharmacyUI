@@ -645,6 +645,7 @@ public class SQL_DataHandler {
                 	i.item_name AS "Item Name",
                 	ut.unit_Type AS "Unit Type",
                 	it.item_Type AS "Item Type",
+                	iut.item_unit_ID AS "Item Unit ID",
                 	(SUM(COALESCE(r.start_qty - r.sold_qty, 0))) AS "Item Quantity",
                 	i.unit_cost AS "Unit Cost"
                 FROM Items AS i
@@ -655,6 +656,7 @@ public class SQL_DataHandler {
                 	AND r.expiry_Date >= CURRENT_DATE()
                     AND r.start_Qty > r.sold_Qty
                 GROUP BY i.item_ID
+                ORDER BY i.item_ID ASC
                 LIMIT ?;
                 """;
 
@@ -662,6 +664,9 @@ public class SQL_DataHandler {
 
         if (connection == null)
             prepareConnection();
+
+        if (limit == -1)
+            limit = 100;
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             List<Item> list = new ArrayList<>();
