@@ -267,8 +267,8 @@
                      </font>
                   </Label>
                   <TextField fx:id="itemQuantity_textField" layoutX="830.0" layoutY="226.0" prefHeight="27.0" prefWidth="79.0" promptText="Qty" style="-fx-border-color: black; -fx-border-radius: 0px;" />
-                  <ComboBox fx:id="item_TypeCb" layoutX="732.0" layoutY="157.0" prefHeight="29.0" prefWidth="177.0" style="-fx-border-color: black;" />
-                  <ComboBox fx:id="item_unitCb" layoutX="732.0" layoutY="226.0" prefHeight="27.0" prefWidth="79.0" style="-fx-border-color: black;" />
+                  <ComboBox fx:id="item_TypeCb" layoutX="732.0" layoutY="157.0" onAction="#itemType_comboBoxOnAction" prefHeight="29.0" prefWidth="177.0" style="-fx-border-color: black;" />
+                  <ComboBox fx:id="item_unitCb" layoutX="732.0" layoutY="226.0" onAction="#unitType_comboBoxOnAction" prefHeight="27.0" prefWidth="79.0" style="-fx-border-color: black;" />
                   <ComboBox fx:id="item_filterCb" layoutX="15.0" layoutY="31.0" prefWidth="150.0" style="-fx-border-color: black;" />
                </children>
             </AnchorPane>
