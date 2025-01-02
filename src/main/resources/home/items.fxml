@@ -209,7 +209,7 @@
                <children>
                   <TableView fx:id="itemTable" layoutX="14.0" layoutY="65.0" prefHeight="492.0" prefWidth="707.0" style="-fx-border-color: black;">
                     <columns>
-                      <TableColumn fx:id="itemID_col" prefWidth="75.0" text="Item ID" />
+                      <TableColumn fx:id="itemID_col" editable="false" prefWidth="75.0" text="Item ID" />
                       <TableColumn fx:id="itemName_col" prefWidth="75.0" text="Item Name" />
                         <TableColumn fx:id="itemUnitType_col" prefWidth="75.0" text="Item Unit Type" />
                         <TableColumn fx:id="itemQuantity_col" prefWidth="75.0" text="Quantity" />

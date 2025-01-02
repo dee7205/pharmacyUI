@@ -207,13 +207,13 @@
          <center>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <TableView fx:id="itemTable" layoutX="14.0" layoutY="65.0" prefHeight="481.0" prefWidth="663.0" style="-fx-border-color: black;">
+                  <TableView fx:id="itemUnitTypeTable" layoutX="14.0" layoutY="65.0" prefHeight="481.0" prefWidth="663.0" style="-fx-border-color: black;">
                      <columns>
-                        <TableColumn editable="false" prefWidth="75.0" text="Item Unit Type ID" />
-                        <TableColumn editable="false" prefWidth="75.0" text="Item Type ID" />
-                        <TableColumn editable="false" prefWidth="75.0" text="Item Type Name" />
-                        <TableColumn editable="false" prefWidth="75.0" text="Unit Type ID" />
-                        <TableColumn editable="false" prefWidth="75.0" text="Unit Type Name" />
+                        <TableColumn fx:id="itemUnitTypeID_col" editable="false" prefWidth="75.0" text="Item Unit Type ID" />
+                        <TableColumn fx:id="itemUnitType_itemTypeID_col" editable="false" prefWidth="75.0" text="Item Type ID" />
+                        <TableColumn fx:id="itemUnitType_itemTypeName_col" editable="false" prefWidth="75.0" text="Item Type Name" />
+                        <TableColumn fx:id="itemUnitType_unitTypeID_col" editable="false" prefWidth="75.0" text="Unit Type ID" />
+                        <TableColumn fx:id="itemUnitType_unitTypeName_col" editable="false" prefWidth="75.0" text="Unit Type Name" />
                      </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -225,17 +225,17 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <Button alignment="CENTER" contentDisplay="BOTTOM" layoutX="684.0" layoutY="406.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item Unit Type">
+                  <Button fx:id="addItemUnitTypeButton" alignment="CENTER" contentDisplay="BOTTOM" layoutX="684.0" layoutY="406.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item Unit Type">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button alignment="CENTER" layoutX="684.0" layoutY="457.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Update Item Unit Type">
+                  <Button fx:id="updateItemUnitTypeButton" alignment="CENTER" layoutX="684.0" layoutY="457.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Update Item Unit Type">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button alignment="CENTER" layoutX="684.0" layoutY="509.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item Unit Type">
+                  <Button fx:id="deleteItemUnitTypeButton" alignment="CENTER" layoutX="684.0" layoutY="509.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item Unit Type">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -245,13 +245,13 @@
                         <Font name="AauxNext-Bold" size="18.0" />
                      </font>
                   </Label>
-                  <TextField layoutX="694.0" layoutY="116.0" prefHeight="29.0" prefWidth="193.0" promptText="Type item type id here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
+                  <TextField fx:id="itemUnitType_itemTypeID_textField" layoutX="694.0" layoutY="116.0" prefHeight="29.0" prefWidth="193.0" promptText="Type item type id here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
                   <Label layoutX="695.0" layoutY="158.0" text="Unit Type ID">
                      <font>
                         <Font name="AauxNext-Bold" size="18.0" />
                      </font>
                   </Label>
-                  <TextField layoutX="694.0" layoutY="181.0" prefHeight="29.0" prefWidth="193.0" promptText="Type unit type id here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
+                  <TextField fx:id="itemUnitType_unitTypeID_textField" layoutX="694.0" layoutY="181.0" prefHeight="29.0" prefWidth="193.0" promptText="Type unit type id here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
                </children>
             </AnchorPane>
          </center>

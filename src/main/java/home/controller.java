@@ -25,6 +25,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.Date;
 
 import DBHandler.*;
 
@@ -109,7 +110,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", " ");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "shanna05");
             JOptionPane.showMessageDialog(null, "Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -189,6 +190,88 @@ public class controller implements Initializable {
             itemType.setItemTypeName(event.getNewValue());
         });
     }
+
+    //===============================PHARMACIST METHODS====================================
+
+    @FXML private TextField pharmacist_fName_textField;
+    @FXML private TextField pharmacist_id_textField;
+    @FXML private TextField pharmacist_lName_textField;
+    @FXML private TextField pharmacist_mName_textField;
+
+    @FXML private TableView<Pharmacist> pharmacistTable;
+    @FXML private TableColumn<Pharmacist, Integer> pharmacistID_col;
+    @FXML private TableColumn<Pharmacist, String> pharmacist_fName_col;
+    @FXML private TableColumn<Pharmacist, String> pharmacist_mName_col;
+    @FXML private TableColumn<Pharmacist, String> pharmacist_lName_col;
+
+    //===============================UNIT TYPE METHODS====================================
+
+    @FXML private TableColumn<UnitType, Integer> unitTypeID_col;
+    @FXML private TableColumn<UnitType, String> unitTypeName_col;
+    @FXML private TableView<UnitType> unitTypeTable;
+
+    @FXML private TextField unitType_textField;
+    @FXML private Button updateUnitTypeButton;
+    @FXML private Button addUnitTypeButton;
+    @FXML private Button deleteUnitTypeButton;
+
+    //===============================RESTOCK METHODS====================================
+
+    @FXML private DatePicker expirationDate_datePicker;
+    @FXML private DatePicker restockDate_datePicker;
+
+    @FXML private TableColumn<Restocks, Integer> restockID_col;
+    @FXML private TableView<Restocks> restockTable;
+    @FXML private TableColumn<Restocks, Integer> restock_beginningQty_col;
+    @FXML private TableColumn<Restocks, Date> restock_expirationDate_col;
+    @FXML private TableColumn<Restocks, String> restock_itemName_col;
+    @FXML private TableColumn<Restocks, Date> restock_restockDate_col;
+    @FXML private TableColumn<Restocks, Integer> restock_soldQty_col;
+
+    @FXML private TextField restock_qty;
+    @FXML private ChoiceBox<?> restock_item_cb;
+
+    //===============================TRANSACTION METHODS====================================
+
+    @FXML private TableView<Transaction> transactionTable;
+    @FXML private TableColumn<Transaction, Date> transactionDate_col;
+    @FXML private TableColumn<Transaction, Integer> transactionNo_col;
+    @FXML private TableColumn<Transaction, Double> transaction_income_col;
+    @FXML private TableColumn<Transaction, Integer> transaction_pharmacistID_col;
+    @FXML private TableColumn<Transaction, Integer> transaction_soldQty_col;
+
+    @FXML private TableView<ItemsSold> itemsSoldTable;
+    @FXML private TableColumn<ItemsSold, Double> itemsSold_income_col;
+    @FXML private TableColumn<ItemsSold, String> itemsSold_itemName_col;
+    @FXML private TableColumn<ItemsSold, Integer> itemsSold_soldQty_col;
+    @FXML private TableColumn<ItemsSold, Double> itemsSold_unitCost_col;
+
+
+    //===============================ITEM UNIT TYPE METHODS====================================
+
+    @FXML private Button addItemUnitTypeButton;
+    @FXML private Button deleteItemUnitTypeButton;
+    @FXML private Button updateItemUnitTypeButton;
+    @FXML private TextField itemUnitType_unitTypeID_textField;
+    @FXML private TextField itemUnitType_itemTypeID_textField;
+
+    @FXML private TableView<ItemUnitType> itemUnitTypeTable;
+    @FXML private TableColumn<ItemUnitType, Integer> itemUnitTypeID_col;
+    @FXML private TableColumn<ItemUnitType, Integer> itemUnitType_itemTypeID_col;
+    @FXML private TableColumn<ItemUnitType, String> itemUnitType_itemTypeName_col;
+    @FXML private TableColumn<ItemUnitType, Integer> itemUnitType_unitTypeID_col;
+    @FXML private TableColumn<ItemUnitType, String> itemUnitType_unitTypeName_col;
+
+    //===============================STATISTIC METHODS====================================
+
+    @FXML private TableView<Statistics> statisticsTable;
+    @FXML private TableColumn<Statistics, ?> statistic_month_col;
+    @FXML private TableColumn<Statistics, ?> statistic_day_col;
+    @FXML private TableColumn<Statistics, ?> statistic_year_col;
+    @FXML private TableColumn<Statistics, Double> statistic_beginningBalance_col;
+    @FXML private TableColumn<Statistics, Double> statistic_endingBalance_col;
+    @FXML private TableColumn<Statistics, Double> statistic_soldBalance_col;
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -295,7 +378,6 @@ public class controller implements Initializable {
             System.err.println("Stage is null. Scene switch failed.");
         }
     }
-
 
 
     public void switchToItems(ActionEvent event) throws IOException {
