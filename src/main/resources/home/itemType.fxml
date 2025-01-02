@@ -207,7 +207,7 @@
          <center>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <TableView fx:id="itemTypeTable" layoutX="14.0" layoutY="65.0" prefHeight="481.0" prefWidth="663.0" style="-fx-border-color: black;">
+                  <TableView fx:id="itemTypeTable" editable="true" layoutX="14.0" layoutY="65.0" prefHeight="481.0" prefWidth="663.0" style="-fx-border-color: black;">
                      <columns>
                         <TableColumn fx:id="itemTypeIDColumn" editable="false" prefWidth="136.0" sortable="false" text="Item Type ID" />
                         <TableColumn fx:id="itemTypeNameColumn" editable="true" prefWidth="523.0" text="Item Type Name" />
@@ -232,7 +232,7 @@
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="deleteItemTypeButton" alignment="CENTER" layoutX="694.0" layoutY="355.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="203.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item Type">
+                  <Button fx:id="deleteItemTypeButton" alignment="CENTER" layoutX="694.0" layoutY="355.0" mnemonicParsing="false" onAction = "#deleteItemType" prefHeight="36.0" prefWidth="203.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item Type">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>

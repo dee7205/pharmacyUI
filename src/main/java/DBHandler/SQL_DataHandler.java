@@ -637,6 +637,11 @@ public class SQL_DataHandler {
         }
     }
 
+    //TODO: Implement this
+    public Item [] getAllItemsFiltered(int condition){
+        return null;
+    }
+
     //TODO: Add comments for this method
     public Item [] getAllItems(int limit){
         final String query = """
@@ -950,7 +955,7 @@ public class SQL_DataHandler {
     }
 
 //======================================================================================================================================================================
-//Methods for the Item Type.
+//Methods for Item Type.
 
     //TODO: Add comments for method
     public boolean addItemType(String itemTypeName){
@@ -1165,6 +1170,52 @@ public class SQL_DataHandler {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public int getAffectedItems(List<ItemType> list){
+        ItemType [] array = new ItemType[list.size()];
+        return getAffectedItems(list.toArray(array));
+    }
+
+    public int getAffectedItems(ItemType item){
+        List<ItemType> list = new ArrayList<>();
+        list.add(item);
+        ItemType [] array = new ItemType[1];
+        return getAffectedItems(list.toArray(array));
+    }
+
+    /**
+     * Gets all the items using a specific itemType
+     *
+     * @param list  Contains the list of items to be searched for
+     * @return      Number of items using the specific ItemType
+     */
+    public int getAffectedItems(ItemType [] list){
+        if (connection == null)
+            prepareConnection();
+
+        String query = """
+            SELECT 
+                COUNT(i.item_ID) AS "Item Count"
+            FROM ItemType AS it
+            JOIN itemUnitType AS iut ON it.itemType_ID = iut.itemType_ID
+            JOIN Items AS i ON i.item_unit_ID = iut.item_unit_ID
+            WHERE it.itemType_ID = ?
+        """;
+
+        int itemCount = 0;
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            for (ItemType item : list){
+                pstmt.setInt(1, item.getItemTypeID());
+                ResultSet set = pstmt.executeQuery();
+                if (set.next())
+                    itemCount += set.getInt("Item Count");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return itemCount;
     }
 
 //======================================================================================================================================================================
