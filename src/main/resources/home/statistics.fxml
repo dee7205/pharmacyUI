@@ -213,7 +213,7 @@
                         <TableColumn fx:id="statistic_year_col" prefWidth="75.0" text="Year" />
                         <TableColumn fx:id="statistic_beginningBalance_col" prefWidth="75.0" text="Beginning Balance" />
                         <TableColumn fx:id="statistic_soldBalance_col" prefWidth="75.0" text="Sold Balance" />
-                        <TableColumn prefWidth="75.0" text="Ending Balance" />
+                        <TableColumn fx:id="statistic_endingBalance_col" prefWidth="75.0" text="Ending Balance" />
                      </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

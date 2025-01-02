@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -14,11 +14,11 @@
 
 <AnchorPane prefHeight="470.0" prefWidth="647.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="home.controller">
    <children>
-      <TableView layoutX="246.0" layoutY="75.0" prefHeight="306.0" prefWidth="379.0">
+      <TableView fx:id="transactionWindowTable" layoutX="246.0" layoutY="75.0" prefHeight="306.0" prefWidth="379.0">
         <columns>
-          <TableColumn prefWidth="146.0" text="Item Name" />
-          <TableColumn prefWidth="105.0" text="Sell Quantity" />
-            <TableColumn prefWidth="75.0" text="Unit Cost" />
+          <TableColumn fx:id="transaction_itemName_col" prefWidth="146.0" text="Item Name" />
+          <TableColumn fx:id="transaction_sellQty_col" prefWidth="105.0" text="Sell Quantity" />
+            <TableColumn fx:id="transaction_unitCost_col" prefWidth="75.0" text="Unit Cost" />
         </columns>
          <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -33,7 +33,6 @@
             </ImageView>
          </children>
       </AnchorPane>
-      <ChoiceBox layoutX="26.0" layoutY="117.0" prefHeight="27.0" prefWidth="193.0" style="-fx-border-radius: 0px; -fx-border-color: black; -fx-background-color: white;" />
       <Text layoutX="26.0" layoutY="113.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Item Name">
          <font>
             <Font name="Nunito ExtraBold" size="15.0" />
@@ -44,19 +43,19 @@
             <Font name="Nunito ExtraBold" size="15.0" />
          </font>
       </Text>
-      <TextField layoutX="26.0" layoutY="178.0" prefHeight="25.0" prefWidth="193.0" promptText="Current Quantity" style="-fx-border-color: black;" />
-      <TextField layoutX="26.0" layoutY="235.0" prefHeight="25.0" prefWidth="193.0" promptText="Sell Quantity" style="-fx-border-color: black;" />
+      <TextField fx:id="transaction_currentQty_textField" layoutX="26.0" layoutY="178.0" prefHeight="25.0" prefWidth="193.0" promptText="Current Quantity" style="-fx-border-color: black;" />
+      <TextField fx:id="transaction_sellQty_textField" layoutX="26.0" layoutY="235.0" prefHeight="25.0" prefWidth="193.0" promptText="Sell Quantity" style="-fx-border-color: black;" />
       <Text layoutX="26.0" layoutY="229.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Sell Quantity">
          <font>
             <Font name="Nunito ExtraBold" size="15.0" />
          </font>
       </Text>
-      <Button layoutX="26.0" layoutY="296.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="193.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add">
+      <Button fx:id="transactionWindow_addTransactionButton" layoutX="26.0" layoutY="296.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="193.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add">
          <font>
             <Font name="Nunito ExtraBold" size="16.0" />
          </font>
       </Button>
-      <Button layoutX="26.0" layoutY="342.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="193.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Remove">
+      <Button fx:id="transactionWindow_removeTransactionButton" layoutX="26.0" layoutY="342.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="193.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Remove">
          <font>
             <Font name="Nunito ExtraBold" size="16.0" />
          </font>
@@ -77,5 +76,6 @@
          </font>
       </Text>
       <Label layoutX="316.0" layoutY="392.0" text="Secret" />
+      <ComboBox fx:id="transaction_itemName_comboBox" layoutX="26.0" layoutY="118.0" onAction="#transactionItemName_comboBoxOnAction" prefHeight="26.0" prefWidth="194.0" style="-fx-border-color: black;" />
    </children>
 </AnchorPane>
