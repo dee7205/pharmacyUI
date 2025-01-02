@@ -9,8 +9,7 @@ public class Item {
 
     public Item(Integer itemNumber, String itemName, String itemType, Integer beginningQty, Double unitCost) {
         this.itemNumber = itemNumber;
-        this.itemName = itemName;
-        this.itemType = itemType;
+        this.itemName = itemName;       this.itemType = itemType;
         this.beginningQty = beginningQty;
         this.unitCost = unitCost;
     }

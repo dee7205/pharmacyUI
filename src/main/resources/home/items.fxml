@@ -55,7 +55,7 @@
                         <Font name="System Bold" size="15.0" />
                      </font>
                      <graphic>
-                        <ImageView fitHeight="28.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;">
+                        <ImageView fitHeight="28.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@images/menuicon.png" />
                            </image>
@@ -178,7 +178,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="addTransactionButton" depthTest="DISABLE" graphicTextGap="10.0" mnemonicParsing="false" onAction="#switchToInputPharmacistIDWindow" prefHeight="39.0" prefWidth="219.0" style="-fx-background-color: #672886; -fx-background-radius: 0px; -fx-cursor: hand;" textFill="WHITE">
+                        <Button fx:id="addButton" depthTest="DISABLE" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="219.0" style="-fx-background-color: #672886; -fx-background-radius: 0px;" textFill="WHITE">
                            <opaqueInsets>
                               <Insets top="5.0" />
                            </opaqueInsets>
@@ -189,7 +189,7 @@
                               <Insets top="20.0" />
                            </VBox.margin>
                            <graphic>
-                              <ImageView fx:id="addTransactionButton" fitHeight="40.0" fitWidth="46.0" pickOnBounds="true" preserveRatio="true">
+                              <ImageView fitHeight="40.0" fitWidth="46.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@images/addicon.png" />
                                  </image>
