@@ -1,5 +1,7 @@
 package home;
 
+//nasa kiffy ko si pabilona
+
 import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
