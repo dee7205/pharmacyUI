@@ -24,9 +24,9 @@ import java.net.URL;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
+
+import DBHandler.*;
 
 public class controller implements Initializable {
     private Stage stage;
@@ -134,11 +134,15 @@ public class controller implements Initializable {
 
     ObservableList<ItemType> initialItemTypeData(){
 
-        ItemType i1 = new ItemType(1,"Test_Medicine");
-        ItemType i2 = new ItemType(2,"Test_Supplies");
-        ItemType i3 = new ItemType(3, "Test_Equipment");
+        SQL_DataHandler handler = new SQL_DataHandler();
+        DBHandler.ItemType [] types = handler.getAllItemTypes();
 
-        return FXCollections.<ItemType> observableArrayList(i1,i2,i3);
+        List<ItemType> list = new ArrayList<>();
+        for (DBHandler.ItemType type : types){
+            list.add(new ItemType(type.getItemTypeID(), type.getItemTypeName()));
+        }
+
+        return FXCollections.<ItemType> observableArrayList(list);
     }
 
     @FXML
@@ -228,6 +232,8 @@ public class controller implements Initializable {
             itemTypeTable.setItems(initialItemTypeData());
             itemTypeEditData();
         }
+
+
 
     }
 

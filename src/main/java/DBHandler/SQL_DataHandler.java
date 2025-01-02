@@ -1046,6 +1046,40 @@ public class SQL_DataHandler {
         }
     }
 
+    public ItemType [] getAllItemTypes(){
+        final String query = """
+            SELECT 
+                it.itemType_ID AS "Item Type ID",
+                it.item_Type AS "Item Type Name"
+            FROM ItemType as it
+            ORDER BY it.itemType_ID ASC;
+            """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(Statement stmt = connection.createStatement();){
+            ResultSet set = stmt.executeQuery(query);
+
+            List<ItemType> list = new ArrayList<>();
+            boolean isAdded = false;
+            while (set.next()){
+                list.add(new ItemType(set.getInt("Item Type ID"), set.getString("Item Type Name")));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                ItemType [] array = new ItemType[list.size()];
+                return list.toArray(array);
+            }   else
+                return null;
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     //TODO: Add comments for the method
     public boolean itemTypeExists(String itemTypeName){
         final String query = "SELECT * FROM ItemType WHERE item_Type = ?";
