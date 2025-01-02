@@ -161,7 +161,7 @@ public class controller implements Initializable {
         if (!itemTypeName.isEmpty() && !itemTypeName.equals("Item Type") && handler.addItemType(itemTypeName)) {
             ItemType type = handler.getItemType(itemTypeName);
             itemTypeTable.getItems().add(type); //Adds item type to the table
-        } else if (itemTypeName.equals("Item Type")){
+        } else if (itemTypeName.equalsIgnoreCase("Item Type")){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
             alert.setHeaderText("Unable to add new Item Type: " + itemTypeName);
