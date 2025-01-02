@@ -34,7 +34,7 @@ public class SQL_DataHandler {
         UnitType type = handler.getUnitType(handler.getUnitTypeID("Packet"));
         System.out.println(type.getUnitTypeID() + " " + type.getUnitType());
 
-
+        System.out.println("Item Unit Type Exists: " + handler.itemUnitTypeExists(1, 1));
 
 //        handler.removeAllItems();
         handler.addItem("Paracetamol", handler.getItemUnitTypeID("Medicine", "Pills"), 5.0);
@@ -59,7 +59,7 @@ public class SQL_DataHandler {
 
 //        handler.addTransaction(1);
         handler.addItemsSold(1, 1, 20);
-        ItemsSold [] sold = handler.getItemsSold_Transaction(1);
+        ItemsSold [] sold = handler.getItemsSold_Item(1);
 
         if (sold != null && sold.length > 0){
             for (ItemsSold i : sold){
@@ -1486,7 +1486,7 @@ public class SQL_DataHandler {
     //TODO: Add comments to this method
     public boolean addRestock(int itemID, int startQuantity, Date expiryDate){
         final String query = """
-            INSERT INTO Restocks (item_ID, start_Qty, sold_Qty, restock_Date, expiry_Date) 
+            INSERT INTO Restocks (item_ID, start_Qty, sold_Qty, restock_Date, expiry_Date)
             VALUES (?, ?, 0, ?, ?)
             """;
 
