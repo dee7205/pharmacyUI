@@ -93,9 +93,139 @@ public class controller implements Initializable {
     @FXML private Button updateItemButton;
     @FXML private Button deleteItemButton;
     @FXML private Button itemTransactHistButton;
-    @FXML private ComboBox<?> item_TypeCb;
+
     @FXML private ComboBox<?> item_filterCb;
-    @FXML private ComboBox<?> item_unitCb;
+
+    // ==============COMBO BOX UNIT TYPE (item.fxml)===================
+    @FXML private ComboBox<String> item_unitCb;
+    public void unitType_comboBoxOnAction(ActionEvent event) {
+        if (item_unitCb != null) {
+            String selectAllData = "SELECT * FROM UnitType";
+            Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
+
+            if (connect != null) { // Make sure the connection is valid
+                try (PreparedStatement pr = connect.prepareStatement(selectAllData);
+                     ResultSet rs = pr.executeQuery()) {
+
+                    ObservableList<String> listData = FXCollections.observableArrayList();
+
+                    while (rs.next()) {
+                        String itemPanel_unit_type = rs.getString("unit_Type");
+                        listData.add(itemPanel_unit_type);
+                    }
+
+                    item_unitCb.setItems(listData);
+
+                } catch (SQLException e) {
+                    System.err.println("SQL Error: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("Database connection failed.");
+            }
+        } else {
+            System.err.println("ComboBox is null");
+        }
+    }
+
+    // ==============COMBO BOX ITEM TYPE (item.fxml)===================
+    @FXML private ComboBox<String> item_TypeCb;
+
+    public void itemType_comboBoxOnAction(ActionEvent event) {
+        if (item_TypeCb != null) {
+            String selectAllData = "SELECT * FROM ItemType";
+            Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
+
+            if (connect != null) { // Make sure the connection is valid
+                try (PreparedStatement pr = connect.prepareStatement(selectAllData);
+                     ResultSet rs = pr.executeQuery()) {
+
+                    ObservableList<String> listData = FXCollections.observableArrayList();
+
+                    while (rs.next()) {
+                        String item_type = rs.getString("item_Type");
+                        listData.add(item_type);
+                    }
+
+                    item_TypeCb.setItems(listData);
+
+                } catch (SQLException e) {
+                    System.err.println("SQL Error: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("Database connection failed.");
+            }
+        } else {
+            System.err.println("ComboBox is null");
+        }
+    }
+
+    // ==============COMBO BOX ITEM NAME (restock.fxml)===================
+    @FXML private ChoiceBox<String> restock_item_cb;
+
+    public void restock_itemName_comboBoxOnAction (ActionEvent event) {
+        if (restock_item_cb != null) {
+            String selectAllData = "SELECT * FROM Items";
+            Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
+
+            if (connect != null) { // Make sure the connection is valid
+                try (PreparedStatement pr = connect.prepareStatement(selectAllData);
+                     ResultSet rs = pr.executeQuery()) {
+
+                    ObservableList<String> listData = FXCollections.observableArrayList();
+
+                    while (rs.next()) {
+                        String restock_item_name = rs.getString("item_name");
+                        listData.add(restock_item_name);
+                    }
+
+                    restock_item_cb.setItems(listData);
+
+                } catch (SQLException e) {
+                    System.err.println("SQL Error: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("Database connection failed.");
+            }
+        } else {
+            System.err.println("ComboBox is null");
+        }
+    }
+
+    // ==============COMBO BOX ITEM NAME (transactionWindow.fxml)===================
+    @FXML private ComboBox<String> transaction_itemName_comboBox;
+
+    public void transactionItemName_comboBoxOnAction (ActionEvent event) {
+        if (transaction_itemName_comboBox != null) {
+            String selectAllData = "SELECT * FROM Items";
+            Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
+
+            if (connect != null) { // Make sure the connection is valid
+                try (PreparedStatement pr = connect.prepareStatement(selectAllData);
+                     ResultSet rs = pr.executeQuery()) {
+
+                    ObservableList<String> listData = FXCollections.observableArrayList();
+
+                    while (rs.next()) {
+                        String transaction_item_name = rs.getString("item_name");
+                        listData.add(transaction_item_name);
+                    }
+
+                    transaction_itemName_comboBox.setItems(listData);
+
+                } catch (SQLException e) {
+                    System.err.println("SQL Error: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("Database connection failed.");
+            }
+        } else {
+            System.err.println("ComboBox is null");
+        }
+    }
 
     int index = -1;
 
@@ -110,7 +240,7 @@ public class controller implements Initializable {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "shanna05");
-            JOptionPane.showMessageDialog(null, "Connected to database");
+            System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
@@ -273,7 +403,6 @@ public class controller implements Initializable {
     @FXML private TableColumn<Restocks, Integer> restock_soldQty_col;
 
     @FXML private TextField restock_qty;
-    @FXML private ChoiceBox<?> restock_item_cb;
 
     //===============================TRANSACTION METHODS====================================
 
@@ -315,6 +444,20 @@ public class controller implements Initializable {
     @FXML private TableColumn<Statistics, Double> statistic_beginningBalance_col;
     @FXML private TableColumn<Statistics, Double> statistic_endingBalance_col;
     @FXML private TableColumn<Statistics, Double> statistic_soldBalance_col;
+
+
+    //===============================TRANSACTION WINDOW METHODS====================================
+
+    @FXML private Button transactionWindow_addTransactionButton;
+    @FXML private Button transactionWindow_removeTransactionButton;
+    @FXML private TextField transaction_currentQty_textField;
+    @FXML private TextField transaction_sellQty_textField;
+
+    @FXML private TableView<?> transactionWindowTable;
+    @FXML private TableColumn<?, ?> transaction_itemName_col;
+    @FXML private TableColumn<?, ?> transaction_sellQty_col;
+    @FXML private TableColumn<?, ?> transaction_unitCost_col;
+
 
 
     @Override
@@ -376,14 +519,20 @@ public class controller implements Initializable {
         //Initialize ITEM
         if (itemTable != null){
             itemID_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemID"));
-            itemName_col.setCellValueFactory(new PropertyValueFactory<Item,String>("itemName"));
-            itemUnitType_col.setCellValueFactory(new PropertyValueFactory<Item,String>("itemUnitType"));
+            itemName_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemName"));
+            itemUnitType_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemUnitType"));
             itemQuantity_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("quantity"));
-            itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<Item,Double>("unitCost"));
-            itemMovement_col.setCellValueFactory(new PropertyValueFactory<Item,Double>("movement"));
+            itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("unitCost"));
+            itemMovement_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("movement"));
             itemTable.setItems(initialItemData());
             itemEditData();
         }
+
+        // combo box from database
+        itemType_comboBoxOnAction(new ActionEvent());
+        unitType_comboBoxOnAction(new ActionEvent());
+        restock_itemName_comboBoxOnAction(new ActionEvent());
+        transactionItemName_comboBoxOnAction(new ActionEvent());
 
         if (unitTypeTable != null){
             //TODO: Add implementation
