@@ -22,10 +22,10 @@ import javax.swing.*;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.Date;
 
 import DBHandler.*;
 
@@ -62,7 +62,6 @@ public class controller implements Initializable {
     @FXML private Button updatePharmacistsButton;
     @FXML private Button deletePharmacistsButton;
     @FXML private Button pharmacistTransactHistButton;
-
 
     //===================================ITEM METHODS========================================
     @FXML TableView<Item> itemTable;
@@ -289,35 +288,79 @@ public class controller implements Initializable {
     void addItemType(ActionEvent event) { //ADD ITEM TYPE
         SQL_DataHandler handler = new SQL_DataHandler();
         String itemTypeName = itemTypeNameTextField.getText();
-        if (handler.addItemType(itemTypeName)){
+        if (!itemTypeName.isEmpty() && !itemTypeName.equals("Item Type") && handler.addItemType(itemTypeName)) {
             ItemType type = handler.getItemType(itemTypeName);
             itemTypeTable.getItems().add(type); //Adds item type to the table
-            itemTypeNameTextField.clear();
+        } else if (itemTypeName.equalsIgnoreCase("Item Type")){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Item Type: " + itemTypeName);
+            alert.setContentText("Silly you, you cannot name an Item Type \"Item Type\"");
+            alert.showAndWait();
+        } else if (!itemTypeName.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Item Type: " + itemTypeName);
+            alert.setContentText("Item Type " + itemTypeName + " already exists in the list");
+            alert.showAndWait();
         }
     }
 
     @FXML
     void deleteItemType(ActionEvent event) { //DELETE ITEM TYPE
-        TableView.TableViewSelectionModel<ItemType> selectionModel = itemTypeTable.getSelectionModel();
-        if (selectionModel.isEmpty()) {
-            System.out.println("No Item Type Selected.");
+        //Gets the item type selected (Can be null if no item is selected)
+        int index = itemTypeTable.getSelectionModel().getSelectedIndex();
+        if (index == -1){
+            System.out.println("ERROR: Unable to delete Item Type. No index is selected.");
+            return;
         }
-        ObservableList<Integer> list = selectionModel.getSelectedIndices();
-        Integer[] selectedIndices = new Integer[list.size()];
-        selectedIndices = list.toArray(selectedIndices);
 
-        Arrays.sort(selectedIndices);
-        for (int i = selectedIndices.length - 1; i >= 0; i--) {
-            selectionModel.clearSelection(selectedIndices[i].intValue());
-            itemTypeTable.getItems().remove(selectedIndices[i].intValue());
+        ItemType item = itemTypeTable.getSelectionModel().getTableView().getItems().get(index);
+
+        //Error handling
+        if (item == null){
+            System.out.println("No Item Type Selected.");
+            return;
+        }
+
+        else {
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Comfirm Item Deletion");
+            alert.setHeaderText("Are you sure you want to delete this item type? \nNumber of Affected Items: " + handler.getAffectedItems(item));
+            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
+
+            Optional<ButtonType> result = alert.showAndWait();
+
+            //Removes the list of selected items
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                handler.removeItemType(item.getItemTypeName());
+                itemTypeTable.getSelectionModel().getTableView().getItems().remove(item);
+            }
         }
     }
 
     private void itemTypeEditData(){
+        itemTypeNameColumn.setEditable(true);
         itemTypeNameColumn.setCellFactory(TextFieldTableCell.<ItemType>forTableColumn());
         itemTypeNameColumn.setOnEditCommit(event ->{
+            SQL_DataHandler handler = new SQL_DataHandler();
+
             ItemType itemType = event.getTableView().getItems().get(event.getTablePosition().getRow());
-            itemType.setItemTypeName(event.getNewValue());
+            if (!handler.itemTypeExists(event.getNewValue())){
+                handler.updateItemType(itemType.getItemTypeID(), event.getNewValue());
+                itemType.setItemTypeName(event.getNewValue());
+            }   else {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("ERROR");
+                    alert.setHeaderText("Unable to update Item Type: " + event.getOldValue() + " to " + event.getNewValue());
+                    alert.setContentText("The item name to be updated \"" + event.getNewValue() + "\", already exists in the database.");
+
+                    Optional<ButtonType> result = alert.showAndWait();
+                    if (result.isPresent() && result.get() == ButtonType.OK) {
+                        return;
+                    }
+                }
         });
     }
 
@@ -489,6 +532,10 @@ public class controller implements Initializable {
         unitType_comboBoxOnAction(new ActionEvent());
         restock_itemName_comboBoxOnAction(new ActionEvent());
         transactionItemName_comboBoxOnAction(new ActionEvent());
+
+        if (unitTypeTable != null){
+            //TODO: Add implementation
+        }
 
     }
 

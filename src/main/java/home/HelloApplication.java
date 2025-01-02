@@ -57,12 +57,4 @@ public class HelloApplication extends Application {
     public static void main(String[] args) {
         launch();
     }
-
-//    private void createConnection() {
-//        try (Connection connection = database.getConnection()) {
-//            System.out.println("Database connection established");
-//        } catch (SQLException e) {
-//            Logger.getLogger(HelloApplication.class.getName()).log(Level.SEVERE, "Database connection failed", e);
-//        }
-//    }
 }
