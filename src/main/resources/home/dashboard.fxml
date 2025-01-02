@@ -5,6 +5,7 @@
 <?import javafx.geometry.Rectangle2D?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -35,24 +36,24 @@
                         <Image url="@images/gimatagicon.png" />
                      </image>
                   </ImageView>
-                  <Label fx:id="Menu" layoutX="14.0" layoutY="47.0" text="MENU" textFill="WHITE">
+                  <Label fx:id="Menu" layoutX="14.0" layoutY="47.0" style="fx-cursor: hand;" text="MENU" textFill="WHITE">
                      <font>
                         <Font name="System Bold" size="15.0" />
                      </font>
                      <graphic>
-                        <ImageView fitHeight="28.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fitHeight="28.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true" style="fx-cursor: hand;">
                            <image>
                               <Image url="@images/menuicon.png" />
                            </image>
                         </ImageView>
                      </graphic>
                   </Label>
-                  <Label fx:id="MenuBack" layoutX="14.0" layoutY="47.0" text="MENU" textFill="WHITE">
+                  <Label fx:id="MenuBack" layoutX="14.0" layoutY="47.0" style="fx-cursor: hand;" text="MENU" textFill="WHITE">
                      <font>
                         <Font name="System Bold" size="15.0" />
                      </font>
                      <graphic>
-                        <ImageView fitHeight="28.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fitHeight="28.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true" style="fx-cursor: hand;">
                            <image>
                               <Image url="@images/menuicon.png" />
                            </image>
@@ -179,7 +180,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="addButton" depthTest="DISABLE" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="219.0" style="-fx-background-color: #672886; -fx-background-radius: 0px;" textFill="WHITE">
+                        <Button fx:id="addButton" depthTest="DISABLE" graphicTextGap="10.0" mnemonicParsing="false" onAction="#switchToInputPharmacistIDWindow" prefHeight="39.0" prefWidth="219.0" style="-fx-background-color: #672886; -fx-background-radius: 0px; -fx-cursor: hand;" textFill="WHITE">
                            <opaqueInsets>
                               <Insets top="5.0" />
                            </opaqueInsets>
@@ -190,7 +191,7 @@
                               <Insets top="20.0" />
                            </VBox.margin>
                            <graphic>
-                              <ImageView fitHeight="40.0" fitWidth="46.0" pickOnBounds="true" preserveRatio="true">
+                              <ImageView fx:id="addTransactionButton" fitHeight="40.0" fitWidth="46.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@images/addicon.png" />
                                  </image>
@@ -208,6 +209,41 @@
          <center>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
+                  <HBox layoutX="14.0" layoutY="228.0" prefHeight="325.0" prefWidth="393.0">
+                     <children>
+                        <ScrollPane prefHeight="325.0" prefWidth="401.0">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="325.0" prefWidth="362.0">
+                                 <children>
+                                    <VBox prefHeight="322.0" prefWidth="381.0">
+                                       <children>
+                                          <HBox prefHeight="39.0" prefWidth="259.0" style="-fx-background-color: lightgray;">
+                                             <children>
+                                                <Label contentDisplay="CENTER" prefHeight="42.0" prefWidth="54.0" text="Item ID">
+                                                   <HBox.margin>
+                                                      <Insets left="45.0" />
+                                                   </HBox.margin>
+                                                </Label>
+                                                <Label contentDisplay="CENTER" prefHeight="39.0" prefWidth="70.0" text="Item Name">
+                                                   <HBox.margin>
+                                                      <Insets left="45.0" />
+                                                   </HBox.margin>
+                                                </Label>
+                                                <Label contentDisplay="CENTER" prefHeight="39.0" prefWidth="71.0" text="Percentage">
+                                                   <HBox.margin>
+                                                      <Insets left="45.0" />
+                                                   </HBox.margin>
+                                                </Label>
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </AnchorPane>
+                          </content>
+                        </ScrollPane>
+                     </children>
+                  </HBox>
                   <VBox id="pane" fx:id="pane" layoutX="40.0" layoutY="-1.0" prefHeight="187.0" prefWidth="829.0" style="-fx-background-color: #C5ACF0; -fx-background-radius: 0px 0px 30px 30px;" styleClass="pane" stylesheets="@css/style.css" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="49.0" AnchorPane.topAnchor="-1.0">
                      <children>
                         <HBox prefHeight="37.0" prefWidth="827.0">
@@ -222,12 +258,12 @@
                                     <Insets left="10.0" right="10.0" />
                                  </HBox.margin>
                               </Separator>
-                              <Label layoutX="25.0" layoutY="25.0" text="Hello, welcome back!" textFill="#0a0000">
+                              <Label layoutX="25.0" layoutY="25.0" text="Hello, welcome back!">
                                  <font>
                                     <Font name="Nunito ExtraBold" size="18.0" />
                                  </font>
                               </Label>
-                              <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="144.0" layoutY="25.0" maxWidth="1.7976931348623157E308" prefHeight="27.0" prefWidth="510.0" text="MARCH 17, 2024 " textFill="#0a0000">
+                              <Label fx:id="dashboardDate" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="144.0" layoutY="25.0" maxWidth="1.7976931348623157E308" prefHeight="27.0" prefWidth="510.0" text="MARCH 17, 2024 " textFill="#08000090">
                                  <font>
                                     <Font name="Nunito ExtraBold" size="18.0" />
                                  </font>
@@ -244,7 +280,7 @@
                            <children>
                               <VBox prefHeight="131.0" prefWidth="249.0">
                                  <children>
-                                    <Label text="Beginning Balance:" textFill="#0a0000">
+                                    <Label text="Beginning Balance:">
                                        <font>
                                           <Font name="Nunito ExtraBold" size="17.0" />
                                        </font>
@@ -273,7 +309,7 @@
                               </VBox>
                               <VBox prefHeight="131.0" prefWidth="249.0">
                                  <children>
-                                    <Label text="Issuance Balance:" textFill="#0a0000">
+                                    <Label text="Issuance Balance:">
                                        <font>
                                           <Font name="Nunito ExtraBold" size="17.0" />
                                        </font>
@@ -302,7 +338,7 @@
                               </VBox>
                               <VBox prefHeight="131.0" prefWidth="249.0">
                                  <children>
-                                    <Label text="Beginning Balance:" textFill="#0a0000">
+                                    <Label text="Ending Balance:">
                                        <font>
                                           <Font name="Nunito ExtraBold" size="17.0" />
                                        </font>
@@ -314,7 +350,7 @@
                                                 <Image url="@images/pesoicon.png" />
                                              </image>
                                           </ImageView>
-                                          <Label layoutX="71.0" layoutY="8.0" text="30000.00" textFill="WHITE">
+                                          <Label fx:id="endingBalance" layoutX="71.0" layoutY="8.0" text="30000.00" textFill="WHITE">
                                              <font>
                                                 <Font size="24.0" />
                                              </font>
@@ -333,6 +369,23 @@
                         </HBox>
                      </children>
                   </VBox>
+                  <Label layoutX="14.0" layoutY="201.0" text="Top 10 Fastest Movement">
+                     <font>
+                        <Font name="Nunito ExtraBold" size="18.0" />
+                     </font>
+                  </Label>
+                  <AnchorPane layoutX="432.0" layoutY="227.0" prefHeight="137.0" prefWidth="457.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;" />
+                  <AnchorPane layoutX="432.0" layoutY="416.0" prefHeight="137.0" prefWidth="457.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;" />
+                  <Label layoutX="432.0" layoutY="201.0" text="Short Expiry">
+                     <font>
+                        <Font name="Nunito ExtraBold" size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="432.0" layoutY="391.0" text="Overall Sold Quantity">
+                     <font>
+                        <Font name="Nunito ExtraBold" size="18.0" />
+                     </font>
+                  </Label>
                </children>
             </AnchorPane>
          </center>

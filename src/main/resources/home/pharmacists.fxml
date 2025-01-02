@@ -178,7 +178,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="addButton" depthTest="DISABLE" graphicTextGap="10.0" mnemonicParsing="false" prefHeight="39.0" prefWidth="219.0" style="-fx-background-color: #672886; -fx-background-radius: 0px;" textFill="WHITE">
+                        <Button fx:id="addButton" depthTest="DISABLE" graphicTextGap="10.0" mnemonicParsing="false" onAction="#switchToInputPharmacistIDWindow" prefHeight="39.0" prefWidth="219.0" style="-fx-background-color: #672886; -fx-background-radius: 0px; -fx-cursor: hand;" textFill="WHITE">
                            <opaqueInsets>
                               <Insets top="5.0" />
                            </opaqueInsets>
