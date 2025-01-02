@@ -12,7 +12,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="470.0" prefWidth="647.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="home.controller">
+<AnchorPane prefHeight="470.0" prefWidth="647.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="home.controller">
    <children>
       <TableView layoutX="246.0" layoutY="75.0" prefHeight="306.0" prefWidth="379.0">
         <columns>
@@ -44,8 +44,8 @@
             <Font name="Nunito ExtraBold" size="15.0" />
          </font>
       </Text>
-      <TextField layoutX="26.0" layoutY="178.0" prefHeight="25.0" prefWidth="193.0" style="-fx-border-color: black;" />
-      <TextField layoutX="26.0" layoutY="235.0" prefHeight="25.0" prefWidth="193.0" style="-fx-border-color: black;" />
+      <TextField layoutX="26.0" layoutY="178.0" prefHeight="25.0" prefWidth="193.0" promptText="Current Quantity" style="-fx-border-color: black;" />
+      <TextField layoutX="26.0" layoutY="235.0" prefHeight="25.0" prefWidth="193.0" promptText="Sell Quantity" style="-fx-border-color: black;" />
       <Text layoutX="26.0" layoutY="229.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Sell Quantity">
          <font>
             <Font name="Nunito ExtraBold" size="15.0" />

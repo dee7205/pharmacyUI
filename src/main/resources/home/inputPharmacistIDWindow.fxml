@@ -9,7 +9,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="290.0" prefWidth="472.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="home.controller">
+<AnchorPane prefHeight="290.0" prefWidth="472.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="home.controller">
    <children>
       <BorderPane layoutX="-5.0" prefHeight="56.0" prefWidth="479.0" style="-fx-background-color: #5F2E89;">
          <center>
@@ -20,7 +20,7 @@
             </ImageView>
          </center>
       </BorderPane>
-      <TextField layoutX="130.0" layoutY="145.0" prefHeight="27.0" prefWidth="210.0" promptText="Input your Pharmacist ID here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
+      <TextField layoutX="130.0" layoutY="145.0" prefHeight="27.0" prefWidth="210.0" promptText="Type your Pharmacist ID here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
       <Text layoutX="130.0" layoutY="138.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Pharmacist ID">
          <font>
             <Font name="Nunito Black" size="15.0" />

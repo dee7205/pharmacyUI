@@ -18,7 +18,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="647.0" prefWidth="1137.0" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="home.controller">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="647.0" prefWidth="1137.0" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="home.controller">
    <children>
       <BorderPane layoutX="278.0" layoutY="117.0" prefHeight="428.0" prefWidth="955.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <top>
@@ -221,7 +221,7 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <ChoiceBox layoutX="15.0" layoutY="30.0" prefWidth="150.0" style="-fx-border-color: black;" />
+                  <ChoiceBox layoutX="15.0" layoutY="31.0" prefWidth="150.0" style="-fx-border-color: black;" />
                   <Label layoutX="15.0" layoutY="12.0" text="Sort by">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
@@ -243,7 +243,7 @@
                      </font>
                   </Button>
                   <ChoiceBox layoutX="733.0" layoutY="110.0" prefHeight="27.0" prefWidth="89.0" style="-fx-border-color: black;" />
-                  <Label layoutX="833.0" layoutY="91.0" text="Quantity">
+                  <Label layoutX="833.0" layoutY="90.0" text="Quantity">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
@@ -253,19 +253,19 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <TextField layoutX="833.0" layoutY="110.0" prefHeight="27.0" prefWidth="74.0" style="-fx-border-color: black; -fx-border-radius: 0px;" />
+                  <TextField layoutX="833.0" layoutY="110.0" prefHeight="27.0" prefWidth="74.0" promptText="Qty" style="-fx-border-color: black; -fx-border-radius: 0px;" />
                   <Label layoutX="732.0" layoutY="154.0" text="Restock Date">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <DatePicker layoutX="733.0" layoutY="174.0" prefHeight="28.0" prefWidth="172.0" />
+                  <DatePicker layoutX="733.0" layoutY="174.0" prefHeight="28.0" prefWidth="172.0" promptText="MM/DD/YYYY" />
                   <Label layoutX="731.0" layoutY="216.0" text="Expiration Date">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <DatePicker layoutX="732.0" layoutY="236.0" prefHeight="28.0" prefWidth="172.0" />
+                  <DatePicker layoutX="732.0" layoutY="236.0" prefHeight="28.0" prefWidth="172.0" promptText="MM/DD/YYYY" />
                </children>
             </AnchorPane>
          </center>
