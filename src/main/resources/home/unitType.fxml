@@ -207,10 +207,10 @@
          <center>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <TableView fx:id="unitTypeTable" layoutX="14.0" layoutY="65.0" prefHeight="481.0" prefWidth="663.0" style="-fx-border-color: black;">
+                  <TableView fx:id="unitTypeTable" editable="true" layoutX="14.0" layoutY="65.0" prefHeight="481.0" prefWidth="663.0" style="-fx-border-color: black;">
                      <columns>
                         <TableColumn fx:id="unitTypeID_col" editable="false" prefWidth="136.0" sortable="false" text="Unit Type ID" />
-                        <TableColumn fx:id="unitTypeName_col" editable="false" prefWidth="523.0" text="Unit Type Name" />
+                        <TableColumn fx:id="unitTypeName_col" prefWidth="523.0" text="Unit Type Name" />
                      </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -222,7 +222,7 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <Button fx:id="addUnitTypeButton" alignment="CENTER" layoutX="694.0" layoutY="252.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="203.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Unit Type">
+                  <Button fx:id="addUnitTypeButton" alignment="CENTER" layoutX="694.0" layoutY="252.0" mnemonicParsing="false" onAction="#addUnitType" prefHeight="36.0" prefWidth="203.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Unit Type">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -232,7 +232,7 @@
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="deleteUnitTypeButton" alignment="CENTER" layoutX="694.0" layoutY="355.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="203.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Unit Type">
+                  <Button fx:id="deleteUnitTypeButton" alignment="CENTER" layoutX="694.0" layoutY="355.0" mnemonicParsing="false" onAction="#deleteUnitType" prefHeight="36.0" prefWidth="203.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Unit Type">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>

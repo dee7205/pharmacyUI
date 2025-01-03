@@ -72,20 +72,41 @@ public class controller implements Initializable {
     @FXML private TableColumn<Item, String> itemUnitType_col;
     @FXML private TableColumn<Item, Double> itemMovement_col;
 
+    @FXML private Button item_AddItemButton;
+    @FXML private Button item_DeleteItemButton;
+    @FXML private Button item_TransactionHistoryButton;
+    @FXML private Button item_UpdateItemButton;
+
     public ObservableList<Item> initialItemData(){
         SQL_DataHandler handler = new SQL_DataHandler();
         Item [] types = handler.getAllItems(-1);
         return FXCollections.<Item> observableArrayList(types);
     }
 
-    //TODO: Make cells editable
     private void itemEditData(){
-//        //Makes the specific columns editable
-//        itemTypeNameColumn.setCellFactory(TextFieldTableCell.<ItemType>forTableColumn());
-//        itemTypeNameColumn.setOnEditCommit(event ->{
-//            ItemType itemType = event.getTableView().getItems().get(event.getTablePosition().getRow());
-//            itemType.setItemTypeName(event.getNewValue());
-//        });
+        //Makes the specific columns editable
+        itemName_col.setCellFactory(TextFieldTableCell.<Item>forTableColumn());
+        itemName_col.setOnEditCommit(event ->{
+            SQL_DataHandler handler = new SQL_DataHandler();
+
+            Item item = event.getTableView().getItems().get(event.getTablePosition().getRow());
+            if (!handler.itemExists(item.getItemID())){
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("ERROR");
+                alert.setHeaderText("Unable to update Item Type: " + event.getOldValue() + " to " + event.getNewValue());
+                alert.setContentText("Item to be updated doesn't exist: " + item.getItemID());
+                alert.showAndWait();
+            } else if (handler.itemExists(event.getNewValue())){
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("ERROR");
+                alert.setHeaderText("Unable to update Item Type: " + event.getOldValue() + " to " + event.getNewValue());
+                alert.setContentText("The item name to be updated \"" + event.getNewValue() + "\", already exists in the database.");
+                alert.showAndWait();
+            }   else {
+                handler.updateItem(item.getItemName(), event.getNewValue(), item.getUnitCost());
+                item.setItemName(event.getNewValue());
+            }
+        });
     }
 
     // items
@@ -93,6 +114,8 @@ public class controller implements Initializable {
     @FXML private Button updateItemButton;
     @FXML private Button deleteItemButton;
     @FXML private Button itemTransactHistButton;
+
+
 
     @FXML private ComboBox<?> item_filterCb;
 
@@ -239,7 +262,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "Gimatag2024");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "maclang@2023-00570");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -429,7 +452,7 @@ public class controller implements Initializable {
         pharmacist_fName_col.setOnEditCommit(event ->{
             SQL_DataHandler handler = new SQL_DataHandler();
             Pharmacist p = event.getTableView().getItems().get(event.getTablePosition().getRow());
-            handler.updatePharmacist(p,event.getNewValue(),p.getMiddleName(),p.getLastName());
+            handler.updatePharmacist(p, event.getNewValue(), p.getMiddleName(), p.getLastName());
             p.setFirstName(event.getNewValue());
         });
 
@@ -557,10 +580,7 @@ public class controller implements Initializable {
         //Error handling
         if (unit == null){
             System.out.println("No Unit Type Selected.");
-            return;
-        }
-
-        else {
+        } else {
             SQL_DataHandler handler = new SQL_DataHandler();
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Confirm Unit Type Deletion");
@@ -635,12 +655,18 @@ public class controller implements Initializable {
         SQL_DataHandler handler = new SQL_DataHandler();
         String itemTypeID = itemUnitType_itemTypeID_textField.getText();
         String unitTypeID = itemUnitType_unitTypeID_textField.getText();
+
+        if (!itemTypeID.isEmpty() || !unitTypeID.isEmpty()){
+            System.out.println("ERROR: Unable to add Item Unit Type. TextBox is Blank.");
+            return;
+        }
+
         int convertedItemID, convertedUnitID;
+
         try {
             convertedItemID = Integer.parseInt(itemTypeID);
             convertedUnitID = Integer.parseInt(unitTypeID);
-        }
-        catch(Exception e){
+        } catch(Exception e){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
             alert.setHeaderText("Unable to add new Item Unit Type.");
@@ -648,14 +674,14 @@ public class controller implements Initializable {
             alert.showAndWait();
             return;
         }
-        if (!itemTypeID.isEmpty() && !unitTypeID.isEmpty() && handler.addItemUnitType(convertedItemID,convertedUnitID)) {
 
+        if (handler.addItemUnitType(convertedItemID, convertedUnitID)) {
             ItemUnitType type = handler.getItemUnitType(convertedItemID,convertedUnitID);
             itemUnitTypeTable.getItems().add(type); //Adds item type to the table
             itemUnitType_itemTypeID_textField.clear();
             itemUnitType_unitTypeID_textField.clear();
 
-        } else if (!itemTypeID.isEmpty() && !unitTypeID.isEmpty()) {
+        } else {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
             alert.setHeaderText("Unable to add new Item Unit Type.");
@@ -678,24 +704,25 @@ public class controller implements Initializable {
         //Error handling
         if (unit == null){
             System.out.println("No Item Unit Type Selected.");
-            return;
-        }
-
-        else {
+        } else {
             SQL_DataHandler handler = new SQL_DataHandler();
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Confirm Unit Type Deletion");
-            alert.setHeaderText("Are you sure you want to delete this unit type? \nNumber of Affected Items: " + handler.getAffectedItemsForItemUnit(unit));
+            alert.setHeaderText("Are you sure you want to delete this Item Unit type? \nNumber of Affected Items: " + handler.getAffectedItemsForItemUnit(unit));
             alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
 
             Optional<ButtonType> result = alert.showAndWait();
 
             //Removes the list of selected items
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                handler.removeItemUnitType(unit.getItemUnitTypeID(),9999);
+                handler.removeItemUnitType(unit.getItemUnitTypeID(), SQL_DataHandler.REMOVE_ITEM_UNIT_TYPE);
                 itemUnitTypeTable.getSelectionModel().getTableView().getItems().remove(unit);
             }
         }
+    }
+
+    @FXML
+    void updateItemUnitType(ActionEvent event){
 
     }
 
@@ -797,7 +824,7 @@ public class controller implements Initializable {
             itemUnitType_itemTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("itemTypeName"));
             itemUnitType_unitTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("unitTypeName"));
             itemUnitTypeTable.setItems(initialItemUnitTypeData());
-            //itemUnitTypeEditData();
+//            itemUnitTypeEditData();
         }
 
         //Initialize PHARMACISTS
@@ -828,11 +855,6 @@ public class controller implements Initializable {
         unitType_comboBoxOnAction(new ActionEvent());
         restock_itemName_comboBoxOnAction(new ActionEvent());
         transactionItemName_comboBoxOnAction(new ActionEvent());
-
-        if (unitTypeTable != null){
-            //TODO: Add implementation
-        }
-
     }
 
     // switching scenes
