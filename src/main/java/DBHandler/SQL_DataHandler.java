@@ -50,7 +50,7 @@ public class SQL_DataHandler {
 
         System.out.println(handler.itemExists("Myogesic"));
 
-        System.out.println("Add Restock: " + handler.addRestock(1, 50, Date.valueOf(LocalDate.of(2025, 1, 15))));
+        System.out.println("Add Restock: " + handler.addRestock(1, 50, 3.0, Date.valueOf(handler.getCurrentDate()), Date.valueOf(LocalDate.of(2025, 1, 15))));
         handler.reduceRestocks(1, 30);
 
         Restocks [] list = handler.getCurrentStock(1);
@@ -473,7 +473,6 @@ public class SQL_DataHandler {
 
     //TODO: Add methods for items (Add, Retrieve, Update, Delete & Retrieve Set)
 
-    //TODO: Confirm the implementation, and is prone to changes due to issues with item unit type and item type
     /**
      * Method used to add an item to the database, together with its item type and unit cost (price)
      *
@@ -501,6 +500,50 @@ public class SQL_DataHandler {
             pstmt.setInt(2, itemUnitTypeID);
             pstmt.setDouble(3, unitCost);
 
+            return pstmt.executeUpdate() > 0;
+
+        }   catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Method used to add an item to the database, together with its item type and unit cost (price)
+     * <br> Checks if the itemType & unitType combination exists, if not, creates a new ItemUnitType and
+     *      assigns it to the item to be made
+     *
+     * @param itemName              The name of the item to be added to the database
+     * @param itemTypeID            The id of the item type (Limited to the drop-down GUI)
+     * @param unitTypeID            The id of the unit type (Limited to the drop-down GUI)
+     * @param unitCost              The price for one unit of an item (xxxx.xx)
+     * @return                      true if the item and item type is added to the database, false if not
+     */
+    public boolean addItem(String itemName, int itemTypeID, int unitTypeID, double unitCost){
+        //Add the item to the database
+        String query = "INSERT INTO Items (item_name, item_unit_ID, unit_cost) VALUES (?, ?, ?)";
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
+
+            //Creates a new ItemUnitType in scenarios where an Item Type and Unit Type Combination doesn't exist
+            if (!itemUnitTypeExists(itemTypeID, unitTypeID)){
+                addItemUnitType(itemTypeID, unitTypeID);
+            }
+
+            int itemUnitTypeID = getItemUnitTypeID(itemTypeID, unitTypeID);
+
+            //Checks if there is no existing item with this name
+            if (itemExists(itemName)){
+                System.out.println("ERROR: Unable to add new item as, " + itemName + " " + itemUnitTypeID + " " + unitCost + ", already exists in the database");
+                return false;
+            }
+
+            pstmt.setString(1, itemName);
+            pstmt.setInt(2, itemUnitTypeID);
+            pstmt.setDouble(3, unitCost);
             return pstmt.executeUpdate() > 0;
 
         }   catch (SQLException e){
@@ -590,7 +633,7 @@ public class SQL_DataHandler {
                 JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
                 JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
                 JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
-                LEFT JOIN Items_Sold AS isd ON isd.item_ID = i.item_ID
+                LEFT JOIN Sold_Items AS isd ON isd.item_ID = i.item_ID
                 LEFT JOIN Restocks AS r ON r.item_ID = i.item_ID
                 	AND r.expiry_Date >= CURRENT_DATE()
                     AND r.start_Qty > r.sold_Qty
@@ -730,7 +773,7 @@ public class SQL_DataHandler {
                 JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
                 JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
                 JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
-                LEFT JOIN Items_Sold AS isd ON isd.item_ID = i.item_ID
+                LEFT JOIN Sold_Items AS isd ON isd.item_ID = i.item_ID
                 LEFT JOIN Restocks AS r ON r.item_ID = i.item_ID
                 	AND r.expiry_Date >= CURRENT_DATE()
                     AND r.start_Qty > r.sold_Qty
@@ -787,7 +830,7 @@ public class SQL_DataHandler {
                 JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
                 JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
                 JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
-                LEFT JOIN Items_Sold AS isd ON isd.item_ID = i.item_ID
+                LEFT JOIN Sold_Items AS isd ON isd.item_ID = i.item_ID
                 LEFT JOIN Restocks AS r ON r.item_ID = i.item_ID
                 	AND r.expiry_Date >= CURRENT_DATE()
                     AND r.start_Qty > r.sold_Qty
@@ -889,9 +932,11 @@ public class SQL_DataHandler {
             prepareConnection();
 
         try {
-            //TODO: Add condition to remove all items in Items_Sold table
+            //TODO: Add condition to remove all items in Sold_Items table
             //TODO: Add condition to remove all items in Restock table
 
+//            removeAllSoldItems();
+//            removeAllRestock();
             final String removeInItem = "DELETE FROM ItemType WHERE item_id > 0 ";
             final String removeInUnit = "DELETE FROM UnitType WHERE item_id > 0";
 
@@ -1689,6 +1734,10 @@ public class SQL_DataHandler {
         }
     }
 
+//    public boolean updateItemUnitType(int itemUnitTypeID, int itemTypeID, int unitTypeID){
+//
+//    }
+
     //TODO: Add explanation for why these variables are made/used
     public static final int REMOVE_ITEM_TYPE = 6969;
     public static final int REMOVE_UNIT_TYPE = 9696;
@@ -1765,13 +1814,13 @@ public class SQL_DataHandler {
     }
 
 //======================================================================================================================================================================
-//Methods for the Restocks.
+//Methods for Restocks.
 
     //TODO: Add comments to this method
-    public boolean addRestock(int itemID, int startQuantity, Date expiryDate){
+    public boolean addRestock(int itemID, int startQuantity, double wholesaleCost, Date restockDate, Date expiryDate){
         final String query = """
-            INSERT INTO Restocks (item_ID, start_Qty, sold_Qty, restock_Date, expiry_Date)
-            VALUES (?, ?, 0, ?, ?)
+            INSERT INTO Restocks (item_ID, start_Qty, sold_Qty, wholesale_cost, restock_Date, expiry_Date)
+            VALUES (?, ?, 0, ?, ?, ?)
             """;
 
         if (connection == null)
@@ -1792,8 +1841,9 @@ public class SQL_DataHandler {
 
             pstmt.setInt(1, itemID);
             pstmt.setInt(2, startQuantity);
-            pstmt.setDate(3, Date.valueOf(getCurrentDate()));
-            pstmt.setDate(4, expiryDate);
+            pstmt.setDouble(3, wholesaleCost);
+            pstmt.setDate(4, restockDate);
+            pstmt.setDate(5, expiryDate);
             return pstmt.executeUpdate() > 0;
 
         }   catch (Exception e){
@@ -1802,7 +1852,6 @@ public class SQL_DataHandler {
         }
     }
 
-    //TODO: Finish Implementation
     //  Make this method private
     public boolean reduceRestocks(int itemID, int soldQuantity){
         if (connection == null)
@@ -1854,6 +1903,9 @@ public class SQL_DataHandler {
         return true;
     }
 
+    /**
+     * Gets restocks based from a specific restock ID
+     */
     public Restocks getRestock(int restockID){
         String query = """
             SELECT
@@ -1861,9 +1913,12 @@ public class SQL_DataHandler {
                 r.item_ID AS "Item ID",
                 r.start_Qty AS "Start Quantity",
                 r.sold_Qty AS "Sold Quantity",
+                r.wholesale_cost AS "Wholesale Cost",
                 r.restock_Date AS "Restock Date",
-                r.expiry_Date AS "Expiry Date"
+                r.expiry_Date AS "Expiry Date",
+                i.item_Name AS "Item Name"
             FROM Restocks AS r
+            JOIN Items AS i ON i.item_ID = r.item_ID
             WHERE r.restock_ID = ?;
         """;
 
@@ -1875,8 +1930,10 @@ public class SQL_DataHandler {
             ResultSet set = pstmt.executeQuery();
 
             if (set.next()){
-                return (new Restocks(set.getInt("Item ID"), set.getInt("Restock ID"), set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
-                        set.getDate("Restock Date").toLocalDate(), set.getDate("Expiry Date").toLocalDate()));
+                return (new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
+                                     set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
+                                     set.getDouble("Wholesale Cost"), set.getDate("Restock Date"),
+                                     set.getDate("Expiry Date")));
             } else
                 return null;
 
@@ -1886,7 +1943,9 @@ public class SQL_DataHandler {
         }
     }
 
-    //TODO: Add comments to this method
+    /**
+     * Gets all valid restock (Not Expired and still has Stock, Start Qty > Sold Qty)
+     */
     public Restocks [] getCurrentStock(int itemID){
         String query = """
             SELECT
@@ -1894,9 +1953,12 @@ public class SQL_DataHandler {
                 r.item_ID AS "Item ID",
                 r.start_Qty AS "Start Quantity",
                 r.sold_Qty AS "Sold Quantity",
+                r.wholesale_cost AS "Wholesale Cost",
                 r.restock_Date AS "Restock Date",
-                r.expiry_Date AS "Expiry Date"
+                r.expiry_Date AS "Expiry Date",
+                i.item_Name AS "Item Name"
             FROM Restocks AS r
+            JOIN Items AS i ON i.item_ID = r.item_ID
             WHERE r.expiry_Date >= CURRENT_DATE() AND r.start_Qty > r.sold_Qty AND r.item_ID = ?
             ORDER BY r.restock_ID ASC;
         """;
@@ -1911,8 +1973,10 @@ public class SQL_DataHandler {
 
             List<Restocks> list = new ArrayList<>();
             while(set.next()){
-                list.add(new Restocks(set.getInt("Item ID"), set.getInt("Restock ID"), set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
-                                      set.getDate("Restock Date").toLocalDate(), set.getDate("Expiry Date").toLocalDate()));
+                list.add(new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
+                                      set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
+                                      set.getDouble("Wholesale Cost"), set.getDate("Restock Date"),
+                                      set.getDate("Expiry Date")));
                 isAdded = true;
             }
 
@@ -1922,6 +1986,105 @@ public class SQL_DataHandler {
             }   else
                 return null;
 
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Gets all restocks of an item both valid (Not Expired and still has Stock, Start Qty > Sold Qty) and invalid
+     *
+     *
+     */
+    public Restocks [] getItemRestock(int itemID){
+        String query = """
+            SELECT
+                r.restock_ID AS "Restock ID",
+                r.item_ID AS "Item ID",
+                r.start_Qty AS "Start Quantity",
+                r.sold_Qty AS "Sold Quantity",
+                r.wholesale_cost AS "Wholesale Cost",
+                r.restock_Date AS "Restock Date",
+                r.expiry_Date AS "Expiry Date",
+                i.item_Name AS "Item Name"
+            FROM Restocks AS r
+            JOIN Items AS i ON i.item_ID = r.item_ID
+            WHERE r.item_ID = ?
+            ORDER BY r.restock_ID ASC;
+        """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            pstmt.setInt(1, itemID);
+            ResultSet set = pstmt.executeQuery();
+            boolean isAdded = false;
+
+            List<Restocks> list = new ArrayList<>();
+            while(set.next()){
+                list.add(new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
+                        set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
+                        set.getDouble("Wholesale Cost"), set.getDate("Restock Date"),
+                        set.getDate("Expiry Date")));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                Restocks [] array = new Restocks[list.size()];
+                return list.toArray(array);
+            }   else
+                return null;
+
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Gets all restocks saved in the database
+     */
+    public Restocks [] getAllRestocks(){
+        String query = """
+        SELECT
+            r.restock_ID AS "Restock ID",
+            r.item_ID AS "Item ID",
+            r.start_Qty AS "Start Quantity",
+            r.sold_Qty AS "Sold Quantity",
+            r.wholesale_cost AS "Wholesale Cost",
+            r.restock_Date AS "Restock Date",
+            r.expiry_Date AS "Expiry Date",
+            i.item_Name AS "Item Name"
+        FROM Restocks AS r
+        JOIN Items AS i ON i.item_ID = r.item_ID
+        ORDER BY r.restock_ID ASC;
+    """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(Statement stmt = connection.createStatement()){
+            ResultSet set = stmt.executeQuery(query);
+            boolean isAdded = false;
+
+            List<Restocks> list = new ArrayList<>();
+            while(set.next()){
+                list.add(new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
+                        set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
+                        set.getDouble("Wholesale Cost"), set.getDate("Restock Date"),
+                        set.getDate("Expiry Date")));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                Restocks [] array = new Restocks[list.size()];
+                return list.toArray(array);
+            }   else
+                return null;
 
         } catch (Exception e){
             e.printStackTrace();
@@ -2000,7 +2163,9 @@ public class SQL_DataHandler {
     public static final int REMOVE_BY_ITEM_ID = 1000;
     public static final int REMOVE_BY_RESTOCK_ID = 2000;
 
-    //TODO: Add comment for this method
+    /**
+     * Method to remove restock based on ItemID or Restock ID
+     */
     public boolean removeRestock(int id, int condition){
         if (connection == null)
             prepareConnection();
@@ -2187,7 +2352,7 @@ public class SQL_DataHandler {
                 (SUM(isd.item_qty * i.unit_cost)) AS "Total Sales",
                 (SUM(isd.item_qty)) AS "Sold Quantity"
             FROM Transactions AS t
-            JOIN Items_Sold AS isd ON isd.transaction_ID = t.transaction_ID
+            JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
             JOIN Items AS i ON i.item_ID = isd.item_ID
             ORDER BY r.transaction_ID ASC;
         """;
@@ -2200,7 +2365,7 @@ public class SQL_DataHandler {
                 (SUM(isd.item_qty * i.unit_cost)) AS "Total Sales",
                 (SUM(isd.item_qty)) AS "Sold Quantity"
             FROM Transactions AS t
-            JOIN Items_Sold AS isd ON isd.transaction_ID = t.transaction_ID
+            JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
             JOIN Items AS i ON i.item_ID = isd.item_ID
             ORDER BY r.transaction_ID DESC;
         """;
@@ -2261,7 +2426,7 @@ public class SQL_DataHandler {
             return false;
 
         String query = """
-            INSERT INTO Items_Sold (transaction_ID, item_ID, item_qty, transaction_date) VALUES
+            INSERT INTO Sold_Items (transaction_ID, item_ID, item_qty, transaction_date) VALUES
             (?, ?, ?, CURRENT_DATE())
         """;
 
@@ -2281,7 +2446,7 @@ public class SQL_DataHandler {
      * Gets all the items sold based from a specific transaction
      *
      * @param transactionID     The ID of a specific transaction
-     * @return                  An array of Items_Sold under the same transaction ID, may contain
+     * @return                  An array of Sold_Items under the same transaction ID, may contain
      *                          a combination of different items with different quantities
      */
     public ItemsSold [] getItemsSold_Transaction(int transactionID){
@@ -2294,7 +2459,7 @@ public class SQL_DataHandler {
                 isd.item_qty AS "Item Quantity",
                 (isd.item_qty * i.unit_cost) AS "Income",
                 isd.transaction_date AS "Transaction Date"
-            FROM Items_Sold AS isd
+            FROM Sold_Items AS isd
             JOIN Items AS i ON isd.item_ID = i.item_ID
             WHERE isd.transaction_ID = ?
             ORDER BY i.item_ID DESC;
@@ -2339,7 +2504,7 @@ public class SQL_DataHandler {
      * Gets all the items sold based from a specific item
      *
      * @param itemID            The ID of a specific item
-     * @return                  An array of Items_Sold under the itemID, used to get the total sales
+     * @return                  An array of Sold_Items under the itemID, used to get the total sales
      *                          of an item for all transactions
      */
     public ItemsSold [] getItemsSold_Item(int itemID){
@@ -2352,7 +2517,7 @@ public class SQL_DataHandler {
                 isd.item_qty AS "Item Quantity",
                 (isd.item_qty * i.unit_cost) AS "Income",
                 isd.transaction_date AS "Transaction Date"
-            FROM Items_Sold AS isd
+            FROM Sold_Items AS isd
             JOIN Items AS i ON isd.item_ID = i.item_ID
             WHERE i.item_ID = ?
             ORDER BY i.item_ID DESC;
@@ -2401,7 +2566,7 @@ public class SQL_DataHandler {
      * @return          True if the records are removed successfully, False if the item doesn't exist
      */
     public boolean removeItemsSold(int itemID){
-        final String query = "DELETE FROM Items_Sold AS isd WHERE isd.item_ID = ?";
+        final String query = "DELETE FROM Sold_Items AS isd WHERE isd.item_ID = ?";
 
         if (connection == null)
             prepareConnection();

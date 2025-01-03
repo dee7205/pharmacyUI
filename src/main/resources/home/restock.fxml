@@ -227,7 +227,7 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <Button fx:id="addRestockButton" alignment="CENTER" layoutX="732.0" layoutY="426.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Restock">
+                  <Button fx:id="addRestockButton" alignment="CENTER" layoutX="732.0" layoutY="426.0" mnemonicParsing="false" onAction="#addRestock" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Restock">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -237,7 +237,7 @@
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="deleteRestockButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Restock">
+                  <Button fx:id="deleteRestockButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" onAction="#deleteRestock" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Restock">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>

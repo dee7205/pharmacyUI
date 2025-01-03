@@ -211,7 +211,7 @@
                     <columns>
                       <TableColumn fx:id="itemID_col" editable="false" prefWidth="75.0" text="Item ID" />
                       <TableColumn fx:id="itemName_col" prefWidth="75.0" text="Item Name" />
-                        <TableColumn fx:id="itemUnitType_col" editable="false" prefWidth="75.0" text="Item Unit Type" />
+                        <TableColumn fx:id="itemUnitID_col" editable="false" prefWidth="75.0" text="Item Unit ID" />
                         <TableColumn fx:id="itemQuantity_col" editable="false" prefWidth="75.0" text="Quantity" />
                         <TableColumn fx:id="itemUnitCost_col" editable="false" prefWidth="75.0" text="Unit Cost" />
                         <TableColumn fx:id="itemMovement_col" editable="false" prefWidth="75.0" text="Movement" />
@@ -225,7 +225,7 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <Button fx:id="item_AddItemButton" alignment="CENTER" contentDisplay="BOTTOM" layoutX="732.0" layoutY="378.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item">
+                  <Button fx:id="addItemButton" alignment="CENTER" contentDisplay="BOTTOM" layoutX="732.0" layoutY="378.0" mnemonicParsing="false" onAction="#addItem" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -235,12 +235,12 @@
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="item_DeleteItemButton" alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item">
+                  <Button fx:id="deleteItemButton" alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" onAction="#deleteItem" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="item_TransactionHistoryButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Transaction History">
+                  <Button fx:id="transactionHistoryButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Transaction History">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -256,7 +256,7 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <Label layoutX="829.0" layoutY="207.0" text="Quantity">
+                  <Label layoutX="829.0" layoutY="207.0" text="Unit Cost">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>

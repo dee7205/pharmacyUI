@@ -18,7 +18,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
@@ -69,7 +68,7 @@ public class controller implements Initializable {
     @FXML private TableColumn<Item, String> itemName_col;
     @FXML private TableColumn<Item, Integer> itemID_col;
     @FXML private TableColumn<Item, Integer> itemQuantity_col;
-    @FXML private TableColumn<Item, String> itemUnitType_col;
+    @FXML private TableColumn<Item, Integer> itemUnitID_col;
     @FXML private TableColumn<Item, Double> itemMovement_col;
 
     @FXML private Button item_AddItemButton;
@@ -81,6 +80,18 @@ public class controller implements Initializable {
         SQL_DataHandler handler = new SQL_DataHandler();
         Item [] types = handler.getAllItems(-1);
         return FXCollections.<Item> observableArrayList(types);
+    }
+
+    @FXML
+    private void addItem(ActionEvent event){
+
+    }
+
+    @FXML
+    private void deleteItem(ActionEvent event){
+        //Check if Item Exists
+        //Show Warning Sign (Amount Affected)
+        //
     }
 
     private void itemEditData(){
@@ -123,7 +134,7 @@ public class controller implements Initializable {
     @FXML private ComboBox<String> item_unitCb;
     public void unitType_comboBoxOnAction(ActionEvent event) {
         if (item_unitCb != null) {
-            String selectAllData = "SELECT * FROM UnitType";
+            String selectAllData = "SELECT * FROM UnitType ORDER BY unit_Type ASC";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -156,7 +167,7 @@ public class controller implements Initializable {
 
     public void itemType_comboBoxOnAction(ActionEvent event) {
         if (item_TypeCb != null) {
-            String selectAllData = "SELECT * FROM ItemType";
+            String selectAllData = "SELECT * FROM ItemType ORDER BY item_Type ASC";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -189,7 +200,7 @@ public class controller implements Initializable {
 
     public void restock_itemName_comboBoxOnAction (ActionEvent event) {
         if (restock_item_cb != null) {
-            String selectAllData = "SELECT * FROM Items";
+            String selectAllData = "SELECT * FROM Items ORDER BY item_Name ASC";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -222,7 +233,7 @@ public class controller implements Initializable {
 
     public void transactionItemName_comboBoxOnAction (ActionEvent event) {
         if (transaction_itemName_comboBox != null) {
-            String selectAllData = "SELECT * FROM Items";
+            String selectAllData = "SELECT * FROM Items ORDER BY item_Name ASC";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -613,6 +624,30 @@ public class controller implements Initializable {
 
     @FXML private TextField restock_qty;
 
+    public ObservableList<Restocks> initialRestockData(){
+        SQL_DataHandler handler = new SQL_DataHandler();
+        Restocks [] restocks = handler.getAllRestocks();
+        return FXCollections.<Restocks> observableArrayList(restocks);
+    }
+
+    //TODO: Make this part edit the wholesale cost ALONE.
+    //  Hindi ko pa ito ma implement since wala pa ung wholesale cost column
+    public void restockEditData(){
+
+    }
+
+    @FXML
+    //TODO: Implement this
+    public void addRestock(ActionEvent event){
+
+    }
+
+    @FXML
+    //TODO: Implement this
+    public void deleteRestock(ActionEvent event){
+
+    }
+
     //===============================TRANSACTION METHODS====================================
 
     @FXML private TableView<Transaction> transactionTable;
@@ -726,6 +761,11 @@ public class controller implements Initializable {
 
     }
 
+    //TODO: Complete this
+    void itemUnitTypeEditData(){
+
+    }
+
 
     //===============================STATISTIC METHODS====================================
 
@@ -819,12 +859,12 @@ public class controller implements Initializable {
         //Initialize ITEM UNIT TYPE
         if (itemUnitTypeTable != null){
             itemUnitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("itemUnitTypeID"));
-            itemUnitType_itemTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("itemTypeID"));
+            itemUnitType_itemTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType, Integer>("itemTypeID"));
             itemUnitType_unitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("unitTypeID"));
             itemUnitType_itemTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("itemTypeName"));
             itemUnitType_unitTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("unitTypeName"));
             itemUnitTypeTable.setItems(initialItemUnitTypeData());
-//            itemUnitTypeEditData();
+            itemUnitTypeEditData();
         }
 
         //Initialize PHARMACISTS
@@ -842,12 +882,24 @@ public class controller implements Initializable {
         if (itemTable != null){
             itemID_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemID"));
             itemName_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemName"));
-            itemUnitType_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemUnitType"));
+            itemUnitID_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemUnitTypeID"));
             itemQuantity_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("quantity"));
             itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("unitCost"));
             itemMovement_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("movement"));
             itemTable.setItems(initialItemData());
             itemEditData();
+        }
+
+        if (restockTable != null){
+            restockID_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
+            restock_beginningQty_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("startQty"));
+            restock_expirationDate_col.setCellValueFactory(new PropertyValueFactory<Restocks, Date>("expiryDate"));
+            restock_itemName_col.setCellValueFactory(new PropertyValueFactory<Restocks, String>("itemName"));
+            restock_restockDate_col.setCellValueFactory(new PropertyValueFactory<Restocks, Date>("restockDate"));
+            restock_soldQty_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("soldQty"));
+            //TODO: Add wholesale cost column
+            restockTable.setItems(initialRestockData());
+            restockEditData();
         }
 
         // combo box from database

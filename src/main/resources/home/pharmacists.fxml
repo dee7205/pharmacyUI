@@ -224,7 +224,7 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <Button alignment="CENTER" contentDisplay="BOTTOM" layoutX="732.0" layoutY="378.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Pharmacist">
+                  <Button fx:id="addPharmacistButton" alignment="CENTER" contentDisplay="BOTTOM" layoutX="732.0" layoutY="378.0" mnemonicParsing="false" onAction="#addPharmacist" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Pharmacist">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -234,7 +234,7 @@
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Pharmacist">
+                  <Button fx:id="deletePharmacistButton" alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" onAction="#deletePharmacist" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Pharmacist">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
