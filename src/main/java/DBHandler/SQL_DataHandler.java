@@ -48,6 +48,8 @@ public class SQL_DataHandler {
             System.out.println();
         }
 
+        System.out.println(handler.itemExists("Myogesic"));
+
         System.out.println("Add Restock: " + handler.addRestock(1, 50, Date.valueOf(LocalDate.of(2025, 1, 15))));
         handler.reduceRestocks(1, 30);
 
@@ -415,6 +417,10 @@ public class SQL_DataHandler {
                 return false;
             }
 
+            if (pharmacistExists(fName, mName, lName)){
+                System.out.println("ERROR: Unable to update pharmacist. \nThe pharmacist new name is found existing in the database: " + pharmacist.getPharmacistID());
+                return false;
+            }
 
             final String firstQuery = "UPDATE Pharmacists SET fName = ? WHERE pharmacist_ID = " + pharmacist.getPharmacistID();
             final String secondQuery = "UPDATE Pharmacists SET mName = ? WHERE pharmacist_ID = " + pharmacist.getPharmacistID();
@@ -519,8 +525,13 @@ public class SQL_DataHandler {
 
         try{
             //Checks if there is no existing item with this name
-            if (itemExists(itemName)){
-                System.out.println("ERROR: item " + itemName + ", doesn't exist in the database.");
+            if (!itemExists(itemName)){
+                System.out.println("ERROR: Item to be updated: " + itemName + ", doesn't exist in the database.");
+                return false;
+            }
+
+            if (itemExists(newName)){
+                System.out.println("ERROR: item " + itemName + ", exists in the database.");
                 return false;
             }
 
@@ -528,7 +539,7 @@ public class SQL_DataHandler {
             String firstQuery = "UPDATE Items SET item_name = ? WHERE item_name = ?";
             String secondQuery = "UPDATE Items SET unit_cost = ? WHERE item_name = ?";
             PreparedStatement firstPstmt = connection.prepareStatement(firstQuery);
-            PreparedStatement secondPstmt = connection.prepareStatement(firstQuery);
+            PreparedStatement secondPstmt = connection.prepareStatement(secondQuery);
             firstPstmt.setString(1, newName);
             firstPstmt.setString(2, itemName);
             secondPstmt.setDouble(1, unitCost);
@@ -915,7 +926,6 @@ public class SQL_DataHandler {
             PreparedStatement pstmt = connection.prepareStatement(query);
             pstmt.setString(1, itemName);
             ResultSet set = pstmt.executeQuery();
-
             return set.next();
         }   catch (Exception e){
             e.printStackTrace();
@@ -1168,26 +1178,11 @@ public class SQL_DataHandler {
         }
     }
 
-
     public int getAffectedItems(ItemType item){
         List<ItemType> list = new ArrayList<>();
         list.add(item);
         ItemType [] array = new ItemType[1];
         return getAffectedItems(list.toArray(array));
-    }
-
-    public int getAffectedItemsForUnit(UnitType unit){
-        List<UnitType> list = new ArrayList<>();
-        list.add(unit);
-        UnitType [] array = new UnitType[1];
-        return getAffectedItemsForUnit(list.toArray(array));
-    }
-
-    public int getAffectedItemsForItemUnit(ItemUnitType unit){
-        List<ItemUnitType> list = new ArrayList<>();
-        list.add(unit);
-        ItemUnitType [] array = new ItemUnitType[1];
-        return getAffectedItemsForItemUnit(list.toArray(array));
     }
 
     /**
@@ -1214,65 +1209,6 @@ public class SQL_DataHandler {
         try(PreparedStatement pstmt = connection.prepareStatement(query)){
             for (ItemType item : list){
                 pstmt.setInt(1, item.getItemTypeID());
-                ResultSet set = pstmt.executeQuery();
-                if (set.next())
-                    itemCount += set.getInt("Item Count");
-            }
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-
-        return itemCount;
-    }
-
-
-    //UNIT TYPE LIST
-    public int getAffectedItemsForUnit(UnitType [] list){
-        if (connection == null)
-            prepareConnection();
-
-        String query = """
-            SELECT 
-                COUNT(i.item_ID) AS "Item Count"
-            FROM UnitType AS ut
-            JOIN itemUnitType AS iut ON ut.unitType_ID = iut.unitType_ID
-            JOIN Items AS i ON i.item_unit_ID = iut.item_unit_ID
-            WHERE ut.unitType_ID = ?
-        """;
-
-        int itemCount = 0;
-        try(PreparedStatement pstmt = connection.prepareStatement(query)){
-            for (UnitType unit : list){
-                pstmt.setInt(1, unit.getUnitTypeID());
-                ResultSet set = pstmt.executeQuery();
-                if (set.next())
-                    itemCount += set.getInt("Item Count");
-            }
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-
-        return itemCount;
-    }
-
-    //UNIT TYPE LIST
-    public int getAffectedItemsForItemUnit(ItemUnitType [] list){
-        if (connection == null)
-            prepareConnection();
-
-        String query = """
-            SELECT 
-                COUNT(i.item_ID) AS "Item Count"
-            FROM UnitType AS ut
-            JOIN itemUnitType AS iut ON ut.unitType_ID = iut.unitType_ID
-            JOIN Items AS i ON i.item_unit_ID = iut.item_unit_ID
-            WHERE ut.unitType_ID = ?
-        """;
-
-        int itemCount = 0;
-        try(PreparedStatement pstmt = connection.prepareStatement(query)){
-            for (ItemUnitType unit : list){
-                pstmt.setInt(1, unit.getItemUnitTypeID());
                 ResultSet set = pstmt.executeQuery();
                 if (set.next())
                     itemCount += set.getInt("Item Count");
@@ -1504,12 +1440,16 @@ public class SQL_DataHandler {
         }
     }
 
-    /**
-     * Method to get number of items (count) using the list of Unit Types
-     *
-     * @param list      List of UnitTypes
-     */
-    public int getAffectedItems(UnitType [] list){
+    public int getAffectedItemsForUnit(UnitType unit){
+        List<UnitType> list = new ArrayList<>();
+        list.add(unit);
+        UnitType [] array = new UnitType[1];
+        return getAffectedItemsForUnit(list.toArray(array));
+    }
+
+
+    //UNIT TYPE LIST
+    public int getAffectedItemsForUnit(UnitType [] list){
         if (connection == null)
             prepareConnection();
 
@@ -1524,8 +1464,8 @@ public class SQL_DataHandler {
 
         int itemCount = 0;
         try(PreparedStatement pstmt = connection.prepareStatement(query)){
-            for (UnitType unitType : list){
-                pstmt.setInt(1, unitType.getUnitTypeID());
+            for (UnitType unit : list){
+                pstmt.setInt(1, unit.getUnitTypeID());
                 ResultSet set = pstmt.executeQuery();
                 if (set.next())
                     itemCount += set.getInt("Item Count");
@@ -1788,6 +1728,40 @@ public class SQL_DataHandler {
         }
 
         return true;
+    }
+
+    public int getAffectedItemsForItemUnit(ItemUnitType unit){
+        List<ItemUnitType> list = new ArrayList<>();
+        list.add(unit);
+        ItemUnitType [] array = new ItemUnitType[1];
+        return getAffectedItemsForItemUnit(list.toArray(array));
+    }
+
+    public int getAffectedItemsForItemUnit(ItemUnitType [] list){
+        if (connection == null)
+            prepareConnection();
+
+        String query = """
+            SELECT 
+                COUNT(i.item_ID) AS "Item Count"
+            FROM ItemUnitType AS iut
+            JOIN Items AS i ON i.item_unit_ID = iut.item_unit_ID
+            WHERE iut.item_unit_ID = ?
+        """;
+
+        int itemCount = 0;
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            for (ItemUnitType unit : list){
+                pstmt.setInt(1, unit.getItemUnitTypeID());
+                ResultSet set = pstmt.executeQuery();
+                if (set.next())
+                    itemCount += set.getInt("Item Count");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return itemCount;
     }
 
 //======================================================================================================================================================================

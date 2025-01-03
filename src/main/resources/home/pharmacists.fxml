@@ -207,9 +207,9 @@
          <center>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <TableView fx:id="pharmacistTable" layoutX="14.0" layoutY="65.0" prefHeight="492.0" prefWidth="707.0" style="-fx-border-color: black;">
+                  <TableView fx:id="pharmacistTable" editable="true" layoutX="14.0" layoutY="65.0" prefHeight="492.0" prefWidth="707.0" style="-fx-border-color: black;">
                      <columns>
-                        <TableColumn fx:id="pharmacistID_col" prefWidth="75.0" text="Pharmacist ID" />
+                        <TableColumn fx:id="pharmacistID_col" editable="false" prefWidth="75.0" text="Pharmacist ID" />
                         <TableColumn fx:id="pharmacist_fName_col" prefWidth="75.0" text="First Name" />
                         <TableColumn fx:id="pharmacist_mName_col" prefWidth="75.0" text="Middle Name" />
                         <TableColumn fx:id="pharmacist_lName_col" prefWidth="75.0" text="Last Name" />
