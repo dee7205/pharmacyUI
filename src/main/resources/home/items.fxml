@@ -189,7 +189,7 @@
                               <Insets top="20.0" />
                            </VBox.margin>
                            <graphic>
-                              <ImageView fx:id="addTransactionButton" fitHeight="40.0" fitWidth="46.0" pickOnBounds="true" preserveRatio="true">
+                              <ImageView fitHeight="40.0" fitWidth="46.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@images/addicon.png" />
                                  </image>
@@ -225,22 +225,22 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <Button alignment="CENTER" contentDisplay="BOTTOM" layoutX="732.0" layoutY="378.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item">
+                  <Button fx:id="item_AddItemButton" alignment="CENTER" contentDisplay="BOTTOM" layoutX="732.0" layoutY="378.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button alignment="CENTER" layoutX="732.0" layoutY="426.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Update Item">
+                  <Button fx:id="item_UpdateItemButton" alignment="CENTER" layoutX="732.0" layoutY="426.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Update Item">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item">
+                  <Button fx:id="item_DeleteItemButton" alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Transaction History">
+                  <Button fx:id="item_TransactionHistoryButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Transaction History">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
