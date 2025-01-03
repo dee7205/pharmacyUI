@@ -239,7 +239,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "maclang@2023-00570");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "Gimatag2024");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -291,6 +291,7 @@ public class controller implements Initializable {
         if (!itemTypeName.isEmpty() && !itemTypeName.equals("Item Type") && handler.addItemType(itemTypeName)) {
             ItemType type = handler.getItemType(itemTypeName);
             itemTypeTable.getItems().add(type); //Adds item type to the table
+            itemTypeNameTextField.clear();
         } else if (itemTypeName.equalsIgnoreCase("Item Type")){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
@@ -378,16 +379,204 @@ public class controller implements Initializable {
     @FXML private TableColumn<Pharmacist, String> pharmacist_mName_col;
     @FXML private TableColumn<Pharmacist, String> pharmacist_lName_col;
 
+    @FXML private Button addPharmacistButton;
+    @FXML private Button deletePharmacistButton;
+
+    public ObservableList<Pharmacist> initialPharmacistData(){
+        SQL_DataHandler handler = new SQL_DataHandler();
+        Pharmacist [] pharma = handler.getAllPharmacists();
+        return FXCollections.<Pharmacist> observableArrayList(pharma);
+    }
+
+    @FXML
+    void addPharmacist(ActionEvent event) { //ADD ITEM TYPE
+        SQL_DataHandler handler = new SQL_DataHandler();
+        String firstName = pharmacist_fName_textField.getText();
+        String middleName = pharmacist_mName_textField.getText();
+        String lastName = pharmacist_lName_textField.getText();
+        String ID = pharmacist_id_textField.getText();
+        int convertedID;
+        try {
+            convertedID = Integer.parseInt(ID);
+        } catch(Exception e){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Pharmacist: " + firstName + " " + lastName);
+            alert.setContentText("Pharmacist ID " + ID + " is not an Integer.");
+            alert.showAndWait();
+            return;
+        }
+        if (!firstName.isEmpty() && !lastName.isEmpty() && !middleName.isEmpty() && !ID.isEmpty() && handler.addPharmacist(convertedID,firstName,middleName,lastName)) {
+            Pharmacist p = handler.getPharmacist(convertedID);
+            pharmacistTable.getItems().add(p); //Adds item type to the table
+            pharmacist_fName_textField.clear();
+            pharmacist_mName_textField.clear();
+            pharmacist_lName_textField.clear();
+            pharmacist_id_textField.clear();
+
+        } else if (!ID.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Pharmacist: " + firstName + " " + lastName);
+            alert.setContentText("Pharmacist ID " + ID + " already exists in the list");
+            alert.showAndWait();
+        }
+    }
+
+    private void pharmacistEditData(){
+        pharmacist_fName_col.setEditable(true);
+        pharmacist_fName_col.setCellFactory(TextFieldTableCell.<Pharmacist>forTableColumn());
+        pharmacist_fName_col.setOnEditCommit(event ->{
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Pharmacist p = event.getTableView().getItems().get(event.getTablePosition().getRow());
+            handler.updatePharmacist(p,event.getNewValue(),p.getMiddleName(),p.getLastName());
+            p.setFirstName(event.getNewValue());
+        });
+
+        pharmacist_mName_col.setEditable(true);
+        pharmacist_mName_col.setCellFactory(TextFieldTableCell.<Pharmacist>forTableColumn());
+        pharmacist_mName_col.setOnEditCommit(event ->{
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Pharmacist p = event.getTableView().getItems().get(event.getTablePosition().getRow());
+            handler.updatePharmacist(p,p.getFirstName(),event.getNewValue(),p.getLastName());
+            p.setMiddleName(event.getNewValue());
+        });
+
+        pharmacist_lName_col.setEditable(true);
+        pharmacist_lName_col.setCellFactory(TextFieldTableCell.<Pharmacist>forTableColumn());
+        pharmacist_lName_col.setOnEditCommit(event ->{
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Pharmacist p = event.getTableView().getItems().get(event.getTablePosition().getRow());
+            handler.updatePharmacist(p,p.getFirstName(),p.getMiddleName(),event.getNewValue());
+            p.setLastName(event.getNewValue());
+        });
+    }
+
+    @FXML
+    void deletePharmacist(ActionEvent event) {
+        //Gets the pharmacist selected (Can be null if no item is selected)
+        int index = pharmacistTable.getSelectionModel().getSelectedIndex();
+        if (index == -1){
+            System.out.println("ERROR: Unable to delete Pharmacist. No index is selected.");
+            return;
+        }
+
+        Pharmacist p = pharmacistTable.getSelectionModel().getTableView().getItems().get(index);
+
+        //Error handling
+        if (p == null){
+            System.out.println("No Pharmacist Selected.");
+            return;
+        }
+
+        else {
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirm Pharmacist Deletion");
+            alert.setHeaderText("Are you sure you want to delete this Pharmacist? \nNumber of Affected Items: (No Transactions Feature Yet)" );
+            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
+
+            Optional<ButtonType> result = alert.showAndWait();
+
+            //Removes the list of selected items
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                handler.removePharmacist(p.getPharmacistID());
+                pharmacistTable.getSelectionModel().getTableView().getItems().remove(p);
+            }
+        }
+    }
+
     //===============================UNIT TYPE METHODS====================================
 
     @FXML private TableColumn<UnitType, Integer> unitTypeID_col;
     @FXML private TableColumn<UnitType, String> unitTypeName_col;
     @FXML private TableView<UnitType> unitTypeTable;
-
     @FXML private TextField unitType_textField;
-    @FXML private Button updateUnitTypeButton;
     @FXML private Button addUnitTypeButton;
     @FXML private Button deleteUnitTypeButton;
+
+    public ObservableList<UnitType> initialUnitTypeData(){
+        SQL_DataHandler handler = new SQL_DataHandler();
+        UnitType [] types = handler.getAllUnitTypes();
+        return FXCollections.<UnitType> observableArrayList(types);
+    }
+
+    @FXML
+    void addUnitType(ActionEvent event) { //ADD ITEM TYPE
+        SQL_DataHandler handler = new SQL_DataHandler();
+        String unitType = unitType_textField.getText();
+        if (!unitType.isEmpty() && handler.addUnitType(unitType)) {
+            UnitType type = handler.getUnitType(unitType);
+            unitTypeTable.getItems().add(type); //Adds item type to the table
+            unitType_textField.clear();
+
+        } else if (!unitType.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Unit Type: " + unitType);
+            alert.setContentText("Unit Type " + unitType + " already exists in the list");
+            alert.showAndWait();
+        }
+    }
+
+    private void unitTypeEditData(){
+        unitTypeName_col.setEditable(true);
+        unitTypeName_col.setCellFactory(TextFieldTableCell.<UnitType>forTableColumn());
+        unitTypeName_col.setOnEditCommit(event ->{
+            SQL_DataHandler handler = new SQL_DataHandler();
+
+            UnitType unitType = event.getTableView().getItems().get(event.getTablePosition().getRow());
+            if (!handler.unitTypeExists(event.getNewValue())){
+                handler.updateUnitType(unitType.getUnitTypeID(), event.getNewValue());
+                unitType.setUnitType(event.getNewValue());
+            }   else {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("ERROR");
+                alert.setHeaderText("Unable to update Unit Type: " + event.getOldValue() + " to " + event.getNewValue());
+                alert.setContentText("The Unit Name to be updated \"" + event.getNewValue() + "\", already exists in the database.");
+
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.isPresent() && result.get() == ButtonType.OK) {
+                    return;
+                }
+            }
+        });
+    }
+
+    @FXML
+    void deleteUnitType(ActionEvent event) {
+        //Gets the unit type selected (Can be null if no item is selected)
+        int index = unitTypeTable.getSelectionModel().getSelectedIndex();
+        if (index == -1){
+            System.out.println("ERROR: Unable to delete Unit Type. No index is selected.");
+            return;
+        }
+
+        UnitType unit = unitTypeTable.getSelectionModel().getTableView().getItems().get(index);
+
+        //Error handling
+        if (unit == null){
+            System.out.println("No Unit Type Selected.");
+            return;
+        }
+
+        else {
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirm Unit Type Deletion");
+            alert.setHeaderText("Are you sure you want to delete this unit type? \nNumber of Affected Items: " + handler.getAffectedItemsForUnit(unit));
+            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
+
+            Optional<ButtonType> result = alert.showAndWait();
+
+            //Removes the list of selected items
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                handler.removeUnitType(unit.getUnitType());
+                unitTypeTable.getSelectionModel().getTableView().getItems().remove(unit);
+            }
+        }
+
+    }
 
     //===============================RESTOCK METHODS====================================
 
@@ -434,6 +623,82 @@ public class controller implements Initializable {
     @FXML private TableColumn<ItemUnitType, String> itemUnitType_itemTypeName_col;
     @FXML private TableColumn<ItemUnitType, Integer> itemUnitType_unitTypeID_col;
     @FXML private TableColumn<ItemUnitType, String> itemUnitType_unitTypeName_col;
+
+    public ObservableList<ItemUnitType> initialItemUnitTypeData(){
+        SQL_DataHandler handler = new SQL_DataHandler();
+        ItemUnitType [] types = handler.getAllItemUnitTypes();
+        return FXCollections.<ItemUnitType> observableArrayList(types);
+    }
+
+    @FXML
+    void addItemUnitType(ActionEvent event) { //ADD ITEM TYPE
+        SQL_DataHandler handler = new SQL_DataHandler();
+        String itemTypeID = itemUnitType_itemTypeID_textField.getText();
+        String unitTypeID = itemUnitType_unitTypeID_textField.getText();
+        int convertedItemID, convertedUnitID;
+        try {
+            convertedItemID = Integer.parseInt(itemTypeID);
+            convertedUnitID = Integer.parseInt(unitTypeID);
+        }
+        catch(Exception e){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Item Unit Type.");
+            alert.setContentText("Item Type ID/Unit Type ID is not an Integer.");
+            alert.showAndWait();
+            return;
+        }
+        if (!itemTypeID.isEmpty() && !unitTypeID.isEmpty() && handler.addItemUnitType(convertedItemID,convertedUnitID)) {
+
+            ItemUnitType type = handler.getItemUnitType(convertedItemID,convertedUnitID);
+            itemUnitTypeTable.getItems().add(type); //Adds item type to the table
+            itemUnitType_itemTypeID_textField.clear();
+            itemUnitType_unitTypeID_textField.clear();
+
+        } else if (!itemTypeID.isEmpty() && !unitTypeID.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Item Unit Type.");
+            alert.setContentText("Combination of Item Type,Unit Type " + convertedItemID + "," + convertedUnitID + " are invalid.");
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    void deleteItemUnitType(ActionEvent event) {
+        //Gets the unit type selected (Can be null if no item is selected)
+        int index = itemUnitTypeTable.getSelectionModel().getSelectedIndex();
+        if (index == -1){
+            System.out.println("ERROR: Unable to delete Item Unit Type. No index is selected.");
+            return;
+        }
+
+        ItemUnitType unit = itemUnitTypeTable.getSelectionModel().getTableView().getItems().get(index);
+
+        //Error handling
+        if (unit == null){
+            System.out.println("No Item Unit Type Selected.");
+            return;
+        }
+
+        else {
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirm Unit Type Deletion");
+            alert.setHeaderText("Are you sure you want to delete this unit type? \nNumber of Affected Items: " + handler.getAffectedItemsForItemUnit(unit));
+            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
+
+            Optional<ButtonType> result = alert.showAndWait();
+
+            //Removes the list of selected items
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                handler.removeItemUnitType(unit.getItemUnitTypeID(),9999);
+                itemUnitTypeTable.getSelectionModel().getTableView().getItems().remove(unit);
+            }
+        }
+
+    }
+
 
     //===============================STATISTIC METHODS====================================
 
@@ -514,6 +779,36 @@ public class controller implements Initializable {
             itemTypeNameColumn.setCellValueFactory(new PropertyValueFactory<ItemType,String>("itemTypeName"));
             itemTypeTable.setItems(initialItemTypeData());
             itemTypeEditData();
+        }
+
+        //Initialize UNIT TYPE
+        if (unitTypeTable != null){
+            unitTypeID_col.setCellValueFactory(new PropertyValueFactory<UnitType,Integer>("unitTypeID"));
+            unitTypeName_col.setCellValueFactory(new PropertyValueFactory<UnitType,String>("unitType"));
+            unitTypeTable.setItems(initialUnitTypeData());
+            unitTypeEditData();
+        }
+
+        //Initialize ITEM UNIT TYPE
+        if (itemUnitTypeTable != null){
+            itemUnitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("itemUnitTypeID"));
+            itemUnitType_itemTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("itemTypeID"));
+            itemUnitType_unitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("unitTypeID"));
+            itemUnitType_itemTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("itemTypeName"));
+            itemUnitType_unitTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("unitTypeName"));
+            itemUnitTypeTable.setItems(initialItemUnitTypeData());
+            //itemUnitTypeEditData();
+        }
+
+        //Initialize PHARMACISTS
+        if (pharmacistTable != null){
+            pharmacistID_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,Integer>("pharmacistID"));
+            pharmacist_fName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("firstName"));
+            pharmacist_mName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("middleName"));
+            pharmacist_lName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("lastName"));
+
+            pharmacistTable.setItems(initialPharmacistData());
+            pharmacistEditData();
         }
 
         //Initialize ITEM

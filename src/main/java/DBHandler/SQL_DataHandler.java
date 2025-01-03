@@ -397,7 +397,7 @@ public class SQL_DataHandler {
     /**
      * Updates the name of an existing pharmacist
      *
-     * @param pharmaID      The primary key or identifier for the pharmacist within the database
+     //* @param pharmaID      The primary key or identifier for the pharmacist within the database
      * @param fName         The first name of the pharmacist to be updated
      * @param mName         The middle name of the pharmacist to be updated
      * @param lName         The last name of the pharmacist to be updated
@@ -405,7 +405,7 @@ public class SQL_DataHandler {
      * @return              true if the pharmacist's details were updated, false if the pharmacist doesn't
      *                      exist or if the update was unable to push through.
      */
-    public boolean updatePharmacist(Pharmacist pharmacist, int pharmaID, String fName, String mName, String lName){
+    public boolean updatePharmacist(Pharmacist pharmacist,String fName, String mName, String lName){
         if (connection == null)
             prepareConnection();
 
@@ -415,32 +415,28 @@ public class SQL_DataHandler {
                 return false;
             }
 
-            if (pharmacistExists(pharmaID)){
-                System.out.println("ERROR: Unable to update pharmacist. \nAnother pharmacist with the ID " + pharmacist.getPharmacistID() + " exists in the database.");
-                return false;
-            }
 
             final String firstQuery = "UPDATE Pharmacists SET fName = ? WHERE pharmacist_ID = " + pharmacist.getPharmacistID();
             final String secondQuery = "UPDATE Pharmacists SET mName = ? WHERE pharmacist_ID = " + pharmacist.getPharmacistID();
             final String thirdQuery = "UPDATE Pharmacists SET lName = ? WHERE pharmacist_ID = " + pharmacist.getPharmacistID();
-            final String fourthQuery = "UPDATE Pharmacists SET pharmacist_ID = ? WHERE pharmacist_ID = " + pharmacist.getPharmacistID();
+
             PreparedStatement firstPstmt = connection.prepareStatement(firstQuery);
             PreparedStatement secondPstmt = connection.prepareStatement(secondQuery);
             PreparedStatement thirdPstmt = connection.prepareStatement(thirdQuery);
-            PreparedStatement fourthPstmt = connection.prepareStatement(fourthQuery);
+
 
             firstPstmt.setString(1, fName);
             secondPstmt.setString(1, mName);
             thirdPstmt.setString(1, lName);
-            fourthPstmt.setInt(1, pharmaID);
+
 
             int rowsAffected = 0;
             rowsAffected += firstPstmt.executeUpdate();
             rowsAffected += secondPstmt.executeUpdate();
             rowsAffected += thirdPstmt.executeUpdate();
-            rowsAffected += fourthPstmt.executeUpdate();
 
-            return (rowsAffected == 4);
+
+            return (rowsAffected == 3);
 
         } catch(SQLException e){
             e.printStackTrace();
@@ -1172,10 +1168,6 @@ public class SQL_DataHandler {
         }
     }
 
-    public int getAffectedItems(List<ItemType> list){
-        ItemType [] array = new ItemType[list.size()];
-        return getAffectedItems(list.toArray(array));
-    }
 
     public int getAffectedItems(ItemType item){
         List<ItemType> list = new ArrayList<>();
@@ -1184,12 +1176,27 @@ public class SQL_DataHandler {
         return getAffectedItems(list.toArray(array));
     }
 
+    public int getAffectedItemsForUnit(UnitType unit){
+        List<UnitType> list = new ArrayList<>();
+        list.add(unit);
+        UnitType [] array = new UnitType[1];
+        return getAffectedItemsForUnit(list.toArray(array));
+    }
+
+    public int getAffectedItemsForItemUnit(ItemUnitType unit){
+        List<ItemUnitType> list = new ArrayList<>();
+        list.add(unit);
+        ItemUnitType [] array = new ItemUnitType[1];
+        return getAffectedItemsForItemUnit(list.toArray(array));
+    }
+
     /**
      * Gets all the items using a specific itemType
      *
      * @param list  Contains the list of items to be searched for
      * @return      Number of items using the specific ItemType
      */
+
     public int getAffectedItems(ItemType [] list){
         if (connection == null)
             prepareConnection();
@@ -1207,6 +1214,65 @@ public class SQL_DataHandler {
         try(PreparedStatement pstmt = connection.prepareStatement(query)){
             for (ItemType item : list){
                 pstmt.setInt(1, item.getItemTypeID());
+                ResultSet set = pstmt.executeQuery();
+                if (set.next())
+                    itemCount += set.getInt("Item Count");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return itemCount;
+    }
+
+
+    //UNIT TYPE LIST
+    public int getAffectedItemsForUnit(UnitType [] list){
+        if (connection == null)
+            prepareConnection();
+
+        String query = """
+            SELECT 
+                COUNT(i.item_ID) AS "Item Count"
+            FROM UnitType AS ut
+            JOIN itemUnitType AS iut ON ut.unitType_ID = iut.unitType_ID
+            JOIN Items AS i ON i.item_unit_ID = iut.item_unit_ID
+            WHERE ut.unitType_ID = ?
+        """;
+
+        int itemCount = 0;
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            for (UnitType unit : list){
+                pstmt.setInt(1, unit.getUnitTypeID());
+                ResultSet set = pstmt.executeQuery();
+                if (set.next())
+                    itemCount += set.getInt("Item Count");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return itemCount;
+    }
+
+    //UNIT TYPE LIST
+    public int getAffectedItemsForItemUnit(ItemUnitType [] list){
+        if (connection == null)
+            prepareConnection();
+
+        String query = """
+            SELECT 
+                COUNT(i.item_ID) AS "Item Count"
+            FROM UnitType AS ut
+            JOIN itemUnitType AS iut ON ut.unitType_ID = iut.unitType_ID
+            JOIN Items AS i ON i.item_unit_ID = iut.item_unit_ID
+            WHERE ut.unitType_ID = ?
+        """;
+
+        int itemCount = 0;
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            for (ItemUnitType unit : list){
+                pstmt.setInt(1, unit.getItemUnitTypeID());
                 ResultSet set = pstmt.executeQuery();
                 if (set.next())
                     itemCount += set.getInt("Item Count");
@@ -1351,20 +1417,25 @@ public class SQL_DataHandler {
     }
 
     //TODO: Add comments for this method
-    public boolean removeUnitType(int unitTypeID){
-        final String query = "DELETE FROM UnitType WHERE item_id = ?";
-
+    public boolean removeUnitType(String unitTypeName){
         if (connection == null)
             prepareConnection();
+
+        if (!unitTypeExists(unitTypeName))
+            return false;
+
+        int unitTypeID = getUnitTypeID(unitTypeName);
+        if (unitTypeID == -1)
+            return false;
 
         if (!removeItemUnitType(unitTypeID, REMOVE_UNIT_TYPE))
             return false;
 
-        try(PreparedStatement pstmt = connection.prepareStatement(query);){
-            if (!unitTypeExists(unitTypeID))
-                return false;
+        final String query = "DELETE FROM UnitType WHERE unitType_ID = ?";
 
-            return pstmt.executeUpdate(query) > 0;
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
+            pstmt.setInt(1, unitTypeID);
+            return pstmt.executeUpdate() > 0;
 
         }   catch (Exception e){
             e.printStackTrace();
@@ -1516,7 +1587,7 @@ public class SQL_DataHandler {
                  ut.unit_Type AS "Unit Type Name"
             FROM ItemUnitType AS iut
             JOIN ItemType AS it ON iut.itemType_ID = it.itemType_ID
-            JOIN UnitType AS ut ON iut.unitType_ID = it.unitType_ID
+            JOIN UnitType AS ut ON iut.unitType_ID = ut.unitType_ID
             WHERE iut.unitType_ID = ? AND iut.itemType_ID = ?
             """;
 
@@ -1570,6 +1641,7 @@ public class SQL_DataHandler {
             return -1;
         }
     }
+
 
     //TODO: Add explanation for why these variables are made/used
     public static final int REMOVE_ITEM_TYPE = 6969;
@@ -2329,6 +2401,108 @@ public class SQL_DataHandler {
         } catch (Exception e){
             e.printStackTrace();
             return getCurrentDate();
+        }
+    }
+
+    public UnitType[] getAllUnitTypes() {
+        final String query = """
+            SELECT 
+                ut.unitType_ID AS "Unit Type ID",
+                ut.unit_Type AS "Unit Type Name"
+            FROM UnitType as ut
+            ORDER BY ut.unitType_ID ASC;
+            """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(Statement stmt = connection.createStatement();){
+            ResultSet set = stmt.executeQuery(query);
+
+            List<UnitType> list = new ArrayList<>();
+            boolean isAdded = false;
+            while (set.next()){
+                list.add(new UnitType(set.getInt("Unit Type ID"), set.getString("Unit Type Name")));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                UnitType [] array = new UnitType[list.size()];
+                return list.toArray(array);
+            }   else
+                return null;
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public ItemUnitType[] getAllItemUnitTypes() {
+        final String query = """
+                SELECT
+                iut.item_unit_ID AS "Item Unit Type ID",
+                            iut.itemType_ID AS "Item Type ID",
+                            it.item_Type AS "Item Type Name",
+                iut.unitType_ID AS "Unit Type ID",
+                            ut.unit_Type AS "Unit Type Name"
+                        FROM ItemType AS it
+                        JOIN itemUnitType AS iut ON it.itemType_ID = iut.itemType_ID
+                        JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
+                        GROUP BY iut.item_unit_ID;
+            """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(Statement stmt = connection.createStatement();){
+            ResultSet set = stmt.executeQuery(query);
+
+            List<ItemUnitType> list = new ArrayList<>();
+            boolean isAdded = false;
+            while (set.next()){
+                list.add(new ItemUnitType(set.getInt("Item Unit Type ID"), set.getInt("Item Type ID"),set.getInt("Unit Type ID"),set.getString("Item Type Name"),set.getString("Unit Type Name")));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                ItemUnitType [] array = new ItemUnitType[list.size()];
+                return list.toArray(array);
+            }   else
+                return null;
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public UnitType getUnitType(String unitType) {
+        final String query = """
+                SELECT 
+                    ut.unitType_ID AS "Unit Type ID",
+                    ut.unit_Type AS "Unit Type Name"
+                FROM UnitType as ut
+                WHERE unit_Type = ?
+                """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query);) {
+            pstmt.setString(1, unitType);
+            ResultSet set = pstmt.executeQuery();
+
+            if (set.next())
+                return new UnitType(set.getInt("Unit Type ID"), set.getString("Unit Type Name"));
+            else
+                return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
