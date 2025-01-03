@@ -3,6 +3,8 @@ package home;
 import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -18,6 +20,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
@@ -56,11 +59,6 @@ public class controller implements Initializable {
     @FXML Button updateRestockButton;
     @FXML private Button deleteRestockButton;
 
-    // pharmacists
-    @FXML private Button addPharmacistsButton;
-    @FXML private Button updatePharmacistsButton;
-    @FXML private Button deletePharmacistsButton;
-    @FXML private Button pharmacistTransactHistButton;
 
     //===================================ITEM METHODS========================================
     @FXML TableView<Item> itemTable;
@@ -68,7 +66,7 @@ public class controller implements Initializable {
     @FXML private TableColumn<Item, String> itemName_col;
     @FXML private TableColumn<Item, Integer> itemID_col;
     @FXML private TableColumn<Item, Integer> itemQuantity_col;
-    @FXML private TableColumn<Item, Integer> itemUnitID_col;
+    @FXML private TableColumn<Item, String> itemUnitType_col;
     @FXML private TableColumn<Item, Double> itemMovement_col;
 
     @FXML private Button item_AddItemButton;
@@ -80,18 +78,6 @@ public class controller implements Initializable {
         SQL_DataHandler handler = new SQL_DataHandler();
         Item [] types = handler.getAllItems(-1);
         return FXCollections.<Item> observableArrayList(types);
-    }
-
-    @FXML
-    private void addItem(ActionEvent event){
-
-    }
-
-    @FXML
-    private void deleteItem(ActionEvent event){
-        //Check if Item Exists
-        //Show Warning Sign (Amount Affected)
-        //
     }
 
     private void itemEditData(){
@@ -120,21 +106,66 @@ public class controller implements Initializable {
         });
     }
 
-    // items
-    @FXML private Button addItemButton;
-    @FXML private Button updateItemButton;
-    @FXML private Button deleteItemButton;
-    @FXML private Button itemTransactHistButton;
+    @FXML private TextField item_filterTextField;
+    // ObservableList to hold the data for the table
+    private ObservableList<Item> dataList;
 
+    public void search_itemName() {
+        try {
+            // Fetch data from the handler
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Item[] search = handler.getAllItems(-1);
+            System.out.println("Items fetched: " + Arrays.toString(search)); // debugger
 
+            if (search == null || search.length == 0) {
+                System.out.println("No data retrieved from the database.");
+                return;
+            }
 
-    @FXML private ComboBox<?> item_filterCb;
+            // Set up table columns
+            itemID_col.setCellValueFactory(new PropertyValueFactory<>("itemID"));
+            itemName_col.setCellValueFactory(new PropertyValueFactory<>("itemName"));
+            itemUnitType_col.setCellValueFactory(new PropertyValueFactory<>("itemUnitType"));
+            itemQuantity_col.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+            itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<>("unitCost"));
+            itemMovement_col.setCellValueFactory(new PropertyValueFactory<>("movement"));
+
+            // Convert array to ObservableList
+            dataList = FXCollections.observableArrayList(search);
+            itemTable.setItems(dataList);
+
+            // Add filtering logic
+            FilteredList<Item> filteredData = new FilteredList<>(dataList, b -> true);
+
+            item_filterTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(item -> {
+                    // If search field is empty, show all items
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+
+                    // Filter items by name (case-insensitive)
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    return item.getItemName().toLowerCase().contains(lowerCaseFilter);
+                });
+            });
+
+            // Bind the sorted data to the table
+            SortedList<Item> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(itemTable.comparatorProperty());
+            itemTable.setItems(sortedData);
+
+            System.out.println("Search setup complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     // ==============COMBO BOX UNIT TYPE (item.fxml)===================
     @FXML private ComboBox<String> item_unitCb;
     public void unitType_comboBoxOnAction(ActionEvent event) {
         if (item_unitCb != null) {
-            String selectAllData = "SELECT * FROM UnitType ORDER BY unit_Type ASC";
+            String selectAllData = "SELECT * FROM UnitType";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -167,7 +198,7 @@ public class controller implements Initializable {
 
     public void itemType_comboBoxOnAction(ActionEvent event) {
         if (item_TypeCb != null) {
-            String selectAllData = "SELECT * FROM ItemType ORDER BY item_Type ASC";
+            String selectAllData = "SELECT * FROM ItemType";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -200,7 +231,7 @@ public class controller implements Initializable {
 
     public void restock_itemName_comboBoxOnAction (ActionEvent event) {
         if (restock_item_cb != null) {
-            String selectAllData = "SELECT * FROM Items ORDER BY item_Name ASC";
+            String selectAllData = "SELECT * FROM Items";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -233,7 +264,7 @@ public class controller implements Initializable {
 
     public void transactionItemName_comboBoxOnAction (ActionEvent event) {
         if (transaction_itemName_comboBox != null) {
-            String selectAllData = "SELECT * FROM Items ORDER BY item_Name ASC";
+            String selectAllData = "SELECT * FROM Items";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -273,7 +304,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "maclang@2023-00570");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "shanna05");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -400,6 +431,59 @@ public class controller implements Initializable {
         });
     }
 
+    @FXML private TextField itemType_searchField;
+    // ObservableList to hold the data for the table
+    ObservableList<ItemType> itemTypeList;
+
+    public void search_itemType() {
+        try {
+            // Fetch data from the handler
+            SQL_DataHandler handler = new SQL_DataHandler();
+            ItemType[] types = handler.getAllItemTypes();
+            System.out.println("Numbers fetched: " + Arrays.toString(types)); // debugger
+
+            if (types == null || types.length == 0) {
+                System.out.println("No data retrieved from the database.");
+                return;
+            }
+
+            // Set up table columns
+            itemTypeIDColumn.setCellValueFactory(new PropertyValueFactory<ItemType,Integer>("itemTypeID"));
+            itemTypeNameColumn.setCellValueFactory(new PropertyValueFactory<ItemType,String>("itemTypeName"));
+            itemTypeTable.setItems(initialItemTypeData());
+
+            // Convert array to ObservableList
+            itemTypeList = FXCollections.observableArrayList(types);
+            itemTypeTable.setItems(itemTypeList);
+
+            // Add filtering logic
+            FilteredList<ItemType> filteredData = new FilteredList<>(itemTypeList, b -> true);
+
+            itemType_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(itemType -> {
+                    // If search field is empty, show all items
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+
+                    // Filter items by name (case-insensitive)
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    return itemType.getItemTypeName().toLowerCase().contains(lowerCaseFilter) ||
+                            String.valueOf(itemType.getItemTypeID()).contains(lowerCaseFilter);
+                });
+            });
+
+            // Bind the sorted data to the table
+            SortedList<ItemType> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(itemTypeTable.comparatorProperty());
+            itemTypeTable.setItems(sortedData);
+
+            System.out.println("Search setup complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     //===============================PHARMACIST METHODS====================================
 
     @FXML private TextField pharmacist_fName_textField;
@@ -413,8 +497,10 @@ public class controller implements Initializable {
     @FXML private TableColumn<Pharmacist, String> pharmacist_mName_col;
     @FXML private TableColumn<Pharmacist, String> pharmacist_lName_col;
 
-    @FXML private Button addPharmacistButton;
-    @FXML private Button deletePharmacistButton;
+    @FXML private Button pharmacist_updatePharmacistButton;
+    @FXML private Button pharmacist_TransactionHistoryButton;
+    @FXML private Button pharmacist_addPharmacistButton;
+    @FXML private Button pharmacist_deletePharmacistButton;
 
     public ObservableList<Pharmacist> initialPharmacistData(){
         SQL_DataHandler handler = new SQL_DataHandler();
@@ -520,6 +606,63 @@ public class controller implements Initializable {
         }
     }
 
+    @FXML private TextField pharmacist_searchName;
+    // ObservableList to hold the data for the table
+    private ObservableList<Pharmacist> pharmaList;
+
+    public void search_pharmacist() {
+        try {
+            // Fetch data from the handler
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Pharmacist[] pharmaSearch = handler.getAllPharmacists();
+            System.out.println("Numbers fetched: " + Arrays.toString(pharmaSearch)); // debugger
+
+            if (pharmaSearch == null || pharmaSearch.length == 0) {
+                System.out.println("No data retrieved from the database.");
+                return;
+            }
+
+            // Set up table columns
+            pharmacistID_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,Integer>("pharmacistID"));
+            pharmacist_fName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("firstName"));
+            pharmacist_mName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("middleName"));
+            pharmacist_lName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("lastName"));
+
+            // Convert array to ObservableList
+            pharmaList = FXCollections.observableArrayList(pharmaSearch);
+            pharmacistTable.setItems(pharmaList);
+
+            // Add filtering logic
+            FilteredList<Pharmacist> filteredData = new FilteredList<>(pharmaList, b -> true);
+
+            pharmacist_searchName.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(pharmacist -> {
+                    // If search field is empty, show all items
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+
+                    // Filter items by name (case-insensitive)
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    return pharmacist.getFirstName().toLowerCase().contains(lowerCaseFilter) ||
+                            pharmacist.getMiddleName().toLowerCase().contains(lowerCaseFilter) ||
+                            pharmacist.getLastName().toLowerCase().contains(lowerCaseFilter) ||
+                            String.valueOf(pharmacist.getPharmacistID()).contains(lowerCaseFilter);
+                });
+            });
+
+            // Bind the sorted data to the table
+            SortedList<Pharmacist> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(pharmacistTable.comparatorProperty());
+            pharmacistTable.setItems(sortedData);
+
+            System.out.println("Search setup complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
     //===============================UNIT TYPE METHODS====================================
 
     @FXML private TableColumn<UnitType, Integer> unitTypeID_col;
@@ -606,7 +749,59 @@ public class controller implements Initializable {
                 unitTypeTable.getSelectionModel().getTableView().getItems().remove(unit);
             }
         }
+    }
 
+    @FXML private TextField unitType_searchField;
+    // ObservableList to hold the data for the table
+    ObservableList<UnitType> unitTypeList;
+
+    public void search_unitType() {
+        try {
+            // Fetch data from the handler
+            SQL_DataHandler handler = new SQL_DataHandler();
+            UnitType[] unitTypeSearch = handler.getAllUnitTypes();
+            System.out.println("Numbers fetched: " + Arrays.toString(unitTypeSearch)); // debugger
+
+            if (unitTypeSearch == null || unitTypeSearch.length == 0) {
+                System.out.println("No data retrieved from the database.");
+                return;
+            }
+
+            // Set up table columns
+            unitTypeID_col.setCellValueFactory(new PropertyValueFactory<UnitType,Integer>("unitTypeID"));
+            unitTypeName_col.setCellValueFactory(new PropertyValueFactory<UnitType,String>("unitType"));
+
+
+            // Convert array to ObservableList
+            unitTypeList = FXCollections.observableArrayList(unitTypeSearch);
+            unitTypeTable.setItems(unitTypeList);
+
+            // Add filtering logic
+            FilteredList<UnitType> filteredData = new FilteredList<>(unitTypeList, b -> true);
+
+            unitType_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(unitType -> {
+                    // If search field is empty, show all items
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+
+                    // Filter items by name (case-insensitive)
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    return unitType.getUnitType().toLowerCase().contains(lowerCaseFilter) ||
+                            String.valueOf(unitType.getUnitTypeID()).contains(lowerCaseFilter);
+                });
+            });
+
+            // Bind the sorted data to the table
+            SortedList<UnitType> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(unitTypeTable.comparatorProperty());
+            unitTypeTable.setItems(sortedData);
+
+            System.out.println("Search setup complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     //===============================RESTOCK METHODS====================================
@@ -624,29 +819,66 @@ public class controller implements Initializable {
 
     @FXML private TextField restock_qty;
 
-    public ObservableList<Restocks> initialRestockData(){
-        SQL_DataHandler handler = new SQL_DataHandler();
-        Restocks [] restocks = handler.getAllRestocks();
-        return FXCollections.<Restocks> observableArrayList(restocks);
+    @FXML private TextField restock_searchTextField;
+
+    /*
+    // ObservableList to hold the data for the table
+    private ObservableList<Restocks> restockL;
+
+    public void search_restocks() {
+        try {
+            // Fetch data from the handler
+            SQL_DataHandler handler = new SQL_DataHandler();
+            // Restocks[] restock = handler.getRestock(2); -> ano lang same ra sa method sa para ma retrieve ang data
+            System.out.println("Numbers fetched: " + Arrays.toString(restock)); // debugger
+
+            if (restock == null || restock.length == 0) {
+                System.out.println("No data retrieved from the database.");
+                return;
+            }
+
+            // Set up table columns
+            pharmacistID_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,Integer>("pharmacistID"));
+            pharmacist_fName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("firstName"));
+            pharmacist_mName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("middleName"));
+            pharmacist_lName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("lastName"));
+
+            // Convert array to ObservableList
+            restockList = FXCollections.observableArrayList(pharmaSearch);
+            pharmacistTable.setItems(restockList);
+
+            // Add filtering logic
+            FilteredList<Restock> filteredData = new FilteredList<>(restockList, b -> true);
+
+            restock_searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(restock -> {
+                    // If search field is empty, show all items
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+
+                    // Filter items by name (case-insensitive) -> change lang sa mga iretrieve everytime mag search ka
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    return pharmacist.getFirstName().toLowerCase().contains(lowerCaseFilter) ||
+                            pharmacist.getMiddleName().toLowerCase().contains(lowerCaseFilter) ||
+                            pharmacist.getLastName().toLowerCase().contains(lowerCaseFilter) ||
+                            String.valueOf(pharmacist.getPharmacistID()).contains(lowerCaseFilter);
+                });
+            });
+
+            // Bind the sorted data to the table
+            SortedList<Restock> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(restockTable.comparatorProperty());
+            restockTable.setItems(sortedData);
+
+            System.out.println("Search setup complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    //TODO: Make this part edit the wholesale cost ALONE.
-    //  Hindi ko pa ito ma implement since wala pa ung wholesale cost column
-    public void restockEditData(){
+     */
 
-    }
-
-    @FXML
-    //TODO: Implement this
-    public void addRestock(ActionEvent event){
-
-    }
-
-    @FXML
-    //TODO: Implement this
-    public void deleteRestock(ActionEvent event){
-
-    }
 
     //===============================TRANSACTION METHODS====================================
 
@@ -761,9 +993,63 @@ public class controller implements Initializable {
 
     }
 
-    //TODO: Complete this
-    void itemUnitTypeEditData(){
+    // searching
+    @FXML private TextField itemUnitType_searchField;
+    // ObservableList to hold the data for the table
+    ObservableList<ItemUnitType> itemUnitTypeList;
 
+    public void search_ItemUnitType() {
+        try {
+            // Fetch data from the handler
+            SQL_DataHandler handler = new SQL_DataHandler();
+            ItemUnitType[] IUTypeSearch = handler.getAllItemUnitTypes();
+            System.out.println("Numbers fetched: " + Arrays.toString(IUTypeSearch)); // debugger
+
+            if (IUTypeSearch == null || IUTypeSearch.length == 0) {
+                System.out.println("No data retrieved from the database.");
+                return;
+            }
+
+            // Set up table columns
+            itemUnitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("itemUnitTypeID"));
+            itemUnitType_itemTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("itemTypeID"));
+            itemUnitType_unitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("unitTypeID"));
+            itemUnitType_itemTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("itemTypeName"));
+            itemUnitType_unitTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("unitTypeName"));
+
+            // Convert array to ObservableList
+            itemUnitTypeList = FXCollections.observableArrayList(IUTypeSearch);
+            itemUnitTypeTable.setItems(itemUnitTypeList);
+
+            // Add filtering logic
+            FilteredList<ItemUnitType> filteredData = new FilteredList<>(itemUnitTypeList, b -> true);
+
+            itemUnitType_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(itemUnitType -> {
+                    // If search field is empty, show all items
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+
+                    // Filter items by name (case-insensitive)
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    return String.valueOf(itemUnitType.getItemUnitTypeID()).contains(lowerCaseFilter) ||
+                            String.valueOf(itemUnitType.getItemTypeID()).contains(lowerCaseFilter) ||
+                            String.valueOf(itemUnitType.getUnitTypeID()).contains(lowerCaseFilter) ||
+                            itemUnitType.getItemTypeName().toLowerCase().contains(lowerCaseFilter) ||
+                            itemUnitType.getUnitTypeName().toLowerCase().contains(lowerCaseFilter);
+                });
+            });
+
+            // Bind the sorted data to the table
+            SortedList<ItemUnitType> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(itemUnitTypeTable.comparatorProperty());
+            itemUnitTypeTable.setItems(sortedData);
+
+            System.out.println("Search setup complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -848,6 +1134,16 @@ public class controller implements Initializable {
             itemTypeEditData();
         }
 
+        // search_itemType(); (itemType.fxml)
+        if (itemType_searchField == null) {
+            System.out.println("itemType_searchField is null");
+        } else {
+            itemType_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                System.out.println("Search input: " + newValue);
+            });
+            search_itemType();
+        }
+
         //Initialize UNIT TYPE
         if (unitTypeTable != null){
             unitTypeID_col.setCellValueFactory(new PropertyValueFactory<UnitType,Integer>("unitTypeID"));
@@ -856,15 +1152,35 @@ public class controller implements Initializable {
             unitTypeEditData();
         }
 
+        // search_unitType(); (unitType.fxml)
+        if (unitType_searchField == null) {
+            System.out.println("unitType_searchField is null");
+        } else {
+            unitType_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                System.out.println("Search input: " + newValue);
+            });
+            search_unitType();
+        }
+
         //Initialize ITEM UNIT TYPE
         if (itemUnitTypeTable != null){
             itemUnitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("itemUnitTypeID"));
-            itemUnitType_itemTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType, Integer>("itemTypeID"));
+            itemUnitType_itemTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("itemTypeID"));
             itemUnitType_unitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("unitTypeID"));
             itemUnitType_itemTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("itemTypeName"));
             itemUnitType_unitTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("unitTypeName"));
             itemUnitTypeTable.setItems(initialItemUnitTypeData());
-            itemUnitTypeEditData();
+//           itemUnitTypeEditData();
+        }
+
+        //  search_ItemUnitType(); (itemUnitType.fxml)
+        if (itemUnitType_searchField == null) {
+            System.out.println("itemUnitType_searchField is null");
+        } else {
+            itemUnitType_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                System.out.println("Search input: " + newValue);
+            });
+            search_ItemUnitType();
         }
 
         //Initialize PHARMACISTS
@@ -878,11 +1194,21 @@ public class controller implements Initializable {
             pharmacistEditData();
         }
 
+        // search_pharmacist();(pharmacists.fxml)
+        if (pharmacist_searchName == null) {
+            System.out.println("pharmacist_searchName is null");
+        } else {
+            pharmacist_searchName.textProperty().addListener((observable, oldValue, newValue) -> {
+                System.out.println("Search input: " + newValue);
+            });
+            search_pharmacist();
+        }
+
         //Initialize ITEM
         if (itemTable != null){
             itemID_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemID"));
             itemName_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemName"));
-            itemUnitID_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemUnitTypeID"));
+            itemUnitType_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemUnitType"));
             itemQuantity_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("quantity"));
             itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("unitCost"));
             itemMovement_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("movement"));
@@ -890,23 +1216,35 @@ public class controller implements Initializable {
             itemEditData();
         }
 
-        if (restockTable != null){
-            restockID_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
-            restock_beginningQty_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("startQty"));
-            restock_expirationDate_col.setCellValueFactory(new PropertyValueFactory<Restocks, Date>("expiryDate"));
-            restock_itemName_col.setCellValueFactory(new PropertyValueFactory<Restocks, String>("itemName"));
-            restock_restockDate_col.setCellValueFactory(new PropertyValueFactory<Restocks, Date>("restockDate"));
-            restock_soldQty_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("soldQty"));
-            //TODO: Add wholesale cost column
-            restockTable.setItems(initialRestockData());
-            restockEditData();
+        // search_itemName(); (items.fxml)
+        if (item_filterTextField == null) {
+            System.out.println("item_filterTextField is null");
+        } else {
+            item_filterTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+                System.out.println("Search input: " + newValue);
+            });
+            search_itemName();
         }
+
+        // for restock
+        /* uncomment if okay na methods
+        if (restock_searchTextField == null) {
+                    System.out.println("field is null");
+                } else {
+                    restock_searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+                        System.out.println("Search input: " + newValue);
+                    });
+                    search_restocks();
+                }
+        */
 
         // combo box from database
         itemType_comboBoxOnAction(new ActionEvent());
         unitType_comboBoxOnAction(new ActionEvent());
         restock_itemName_comboBoxOnAction(new ActionEvent());
         transactionItemName_comboBoxOnAction(new ActionEvent());
+
+
     }
 
     // switching scenes

@@ -207,11 +207,11 @@
          <center>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <TableView fx:id="itemTable" editable="true" layoutX="14.0" layoutY="65.0" prefHeight="492.0" prefWidth="707.0" style="-fx-border-color: black;">
+                  <TableView fx:id="itemTable" editable="true" layoutX="14.0" layoutY="54.0" prefHeight="503.0" prefWidth="707.0" style="-fx-border-color: black;">
                     <columns>
                       <TableColumn fx:id="itemID_col" editable="false" prefWidth="75.0" text="Item ID" />
                       <TableColumn fx:id="itemName_col" prefWidth="75.0" text="Item Name" />
-                        <TableColumn fx:id="itemUnitID_col" editable="false" prefWidth="75.0" text="Item Unit ID" />
+                        <TableColumn fx:id="itemUnitType_col" editable="false" prefWidth="75.0" text="Item Unit Type" />
                         <TableColumn fx:id="itemQuantity_col" editable="false" prefWidth="75.0" text="Quantity" />
                         <TableColumn fx:id="itemUnitCost_col" editable="false" prefWidth="75.0" text="Unit Cost" />
                         <TableColumn fx:id="itemMovement_col" editable="false" prefWidth="75.0" text="Movement" />
@@ -220,12 +220,7 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <Label layoutX="15.0" layoutY="12.0" text="Filter">
-                     <font>
-                        <Font name="AauxNext-Bold" size="15.0" />
-                     </font>
-                  </Label>
-                  <Button fx:id="addItemButton" alignment="CENTER" contentDisplay="BOTTOM" layoutX="732.0" layoutY="378.0" mnemonicParsing="false" onAction="#addItem" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item">
+                  <Button fx:id="item_AddItemButton" alignment="CENTER" contentDisplay="BOTTOM" layoutX="732.0" layoutY="378.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -235,12 +230,12 @@
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="deleteItemButton" alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" onAction="#deleteItem" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item">
+                  <Button fx:id="item_DeleteItemButton" alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="transactionHistoryButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Transaction History">
+                  <Button fx:id="item_TransactionHistoryButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Transaction History">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -256,7 +251,7 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <Label layoutX="829.0" layoutY="207.0" text="Unit Cost">
+                  <Label layoutX="829.0" layoutY="207.0" text="Quantity">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
@@ -269,7 +264,7 @@
                   <TextField fx:id="itemQuantity_textField" layoutX="830.0" layoutY="226.0" prefHeight="27.0" prefWidth="79.0" promptText="Qty" style="-fx-border-color: black; -fx-border-radius: 0px;" />
                   <ComboBox fx:id="item_TypeCb" layoutX="732.0" layoutY="157.0" onAction="#itemType_comboBoxOnAction" prefHeight="29.0" prefWidth="177.0" style="-fx-border-color: black;" />
                   <ComboBox fx:id="item_unitCb" layoutX="732.0" layoutY="226.0" onAction="#unitType_comboBoxOnAction" prefHeight="27.0" prefWidth="79.0" style="-fx-border-color: black;" />
-                  <ComboBox fx:id="item_filterCb" layoutX="15.0" layoutY="31.0" prefWidth="150.0" style="-fx-border-color: black;" />
+                  <TextField fx:id="item_filterTextField" layoutX="14.0" layoutY="14.0" prefHeight="27.0" prefWidth="243.0" promptText="Search" style="-fx-border-color: BLACK;" />
                </children>
             </AnchorPane>
          </center>

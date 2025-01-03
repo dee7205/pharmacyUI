@@ -208,7 +208,7 @@
          <center>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <TableView fx:id="restockTable" layoutX="14.0" layoutY="65.0" prefHeight="492.0" prefWidth="707.0" style="-fx-border-color: black;">
+                  <TableView fx:id="restockTable" layoutX="14.0" layoutY="47.0" prefHeight="510.0" prefWidth="707.0" style="-fx-border-color: black;">
                      <columns>
                         <TableColumn fx:id="restockID_col" prefWidth="75.0" text="Restock ID" />
                         <TableColumn fx:id="restock_itemName_col" prefWidth="75.0" text="Item Name" />
@@ -221,13 +221,7 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <ChoiceBox layoutX="15.0" layoutY="31.0" prefWidth="150.0" style="-fx-border-color: black;" />
-                  <Label layoutX="15.0" layoutY="12.0" text="Sort by">
-                     <font>
-                        <Font name="AauxNext-Bold" size="15.0" />
-                     </font>
-                  </Label>
-                  <Button fx:id="addRestockButton" alignment="CENTER" layoutX="732.0" layoutY="426.0" mnemonicParsing="false" onAction="#addRestock" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Restock">
+                  <Button fx:id="addRestockButton" alignment="CENTER" layoutX="732.0" layoutY="426.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Restock">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -237,7 +231,7 @@
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="deleteRestockButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" onAction="#deleteRestock" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Restock">
+                  <Button fx:id="deleteRestockButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Restock">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -266,6 +260,7 @@
                      </font>
                   </Label>
                   <DatePicker fx:id="expirationDate_datePicker" layoutX="732.0" layoutY="236.0" prefHeight="28.0" prefWidth="172.0" promptText="MM/DD/YYYY" />
+                  <TextField fx:id="restock_searchTextField" layoutX="14.0" layoutY="11.0" prefHeight="27.0" prefWidth="243.0" promptText="Search" style="-fx-border-color: BLACK;" />
                </children>
             </AnchorPane>
          </center>

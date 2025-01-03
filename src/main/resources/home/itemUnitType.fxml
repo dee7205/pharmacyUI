@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.geometry.Rectangle2D?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -207,7 +206,7 @@
          <center>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <TableView fx:id="itemUnitTypeTable" layoutX="14.0" editable="true" layoutY="65.0" prefHeight="481.0" prefWidth="663.0" style="-fx-border-color: black;">
+                  <TableView fx:id="itemUnitTypeTable" editable="true" layoutX="14.0" layoutY="49.0" prefHeight="498.0" prefWidth="663.0" style="-fx-border-color: black;">
                      <columns>
                         <TableColumn fx:id="itemUnitTypeID_col" editable="false" prefWidth="75.0" text="Item Unit Type ID" />
                         <TableColumn fx:id="itemUnitType_itemTypeID_col" editable="false" prefWidth="75.0" text="Item Type ID" />
@@ -219,12 +218,6 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <ChoiceBox layoutX="15.0" layoutY="30.0" prefWidth="150.0" style="-fx-border-color: black;" />
-                  <Label layoutX="15.0" layoutY="12.0" text="Sort by">
-                     <font>
-                        <Font name="AauxNext-Bold" size="15.0" />
-                     </font>
-                  </Label>
                   <Button fx:id="addItemUnitTypeButton" alignment="CENTER" contentDisplay="BOTTOM" layoutX="684.0" layoutY="406.0" mnemonicParsing="false" onAction="#addItemUnitType" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item Unit Type">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
@@ -252,6 +245,7 @@
                      </font>
                   </Label>
                   <TextField fx:id="itemUnitType_unitTypeID_textField" layoutX="694.0" layoutY="181.0" prefHeight="29.0" prefWidth="193.0" promptText="Type unit type id here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
+                  <TextField fx:id="itemUnitType_searchField" layoutX="14.0" layoutY="12.0" prefHeight="27.0" prefWidth="243.0" promptText="Search" style="-fx-border-color: BLACK;" />
                </children>
             </AnchorPane>
          </center>
