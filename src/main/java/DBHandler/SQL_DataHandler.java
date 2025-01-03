@@ -1398,6 +1398,67 @@ public class SQL_DataHandler {
         }
     }
 
+    public UnitType[] getAllUnitTypes() {
+        final String query = """
+            SELECT 
+                ut.unitType_ID AS "Unit Type ID",
+                ut.unit_Type AS "Unit Type Name"
+            FROM UnitType as ut
+            ORDER BY ut.unitType_ID ASC;
+            """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(Statement stmt = connection.createStatement();){
+            ResultSet set = stmt.executeQuery(query);
+
+            List<UnitType> list = new ArrayList<>();
+            boolean isAdded = false;
+            while (set.next()){
+                list.add(new UnitType(set.getInt("Unit Type ID"), set.getString("Unit Type Name")));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                UnitType [] array = new UnitType[list.size()];
+                return list.toArray(array);
+            }   else
+                return null;
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public UnitType getUnitType(String unitType) {
+        final String query = """
+                SELECT 
+                    ut.unitType_ID AS "Unit Type ID",
+                    ut.unit_Type AS "Unit Type Name"
+                FROM UnitType as ut
+                WHERE unit_Type = ?
+                """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query);) {
+            pstmt.setString(1, unitType);
+            ResultSet set = pstmt.executeQuery();
+
+            if (set.next())
+                return new UnitType(set.getInt("Unit Type ID"), set.getString("Unit Type Name"));
+            else
+                return null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public boolean updateUnitType(int unitTypeID, String newUnitTypeName){
         final String query = "UPDATE UnitType SET unit_Type = ? WHERE unitType_ID = ?";
 
@@ -1594,6 +1655,9 @@ public class SQL_DataHandler {
         if (connection == null)
             prepareConnection();
 
+        if (!itemUnitTypeExists(itemTypeID, unitTypeID))
+            return null;
+
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, unitTypeID);
             pstmt.setInt(2, itemTypeID);
@@ -1642,6 +1706,48 @@ public class SQL_DataHandler {
         }
     }
 
+    public ItemUnitType[] getAllItemUnitTypes() {
+        final String query = """
+                SELECT
+                    iut.item_unit_ID AS "Item Unit Type ID",
+                    iut.itemType_ID AS "Item Type ID",
+                    it.item_Type AS "Item Type Name",
+                    iut.unitType_ID AS "Unit Type ID",
+                    ut.unit_Type AS "Unit Type Name"
+                FROM ItemType AS it
+                JOIN itemUnitType AS iut ON it.itemType_ID = iut.itemType_ID
+                JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
+                ORDER BY iut.item_unit_ID;
+            """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(Statement stmt = connection.createStatement();){
+            ResultSet set = stmt.executeQuery(query);
+
+            List<ItemUnitType> list = new ArrayList<>();
+            boolean isAdded = false;
+            while (set.next()){
+                list.add(new ItemUnitType(set.getInt("Item Unit Type ID"),
+                        set.getInt("Item Type ID"),
+                        set.getInt("Unit Type ID"),
+                        set.getString("Item Type Name"),
+                        set.getString("Unit Type Name")));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                ItemUnitType [] array = new ItemUnitType[list.size()];
+                return list.toArray(array);
+            }   else
+                return null;
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     //TODO: Add explanation for why these variables are made/used
     public static final int REMOVE_ITEM_TYPE = 6969;
@@ -2401,108 +2507,6 @@ public class SQL_DataHandler {
         } catch (Exception e){
             e.printStackTrace();
             return getCurrentDate();
-        }
-    }
-
-    public UnitType[] getAllUnitTypes() {
-        final String query = """
-            SELECT 
-                ut.unitType_ID AS "Unit Type ID",
-                ut.unit_Type AS "Unit Type Name"
-            FROM UnitType as ut
-            ORDER BY ut.unitType_ID ASC;
-            """;
-
-        if (connection == null)
-            prepareConnection();
-
-        try(Statement stmt = connection.createStatement();){
-            ResultSet set = stmt.executeQuery(query);
-
-            List<UnitType> list = new ArrayList<>();
-            boolean isAdded = false;
-            while (set.next()){
-                list.add(new UnitType(set.getInt("Unit Type ID"), set.getString("Unit Type Name")));
-                isAdded = true;
-            }
-
-            if (isAdded){
-                UnitType [] array = new UnitType[list.size()];
-                return list.toArray(array);
-            }   else
-                return null;
-
-        }   catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-
-    }
-
-    public ItemUnitType[] getAllItemUnitTypes() {
-        final String query = """
-                SELECT
-                    iut.item_unit_ID AS "Item Unit Type ID",
-                    iut.itemType_ID AS "Item Type ID",
-                    it.item_Type AS "Item Type Name",
-                    iut.unitType_ID AS "Unit Type ID",
-                    ut.unit_Type AS "Unit Type Name"
-                FROM ItemType AS it
-                JOIN itemUnitType AS iut ON it.itemType_ID = iut.itemType_ID
-                JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
-                ORDER BY iut.item_unit_ID;
-            """;
-
-        if (connection == null)
-            prepareConnection();
-
-        try(Statement stmt = connection.createStatement();){
-            ResultSet set = stmt.executeQuery(query);
-
-            List<ItemUnitType> list = new ArrayList<>();
-            boolean isAdded = false;
-            while (set.next()){
-                list.add(new ItemUnitType(set.getInt("Item Unit Type ID"), set.getInt("Item Type ID"),set.getInt("Unit Type ID"),set.getString("Item Type Name"),set.getString("Unit Type Name")));
-                isAdded = true;
-            }
-
-            if (isAdded){
-                ItemUnitType [] array = new ItemUnitType[list.size()];
-                return list.toArray(array);
-            }   else
-                return null;
-
-        }   catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-
-    }
-
-    public UnitType getUnitType(String unitType) {
-        final String query = """
-                SELECT 
-                    ut.unitType_ID AS "Unit Type ID",
-                    ut.unit_Type AS "Unit Type Name"
-                FROM UnitType as ut
-                WHERE unit_Type = ?
-                """;
-
-        if (connection == null)
-            prepareConnection();
-
-        try (PreparedStatement pstmt = connection.prepareStatement(query);) {
-            pstmt.setString(1, unitType);
-            ResultSet set = pstmt.executeQuery();
-
-            if (set.next())
-                return new UnitType(set.getInt("Unit Type ID"), set.getString("Unit Type Name"));
-            else
-                return null;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
         }
     }
 }
