@@ -34,7 +34,7 @@ public class SQL_DataHandler {
         UnitType type = handler.getUnitType(handler.getUnitTypeID("Packet"));
         System.out.println(type.getUnitTypeID() + " " + type.getUnitType());
 
-        System.out.println("Item Unit Type Exists: " + handler.itemUnitTypeExists(1, 1));
+        System.out.println("Item Unit Type Exists: " + handler.getItemUnitType(1, 1));
 
 //        handler.removeAllItems();
         handler.addItem("Paracetamol", handler.getItemUnitTypeID("Medicine", "Pills"), 5.0);
@@ -1588,7 +1588,7 @@ public class SQL_DataHandler {
             FROM ItemUnitType AS iut
             JOIN ItemType AS it ON iut.itemType_ID = it.itemType_ID
             JOIN UnitType AS ut ON iut.unitType_ID = ut.unitType_ID
-            WHERE iut.unitType_ID = ? AND iut.itemType_ID = ?
+            WHERE iut.unitType_ID = ? AND iut.itemType_ID = ?;
             """;
 
         if (connection == null)
@@ -1597,7 +1597,7 @@ public class SQL_DataHandler {
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, unitTypeID);
             pstmt.setInt(2, itemTypeID);
-            ResultSet set = pstmt.executeQuery(query);
+            ResultSet set = pstmt.executeQuery();
             if (set.next())
                 return new ItemUnitType(set.getInt("Item Unit ID"), itemTypeID,
                                         unitTypeID, set.getString("Item Type Name"), set.getString("Unit Type Name"));
@@ -2442,15 +2442,15 @@ public class SQL_DataHandler {
     public ItemUnitType[] getAllItemUnitTypes() {
         final String query = """
                 SELECT
-                iut.item_unit_ID AS "Item Unit Type ID",
-                            iut.itemType_ID AS "Item Type ID",
-                            it.item_Type AS "Item Type Name",
-                iut.unitType_ID AS "Unit Type ID",
-                            ut.unit_Type AS "Unit Type Name"
-                        FROM ItemType AS it
-                        JOIN itemUnitType AS iut ON it.itemType_ID = iut.itemType_ID
-                        JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
-                        GROUP BY iut.item_unit_ID;
+                    iut.item_unit_ID AS "Item Unit Type ID",
+                    iut.itemType_ID AS "Item Type ID",
+                    it.item_Type AS "Item Type Name",
+                    iut.unitType_ID AS "Unit Type ID",
+                    ut.unit_Type AS "Unit Type Name"
+                FROM ItemType AS it
+                JOIN itemUnitType AS iut ON it.itemType_ID = iut.itemType_ID
+                JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
+                ORDER BY iut.item_unit_ID;
             """;
 
         if (connection == null)
