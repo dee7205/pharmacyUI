@@ -99,7 +99,7 @@ public class Restocks {
     }
 
     public String getRestockDateString(){
-        return this restockDateString;
+        return this.restockDateString;
     }
 
     public void setExpiryDateString(String expiryDateString){
