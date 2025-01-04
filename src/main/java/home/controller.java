@@ -380,7 +380,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "Gimatag2024");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "maclang@2023-00570");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -1011,6 +1011,35 @@ public class controller implements Initializable {
     @FXML private TableColumn<ItemsSold, Integer> itemsSold_soldQty_col;
     @FXML private TableColumn<ItemsSold, Double> itemsSold_unitCost_col;
 
+    public ObservableList<Transaction> initialTransactionData(){
+        SQL_DataHandler handler = new SQL_DataHandler();
+        Transaction [] transactions = handler.getAllTransactions(true);
+        return FXCollections.<Transaction> observableArrayList(transactions);
+    }
+
+    //Makes it that when
+    public void prepareTransactionTableListener(){
+        transactionTable.setOnMouseClicked(mouseEvent -> {
+            if (mouseEvent.getClickCount() == 2){
+                SQL_DataHandler handler = new SQL_DataHandler();
+                Transaction transaction = transactionTable.getSelectionModel().getSelectedItem();
+
+                //Checks if the transaction exists in the database
+                if (handler.transactionExists(transaction.getTransactionID())){
+                    //Initialize the data in the itemsSoldTable
+                    itemsSoldTable.setItems(initialItemsSoldData(transaction.getTransactionID()));
+                } else {
+                    System.out.println("Transaction doesn't exist: " + transaction.getTransactionID());
+                }
+            }
+        });
+    }
+
+    public ObservableList<ItemsSold> initialItemsSoldData(int transactionID){
+        SQL_DataHandler handler = new SQL_DataHandler();
+        ItemsSold [] items = handler.getItemsSold_Transaction(transactionID);
+        return FXCollections.<ItemsSold> observableArrayList(items);
+    }
 
     //===============================ITEM UNIT TYPE METHODS====================================
 
@@ -1360,8 +1389,9 @@ public class controller implements Initializable {
             itemEditData();
         }
 
-        //Initialize ITEM
-        if (itemTable != null){
+
+        //Initialize Restock
+        if (restockTable != null){
             restockID_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
             restock_itemID_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("itemID"));
             restock_beginningQty_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("startQty"));
@@ -1372,6 +1402,24 @@ public class controller implements Initializable {
             restockTable.setItems(initialRestockData());
             //itemEditData();
         }
+
+        //Initialize TRANSACTIONS and ITEMS SOLD
+        if (transactionTable != null && itemsSoldTable != null){
+            transactionDate_col.setCellValueFactory(new PropertyValueFactory<Transaction, Date>("transactionDate"));
+            transactionNo_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("transactionID"));
+            transaction_income_col.setCellValueFactory(new PropertyValueFactory<Transaction, Double>("income"));
+            transaction_pharmacistID_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("pharmacistID"));
+            transaction_soldQty_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("soldQty"));
+
+            itemsSold_income_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Double>("income"));
+            itemsSold_itemName_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, String>("itemName"));
+            itemsSold_soldQty_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Integer>("itemQty"));
+            itemsSold_unitCost_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Double>("unitCost"));
+
+            prepareTransactionTableListener();
+            transactionTable.setItems(initialTransactionData());
+        }
+
         // search_itemName(); (items.fxml)
         if (item_filterTextField == null) {
             System.out.println("item_filterTextField is null");
