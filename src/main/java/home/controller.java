@@ -146,12 +146,7 @@ public class controller implements Initializable {
 
                     // Filter items by name (case-insensitive)
                     String lowerCaseFilter = newValue.toLowerCase();
-                    return String.valueOf(item.getItemID()).contains(lowerCaseFilter) ||
-                            item.getItemName().toLowerCase().contains(lowerCaseFilter) ||
-                            item.getItemUnitType().toLowerCase().contains(lowerCaseFilter) ||
-                            String.valueOf(item.getQuantity()).contains(lowerCaseFilter) ||
-                            String.valueOf(item.getUnitCost()).contains(lowerCaseFilter) ||
-                            String.valueOf(item.getMovement()).contains(lowerCaseFilter);
+                    return item.getItemName().toLowerCase().contains(lowerCaseFilter);
                 });
             });
 
@@ -825,16 +820,14 @@ public class controller implements Initializable {
     @FXML private TableColumn<Restocks, Integer> restockID_col;
     @FXML private TableView<Restocks> restockTable;
     @FXML private TableColumn<Restocks, Integer> restock_beginningQty_col;
-    @FXML private TableColumn<Restocks, Date> restock_expirationDate_col;
+    @FXML private TableColumn<Restocks, String> restock_expirationDate_col;
     @FXML private TableColumn<Restocks, String> restock_itemName_col;
-    @FXML private TableColumn<Restocks, Date> restock_restockDate_col;
+    @FXML private TableColumn<Restocks, String> restock_restockDate_col;
     @FXML private TableColumn<Restocks, Integer> restock_soldQty_col;
 
     @FXML private TextField restock_qty;
 
     @FXML private TextField restock_searchTextField;
-
-
 
     /*
     // ObservableList to hold the data for the table
@@ -1299,6 +1292,11 @@ public class controller implements Initializable {
                     });
                     search_restocks();
                 }
+
+        if (restockTable != null){
+            
+            restockTable.setItems(initialRestockData());
+        }
         */
 
         // combo box from database

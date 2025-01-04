@@ -2494,13 +2494,14 @@ public class SQL_DataHandler {
                 isd.item_ID AS "Item ID",
                 i.item_name AS "Item Name",
                 i.unit_cost AS "Unit Cost",
-                isd.item_qty AS "Item Quantity",
-                (isd.item_qty * i.unit_cost) AS "Income",
-                isd.transaction_date AS "Transaction Date"
+                SUM(isd.item_qty) AS "Item Quantity",
+                SUM(isd.item_qty * i.unit_cost) AS "Income",
+                MAX(isd.transaction_date) AS "Transaction Date"
             FROM Sold_Items AS isd
             JOIN Items AS i ON isd.item_ID = i.item_ID
             WHERE isd.transaction_ID = ?
-            ORDER BY i.item_ID DESC;
+            GROUP BY isd.item_ID
+            ORDER BY i.item_ID ASC;
         """;
 
         if (connection == null)
