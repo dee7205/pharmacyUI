@@ -812,9 +812,9 @@ public class controller implements Initializable {
     @FXML private TableColumn<Restocks, Integer> restockID_col;
     @FXML private TableView<Restocks> restockTable;
     @FXML private TableColumn<Restocks, Integer> restock_beginningQty_col;
-    @FXML private TableColumn<Restocks, Date> restock_expirationDate_col;
+    @FXML private TableColumn<Restocks, String> restock_expirationDate_col;
     @FXML private TableColumn<Restocks, String> restock_itemName_col;
-    @FXML private TableColumn<Restocks, Date> restock_restockDate_col;
+    @FXML private TableColumn<Restocks, String> restock_restockDate_col;
     @FXML private TableColumn<Restocks, Integer> restock_soldQty_col;
 
     @FXML private TextField restock_qty;
@@ -1284,6 +1284,11 @@ public class controller implements Initializable {
                     });
                     search_restocks();
                 }
+
+        if (restockTable != null){
+            
+            restockTable.setItems(initialRestockData());
+        }
         */
 
         // combo box from database
