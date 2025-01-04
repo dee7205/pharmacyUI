@@ -3,7 +3,7 @@ import java.sql.Date;
 
 public class Restocks {
     int itemID, restockID, startQty, soldQty, remainingQty;
-    String itemName;
+    String itemName, restockDateString, expiryDateString;
     Date restockDate, expiryDate;
     double wholesaleCost;
 
@@ -17,7 +17,9 @@ public class Restocks {
         setWholesaleCost(wholesaleCost);
         setRemainingQty(startQty - soldQty);
         setRestockDate(restockDate);
+        setRestockDateString(restockDate.toString());
         setExpiryDate(expiryDate);
+        setExpiryDateString(expiryDate.toString());
     }
 
     public int getItemID() {
@@ -90,6 +92,22 @@ public class Restocks {
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
+    }
+
+    public void setRestockDateString(String restockDateString){
+        this.restockDateString = restockDateString;
+    }
+
+    public String getRestockDateString(){
+        return this restockDateString;
+    }
+
+    public void setExpiryDateString(String expiryDateString){
+        this.expiryDateString = expiryDateString;
+    }
+
+    public String getExpiryDateString(){
+        return this.expiryDateString;
     }
 
     //
