@@ -111,7 +111,7 @@ public class controller implements Initializable {
         System.out.println(itemUnitTypeID);
         if (!itemName.isEmpty() && !itemCost.isEmpty() && itemUnitTypeID > -1 && handler.addItem(itemName,itemUnitTypeID,convertedCost)) {
             Item i = handler.getItem(itemName);
-            itemTable.getItems().add(i); //Adds item type to the table
+            itemTable.setItems(initialItemData()); //Adds item type to the table
             itemName_textField.clear();
         } else if (!itemName.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
