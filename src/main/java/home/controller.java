@@ -53,6 +53,7 @@ public class controller implements Initializable {
     @FXML private Label issuanceBalance;
     @FXML private Label endingBalance;
     @FXML private Label dashboardDate;
+    @FXML private Label overallSoldQuantity;
 
     // restock
     @FXML private Button addRestockButton;
@@ -1648,23 +1649,63 @@ public class controller implements Initializable {
     }
 
     public void fetchBalances() {
-        double beginning = 150000.00;  // Example value, replace with actual data
-        double issuance = 500.00;    // Example value, replace with actual data
-        double ending = 12312.73;
+        try (Connection connection = DatabaseConnection.connect()) {
+            if (connection == null) {
+                System.err.println("Failed to establish a database connection.");
+                return;
+            }
 
-        if (beginningBalance != null) {
-            beginningBalance.setText(" " + beginning);
+            // SQL Query to calculate beginning balance, issuance balance, ending balance, and overall sold quantity
+            String query = """
+        SELECT 
+            (SELECT COALESCE(SUM(start_Qty * wholesale_cost), 0) FROM Restocks) AS beginning_balance,
+            (SELECT COALESCE(SUM(SI.item_qty * I.unit_Cost), 0)
+             FROM Sold_Items SI
+             JOIN Items I ON SI.item_ID = I.item_ID
+             WHERE SI.transaction_date = CURRENT_DATE()) AS issuance_balance,
+            ((SELECT COALESCE(SUM(start_Qty * wholesale_cost), 0) FROM Restocks) - 
+             (SELECT COALESCE(SUM(SI.item_qty * I.unit_Cost), 0)
+              FROM Sold_Items SI
+              JOIN Items I ON SI.item_ID = I.item_ID
+              WHERE SI.transaction_date = CURRENT_DATE())) AS ending_balance,
+            (SELECT COALESCE(SUM(item_qty), 0)
+             FROM Sold_Items
+             WHERE transaction_date = CURRENT_DATE()) AS overall_sold_quantity
+        """;
+
+            try (PreparedStatement pstmt = connection.prepareStatement(query);
+                 ResultSet rs = pstmt.executeQuery()) {
+
+                if (rs.next()) {
+                    double beginningBalance = rs.getDouble("beginning_balance");
+                    double issuanceBalance = rs.getDouble("issuance_balance");
+                    double endingBalance = rs.getDouble("ending_balance");
+                    int overallSoldQuantity = rs.getInt("overall_sold_quantity"); // Get the overall sold quantity
+
+                    // Update the dashboard fields
+                    if (this.beginningBalance != null) {
+                        this.beginningBalance.setText(String.format("%.2f", beginningBalance));
+                    }
+                    if (this.issuanceBalance != null) {
+                        this.issuanceBalance.setText(String.format("%.2f", issuanceBalance));
+                    }
+                    if (this.endingBalance != null) {
+                        this.endingBalance.setText(String.format("%.2f", endingBalance));
+                    }
+
+                    if (this.overallSoldQuantity != null) {
+                        this.overallSoldQuantity.setText(String.valueOf(overallSoldQuantity)); // Update the label with the sold quantity
+                    }
+
+                    System.out.println("Balances and overall sold quantity updated successfully.");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        if (issuanceBalance != null) {
-            issuanceBalance.setText(" " + issuance);
-        }
-
-        if (endingBalance != null) {
-            endingBalance.setText("" + ending);
-        }
-
     }
+
+
 
     public void toggleSideBar() {
         TranslateTransition slide = new TranslateTransition();
