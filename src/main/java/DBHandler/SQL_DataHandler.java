@@ -2292,7 +2292,7 @@ public class SQL_DataHandler {
 
             if (set.next()){
                 return new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),
-                                       set.getInt("Sold Quantity"), set.getInt("Total Sales"), set.getDate("Transaction Date")));
+                                       set.getInt("Sold Quantity"), set.getInt("Total Sales"), set.getDate("Transaction Date"));
             } else
                 return null;
 

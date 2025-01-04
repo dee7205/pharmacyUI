@@ -351,7 +351,7 @@ public class controller implements Initializable {
     public ObservableList<ItemType> initialItemTypeData(){
         SQL_DataHandler handler = new SQL_DataHandler();
         ItemType [] types = handler.getAllItemTypes();
-        return FXCollections.<ItemType> observableArrayList(types);
+        return FXCollections.<ItemType> observableArrayList(Arrays.asList(types));
     }
 
     @FXML
@@ -360,7 +360,8 @@ public class controller implements Initializable {
         String itemTypeName = itemTypeNameTextField.getText();
         if (!itemTypeName.isEmpty() && !itemTypeName.equals("Item Type") && handler.addItemType(itemTypeName)) {
             ItemType type = handler.getItemType(itemTypeName);
-            itemTypeTable.getItems().add(type); //Adds item type to the table
+            ObservableList<ItemType> list = itemTypeTable.getItems(); //Adds item type to the table
+            list.add(type);
             itemTypeNameTextField.clear();
         } else if (itemTypeName.equalsIgnoreCase("Item Type")){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -520,7 +521,13 @@ public class controller implements Initializable {
         String middleName = pharmacist_mName_textField.getText();
         String lastName = pharmacist_lName_textField.getText();
         String ID = pharmacist_id_textField.getText();
+
+        if (firstName.isEmpty() || lastName.isEmpty() || middleName.isEmpty() || ID.isEmpty()){
+            return;
+        }
+
         int convertedID;
+
         try {
             convertedID = Integer.parseInt(ID);
         } catch(Exception e){
@@ -531,9 +538,10 @@ public class controller implements Initializable {
             alert.showAndWait();
             return;
         }
-        if (!firstName.isEmpty() && !lastName.isEmpty() && !middleName.isEmpty() && !ID.isEmpty() && handler.addPharmacist(convertedID,firstName,middleName,lastName)) {
+
+        if (handler.addPharmacist(convertedID,firstName,middleName,lastName)) {
             Pharmacist p = handler.getPharmacist(convertedID);
-            pharmacistTable.getItems().add(p); //Adds item type to the table
+            pharmacistTable.getItems().add(p); //Adds Pharmacist to the table
             pharmacist_fName_textField.clear();
             pharmacist_mName_textField.clear();
             pharmacist_lName_textField.clear();
