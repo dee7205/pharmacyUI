@@ -2251,10 +2251,14 @@ public class SQL_DataHandler {
             SELECT
                 t.transaction_ID AS "Transaction ID",
                 t.pharmacist_ID AS "Pharmacist ID",
-                t.transaction_date AS "Transaction Date"
+                t.transaction_date AS "Transaction Date",
+                SUM(isd.item_qty * i.unit_cost) AS "Total Sales",
+                SUM(isd.item_qty) AS "Sold Quantity"
             FROM Transactions AS t
+            LEFT JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
+            LEFT JOIN Items AS i ON i.item_ID = isd.item_ID
             WHERE t.transaction_ID = ?
-            ORDER BY t.transaction_ID ASC;
+            GROUP BY t.transaction_ID;
         """;
 
         if (connection == null)
@@ -2266,7 +2270,7 @@ public class SQL_DataHandler {
 
             if (set.next()){
                 return new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),
-                        set.getDate("Transaction Date"));
+                                       set.getInt("Sold Quantity"), set.getInt("Total Sales"), set.getDate("Transaction Date")));
             } else
                 return null;
 
@@ -2283,21 +2287,31 @@ public class SQL_DataHandler {
         String first = """
             SELECT
                 t.transaction_ID AS "Transaction ID",
-                t.pharmacist_ID AS "Pharmacist ID", 
-                t.transaction_date AS "Transaction Date"
+                t.pharmacist_ID AS "Pharmacist ID",
+                t.transaction_date AS "Transaction Date",
+                SUM(isd.item_qty * i.unit_cost) AS "Total Sales",
+                SUM(isd.item_qty) AS "Sold Quantity"
             FROM Transactions AS t
+            LEFT JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
+            LEFT JOIN Items AS i ON i.item_ID = isd.item_ID
             WHERE t.transaction_date = ?
-            ORDER BY r.transaction_ID ASC;
+            GROUP BY t.transaction_ID
+            ORDER BY t.transaction_ID DESC;
         """;
 
         String second = """
             SELECT
                 t.transaction_ID AS "Transaction ID",
-                t.pharmacist_ID AS "Pharmacist ID", 
-                t.transaction_date AS "Transaction Date"
+                t.pharmacist_ID AS "Pharmacist ID",
+                t.transaction_date AS "Transaction Date",
+                SUM(isd.item_qty * i.unit_cost) AS "Total Sales",
+                SUM(isd.item_qty) AS "Sold Quantity"
             FROM Transactions AS t
-            WHERE t.transaction_date =  ?
-            ORDER BY r.transaction_ID DESC;
+            LEFT JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
+            LEFT JOIN Items AS i ON i.item_ID = isd.item_ID
+            WHERE t.transaction_date = ?
+            GROUP BY t.transaction_ID
+            ORDER BY t.transaction_ID DESC;
         """;
 
         String finalQuery;
@@ -2318,7 +2332,7 @@ public class SQL_DataHandler {
             List<Transaction> list = new ArrayList<>();
             while(set.next()){
                 list.add(new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),
-                                         set.getDate("Transaction Date")));
+                                         set.getInt("Sold Quantity"), set.getInt("Total Sales"), set.getDate("Transaction Date")));
                 isAdded = true;
             }
 
@@ -2349,11 +2363,12 @@ public class SQL_DataHandler {
                 t.transaction_ID AS "Transaction ID",
                 t.pharmacist_ID AS "Pharmacist ID",
                 t.transaction_date AS "Transaction Date",
-                (isd.item_qty * i.unit_cost) AS "Total Sales",
-                isd.item_qty AS "Sold Quantity"
+                SUM(isd.item_qty * i.unit_cost) AS "Total Sales",
+                SUM(isd.item_qty) AS "Sold Quantity"
             FROM Transactions AS t
             LEFT JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
             LEFT JOIN Items AS i ON i.item_ID = isd.item_ID
+            GROUP BY t.transaction_ID
             ORDER BY t.transaction_ID ASC;
         """;
 
@@ -2362,11 +2377,12 @@ public class SQL_DataHandler {
                 t.transaction_ID AS "Transaction ID",
                 t.pharmacist_ID AS "Pharmacist ID",
                 t.transaction_date AS "Transaction Date",
-                (isd.item_qty * i.unit_cost) AS "Total Sales",
-                isd.item_qty AS "Sold Quantity"
+                SUM(isd.item_qty * i.unit_cost) AS "Total Sales",
+                SUM(isd.item_qty) AS "Sold Quantity"
             FROM Transactions AS t
             LEFT JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
             LEFT JOIN Items AS i ON i.item_ID = isd.item_ID
+            GROUP BY t.transaction_ID
             ORDER BY t.transaction_ID DESC;
         """;
 
