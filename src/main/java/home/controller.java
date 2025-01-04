@@ -360,8 +360,7 @@ public class controller implements Initializable {
         String itemTypeName = itemTypeNameTextField.getText();
         if (!itemTypeName.isEmpty() && !itemTypeName.equals("Item Type") && handler.addItemType(itemTypeName)) {
             ItemType type = handler.getItemType(itemTypeName);
-            ObservableList<ItemType> list = itemTypeTable.getItems(); //Adds item type to the table
-            list.add(type);
+            itemTypeTable.getItems().add(type);
             itemTypeNameTextField.clear();
         } else if (itemTypeName.equalsIgnoreCase("Item Type")){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -1174,8 +1173,8 @@ public class controller implements Initializable {
 
         //Initialize ITEM TYPE
         if (itemTypeTable != null){
-            itemTypeIDColumn.setCellValueFactory(new PropertyValueFactory<ItemType,Integer>("itemTypeID"));
-            itemTypeNameColumn.setCellValueFactory(new PropertyValueFactory<ItemType,String>("itemTypeName"));
+            itemTypeIDColumn.setCellValueFactory(new PropertyValueFactory<>("itemTypeID"));
+            itemTypeNameColumn.setCellValueFactory(new PropertyValueFactory<>("itemTypeName"));
             itemTypeTable.setItems(initialItemTypeData());
             itemTypeEditData();
         }
@@ -1300,11 +1299,17 @@ public class controller implements Initializable {
                     search_restocks();
                 }
 
-        if (restockTable != null){
-            
-            restockTable.setItems(initialRestockData());
-        }
         */
+
+        if (restockTable != null){
+            restockID_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
+            restock_beginningQty_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("startQty"));
+            restock_expirationDate_col.setCellValueFactory(new PropertyValueFactory<Restocks, String>("expiryDateString"));
+            restock_itemName_col.setCellValueFactory(new PropertyValueFactory<Restocks, String>("itemName"));
+            restock_restockDate_col.setCellValueFactory(new PropertyValueFactory<Restocks, String>("restockDateString"));
+            restock_soldQty_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
+//            restockTable.setItems(initialRestockData());
+        }
 
         // combo box from database
         itemType_comboBoxOnAction(new ActionEvent());
