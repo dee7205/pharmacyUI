@@ -220,7 +220,7 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <Button fx:id="item_AddItemButton" alignment="CENTER" contentDisplay="BOTTOM" layoutX="732.0" layoutY="378.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item">
+                  <Button fx:id="item_AddItemButton" alignment="CENTER" contentDisplay="BOTTOM" layoutX="732.0" layoutY="378.0" mnemonicParsing="false" onAction="#addItem" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -230,7 +230,7 @@
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="item_DeleteItemButton" alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item">
+                  <Button fx:id="item_DeleteItemButton" alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" onAction="#deleteItem" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
