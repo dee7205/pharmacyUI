@@ -80,10 +80,81 @@ public class controller implements Initializable {
 
 
 
+    @FXML private TextField itemName_textField;
+    @FXML private TextField itemCost_textField;
+
     @FXML private Button item_AddItemButton;
     @FXML private Button item_DeleteItemButton;
     @FXML private Button item_TransactionHistoryButton;
     @FXML private Button item_UpdateItemButton;
+
+    @FXML void addItem(ActionEvent event){
+        SQL_DataHandler handler = new SQL_DataHandler();
+        String itemName = itemName_textField.getText();
+        int itemTypeID = handler.getItemTypeID(item_TypeCb.getSelectionModel().getSelectedItem());
+        int unitTypeID = handler.getUnitTypeID(item_unitCb.getSelectionModel().getSelectedItem());
+        String itemCost = itemCost_textField.getText();
+        int convertedCost;
+
+        try{
+            convertedCost = Integer.parseInt(itemCost);
+        } catch (Exception e){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Item Type: " + itemName);
+            alert.setContentText("Item Type " + itemName + "'s cost is Invalid.");
+            alert.showAndWait();
+            return;
+        }
+
+        int itemUnitTypeID = handler.getItemUnitTypeID(itemTypeID,unitTypeID);
+        System.out.println(itemUnitTypeID);
+        if (!itemName.isEmpty() && !itemCost.isEmpty() && itemUnitTypeID > -1 && handler.addItem(itemName,itemUnitTypeID,convertedCost)) {
+            Item i = handler.getItem(itemName);
+            itemTable.getItems().add(i); //Adds item type to the table
+            itemName_textField.clear();
+        } else if (!itemName.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Item Type: " + itemName);
+            alert.setContentText("Item Type " + itemName + "'s Item Type and Unit Type Does not exist in Item Unit Type Table.");
+            alert.showAndWait();
+        }
+
+    }
+
+    @FXML void deleteItem(ActionEvent e){
+        //Gets the item type selected (Can be null if no item is selected)
+        int index = itemTable.getSelectionModel().getSelectedIndex();
+        if (index == -1){
+            System.out.println("ERROR: Unable to delete Item. No index is selected.");
+            return;
+        }
+
+        Item item = itemTable.getSelectionModel().getTableView().getItems().get(index);
+
+        //Error handling
+        if (item == null){
+            System.out.println("No Item Type Selected.");
+            return;
+        }
+
+        else {
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirm Item Deletion");
+            alert.setHeaderText("Are you sure you want to delete this item type? \nNumber of Affected Items: " + "(No Restocks Feature Yet)");
+            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
+
+            Optional<ButtonType> result = alert.showAndWait();
+            //Removes the list of selected items
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                handler.removeItem(item.getItemID());
+                itemTable.getSelectionModel().getTableView().getItems().remove(item);
+            }
+        }
+
+    }
 
     public ObservableList<Item> initialItemData(){
         SQL_DataHandler handler = new SQL_DataHandler();
