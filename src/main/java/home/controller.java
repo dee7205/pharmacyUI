@@ -146,7 +146,12 @@ public class controller implements Initializable {
 
                     // Filter items by name (case-insensitive)
                     String lowerCaseFilter = newValue.toLowerCase();
-                    return item.getItemName().toLowerCase().contains(lowerCaseFilter);
+                    return String.valueOf(item.getItemID()).contains(lowerCaseFilter) ||
+                            item.getItemName().toLowerCase().contains(lowerCaseFilter) ||
+                            item.getItemUnitType().toLowerCase().contains(lowerCaseFilter) ||
+                            String.valueOf(item.getQuantity()).contains(lowerCaseFilter) ||
+                            String.valueOf(item.getUnitCost()).contains(lowerCaseFilter) ||
+                            String.valueOf(item.getMovement()).contains(lowerCaseFilter);
                 });
             });
 
@@ -827,6 +832,8 @@ public class controller implements Initializable {
     @FXML private TextField restock_qty;
 
     @FXML private TextField restock_searchTextField;
+
+
 
     /*
     // ObservableList to hold the data for the table
