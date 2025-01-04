@@ -1351,7 +1351,7 @@ public class controller implements Initializable {
     //===============================TRANSACTION METHODS====================================
 
     @FXML private TableView<Transaction> transactionTable;
-    @FXML private TableColumn<Transaction, Date> transactionDate_col;
+    @FXML private TableColumn<Transaction, String> transactionDate_col;
     @FXML private TableColumn<Transaction, Integer> transactionNo_col;
     @FXML private TableColumn<Transaction, Double> transaction_income_col;
     @FXML private TableColumn<Transaction, Integer> transaction_pharmacistID_col;
@@ -1378,10 +1378,10 @@ public class controller implements Initializable {
         return FXCollections.<Transaction> observableArrayList(transactions);
     }
 
-    //Makes it that when
+    //Makes it that when a transaction is single or double clicked, display the items sold
     public void prepareTransactionTableListener(){
         transactionTable.setOnMouseClicked(mouseEvent -> {
-            if (mouseEvent.getClickCount() == 2){
+            if (mouseEvent.getClickCount() == 1 || mouseEvent.getClickCount() == 2){
                 SQL_DataHandler handler = new SQL_DataHandler();
                 Transaction transaction = transactionTable.getSelectionModel().getSelectedItem();
 
@@ -1399,6 +1399,8 @@ public class controller implements Initializable {
     public ObservableList<ItemsSold> initialItemsSoldData(int transactionID){
         SQL_DataHandler handler = new SQL_DataHandler();
         ItemsSold [] items = handler.getItemsSold_Transaction(transactionID);
+        if (items == null)
+            items = new ItemsSold[0];
         return FXCollections.<ItemsSold> observableArrayList(items);
     }
 
@@ -2102,7 +2104,7 @@ public class controller implements Initializable {
 
         //Initialize TRANSACTIONS and ITEMS SOLD
         if (transactionTable != null && itemsSoldTable != null){
-            transactionDate_col.setCellValueFactory(new PropertyValueFactory<Transaction, Date>("transactionDate"));
+            transactionDate_col.setCellValueFactory(new PropertyValueFactory<Transaction, String>("transactionDateString"));
             transactionNo_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("transactionID"));
             transaction_income_col.setCellValueFactory(new PropertyValueFactory<Transaction, Double>("income"));
             transaction_pharmacistID_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("pharmacistID"));
