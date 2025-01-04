@@ -309,7 +309,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "maclang@2023-00570");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "shanna05");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -540,8 +540,9 @@ public class controller implements Initializable {
         }
 
         if (handler.addPharmacist(convertedID,firstName,middleName,lastName)) {
-            Pharmacist p = handler.getPharmacist(convertedID);
-            pharmacistTable.getItems().add(p); //Adds Pharmacist to the table
+            refreshPharmacistTable();
+            // Pharmacist p = handler.getPharmacist(convertedID);
+            // pharmacistTable.getItems().add(p); //Adds Pharmacist to the table
             pharmacist_fName_textField.clear();
             pharmacist_mName_textField.clear();
             pharmacist_lName_textField.clear();
@@ -587,35 +588,72 @@ public class controller implements Initializable {
 
     @FXML
     void deletePharmacist(ActionEvent event) {
-        //Gets the pharmacist selected (Can be null if no item is selected)
         int index = pharmacistTable.getSelectionModel().getSelectedIndex();
-        if (index == -1){
-            System.out.println("ERROR: Unable to delete Pharmacist. No index is selected.");
+
+        if (index == -1) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Selection");
+            alert.setHeaderText("No Pharmacist Selected");
+            alert.setContentText("Please select a pharmacist to delete.");
+            alert.showAndWait();
             return;
         }
 
-        Pharmacist p = pharmacistTable.getSelectionModel().getTableView().getItems().get(index);
+        Pharmacist p = pharmacistTable.getSelectionModel().getSelectedItem();
 
-        //Error handling
-        if (p == null){
-            System.out.println("No Pharmacist Selected.");
+        if (p == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Pharmacist");
+            alert.setHeaderText("No Pharmacist Found");
+            alert.setContentText("The selected pharmacist is not available.");
+            alert.showAndWait();
             return;
         }
 
-        else {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirm Deletion");
+        alert.setHeaderText("Are you sure you want to delete this Pharmacist?");
+        alert.setContentText("Pharmacist ID: " + p.getPharmacistID() + "\nName: " + p.getFirstName() + " " + p.getLastName());
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
             SQL_DataHandler handler = new SQL_DataHandler();
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirm Pharmacist Deletion");
-            alert.setHeaderText("Are you sure you want to delete this Pharmacist? \nNumber of Affected Items: (No Transactions Feature Yet)" );
-            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
 
-            Optional<ButtonType> result = alert.showAndWait();
+            if (handler.removePharmacist(p.getPharmacistID())) {
+                refreshPharmacistTable();
 
-            //Removes the list of selected items
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                handler.removePharmacist(p.getPharmacistID());
-                pharmacistTable.getSelectionModel().getTableView().getItems().remove(p);
+                Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                successAlert.setTitle("Success");
+                successAlert.setHeaderText("Pharmacist Deleted");
+                successAlert.setContentText("Pharmacist " + p.getFirstName() + " " + p.getLastName() + " has been successfully deleted.");
+                successAlert.showAndWait();
+            } else {
+                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                errorAlert.setTitle("Error");
+                errorAlert.setHeaderText("Deletion Failed");
+                errorAlert.setContentText("Unable to delete the pharmacist from the database.");
+                errorAlert.showAndWait();
             }
+        }
+    }
+
+    // refresh table every action
+    private void refreshPharmacistTable() {
+        SQL_DataHandler handler = new SQL_DataHandler();
+
+        try {
+            // Fetch updated list of pharmacists from the database
+            ObservableList<Pharmacist> pharmacistList = FXCollections.observableArrayList(handler.getAllPharmacists());
+
+            // Set the updated list to the table
+            pharmacistTable.setItems(pharmacistList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Unable to Refresh Table");
+            alert.setContentText("An error occurred while refreshing the pharmacist table.");
+            alert.showAndWait();
         }
     }
 
@@ -916,7 +954,7 @@ public class controller implements Initializable {
         return FXCollections.<Transaction> observableArrayList(transactions);
     }
 
-    //Makes it that when a transaction is single or double clicked, display the items sold
+    //Makes it that when a transaction is single or double-clicked, display the items sold
     public void prepareTransactionTableListener(){
         transactionTable.setOnMouseClicked(mouseEvent -> {
             if (mouseEvent.getClickCount() == 1 || mouseEvent.getClickCount() == 2){
@@ -941,6 +979,123 @@ public class controller implements Initializable {
             items = new ItemsSold[0];
         return FXCollections.<ItemsSold> observableArrayList(items);
     }
+
+    // searching
+    @FXML private TextField transaction_searchField;
+    // ObservableList to hold the data for the table
+    ObservableList<Transaction> transactionList;
+
+    public void search_transaction() {
+        try {
+            // Fetch data from the handler
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Transaction[] transactSearch = handler.getAllTransactions(true);
+            System.out.println("Numbers fetched: " + Arrays.toString(transactSearch)); // debugger
+
+            if (transactSearch == null || transactSearch.length == 0) {
+                System.out.println("No data retrieved from the database.");
+                return;
+            }
+
+            // Set up table columns
+            transactionDate_col.setCellValueFactory(new PropertyValueFactory<Transaction, String>("transactionDateString"));
+            transactionNo_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("transactionID"));
+            transaction_income_col.setCellValueFactory(new PropertyValueFactory<Transaction, Double>("income"));
+            transaction_pharmacistID_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("pharmacistID"));
+            transaction_soldQty_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("soldQty"));
+
+            // Convert array to ObservableList
+            transactionList = FXCollections.observableArrayList(transactSearch);
+            transactionTable.setItems(transactionList);
+
+            // Add filtering logic
+            FilteredList<Transaction> filteredData = new FilteredList<>(transactionList, b -> true);
+
+            transaction_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(transaction -> {
+                    // If search field is empty, show all items
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+
+                    // Filter items by name (case-insensitive)
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    return String.valueOf(transaction.getTransactionDateString()).contains(lowerCaseFilter) ||
+                            String.valueOf(transaction.getTransactionID()).contains(lowerCaseFilter) ||
+                            String.valueOf(transaction.getIncome()).contains(lowerCaseFilter) ||
+                            String.valueOf(transaction.getPharmacistID()).contains(lowerCaseFilter) ||
+                            String.valueOf(transaction.getSoldQty()).contains(lowerCaseFilter);
+                });
+            });
+
+            // Bind the sorted data to the table
+            SortedList<Transaction> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(transactionTable.comparatorProperty());
+            transactionTable.setItems(sortedData);
+
+            System.out.println("Search setup complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // items sold searching
+    @FXML private TextField itemsSold_searchField;
+    // ObservableList to hold the data for the table
+    ObservableList<ItemsSold> itemSoldList;
+    public void search_itemsSold() {
+        try {
+            // Fetch data from the handler
+            SQL_DataHandler handler = new SQL_DataHandler();
+            ItemsSold[] itemsSoldSearch = handler.getItemsSold_Item(3);
+            System.out.println("Numbers fetched: " + Arrays.toString(itemsSoldSearch)); // debugger
+
+            if (itemsSoldSearch == null || itemsSoldSearch.length == 0) {
+                System.out.println("No data retrieved from the database.");
+                return;
+            }
+
+            // Set up table columns
+            itemsSold_income_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Double>("income"));
+            itemsSold_itemName_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, String>("itemName"));
+            itemsSold_soldQty_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Integer>("itemQty"));
+            itemsSold_unitCost_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Double>("unitCost"));
+
+            // Convert array to ObservableList
+            itemSoldList = FXCollections.observableArrayList(itemsSoldSearch);
+            itemsSoldTable.setItems(itemSoldList);
+
+            // Add filtering logic
+            FilteredList<ItemsSold> filteredData = new FilteredList<>(itemSoldList, b -> true);
+
+            itemsSold_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(itemSold -> {
+                    // If search field is empty, show all items
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+
+                    // Filter items by name (case-insensitive)
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    return String.valueOf(itemSold.getIncome()).contains(lowerCaseFilter) ||
+                            itemSold.getItemName().toLowerCase().contains(lowerCaseFilter) ||
+                            String.valueOf(itemSold.getItemQty()).contains(lowerCaseFilter) ||
+                            String.valueOf(itemSold.getUnitCost()).contains(lowerCaseFilter);
+                });
+            });
+
+            // Bind the sorted data to the table
+            SortedList<ItemsSold> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(itemsSoldTable.comparatorProperty());
+            itemsSoldTable.setItems(sortedData);
+
+            System.out.println("Search setup complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     //===============================ITEM UNIT TYPE METHODS====================================
 
@@ -1278,6 +1433,27 @@ public class controller implements Initializable {
             prepareTransactionTableListener();
             transactionTable.setItems(initialTransactionData());
         }
+
+        // transaction table
+        if (transaction_searchField == null) {
+            System.out.println("field is null");
+        } else {
+            transaction_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                System.out.println("Search input: " + newValue);
+            });
+            search_transaction();
+        }
+
+        // items sold table
+        if (itemsSold_searchField == null) {
+            System.out.println("itemsSold_searchField is null");
+        } else {
+            itemsSold_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                System.out.println("Search input: " + newValue);
+            });
+            search_itemsSold();
+        }
+
 
         // search_itemName(); (items.fxml)
         if (item_filterTextField == null) {
