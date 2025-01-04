@@ -235,7 +235,6 @@
                      </font>
                   </Label>
                   <TextField fx:id="transaction_searchField" layoutX="14.0" layoutY="14.0" prefHeight="27.0" prefWidth="243.0" promptText="Search" style="-fx-border-color: BLACK;" />
-                  <TextField fx:id="itemsSold_searchField" layoutX="776.0" layoutY="16.0" prefHeight="27.0" prefWidth="125.0" promptText="Search" style="-fx-border-color: BLACK;" />
                </children>
             </AnchorPane>
          </center>

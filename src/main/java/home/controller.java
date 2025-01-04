@@ -53,6 +53,7 @@ public class controller implements Initializable {
     @FXML private Label issuanceBalance;
     @FXML private Label endingBalance;
     @FXML private Label dashboardDate;
+    @FXML private Label overallSoldQuantity;
 
     // restock
     @FXML private Button addRestockButton;
@@ -62,17 +63,88 @@ public class controller implements Initializable {
 
     //===================================ITEM METHODS========================================
     @FXML TableView<Item> itemTable;
-    @FXML private TableColumn<Item, Double> itemUnitCost_col;
-    @FXML private TableColumn<Item, String> itemName_col;
-    @FXML private TableColumn<Item, Integer> itemID_col;
-    @FXML private TableColumn<Item, Integer> itemQuantity_col;
-    @FXML private TableColumn<Item, String> itemUnitType_col;
-    @FXML private TableColumn<Item, Double> itemMovement_col;
+    @FXML private TableColumn<Item, Double> items_itemUnitCost_col;
+    @FXML private TableColumn<Item, String> items_itemName_col;
+    @FXML private TableColumn<Item, Integer> items_itemID_col;
+    @FXML private TableColumn<Item, Integer> items_itemQuantity_col;
+    @FXML private TableColumn<Item, String> items_itemUnitType_col;
+    @FXML private TableColumn<Item, Double> items_itemMovement_col;
+
+    @FXML private TextField itemName_textField;
+    @FXML private TextField itemCost_textField;
 
     @FXML private Button item_AddItemButton;
     @FXML private Button item_DeleteItemButton;
     @FXML private Button item_TransactionHistoryButton;
     @FXML private Button item_UpdateItemButton;
+
+    @FXML void addItem(ActionEvent event){
+        SQL_DataHandler handler = new SQL_DataHandler();
+        String itemName = itemName_textField.getText();
+        int itemTypeID = handler.getItemTypeID(item_TypeCb.getSelectionModel().getSelectedItem());
+        int unitTypeID = handler.getUnitTypeID(item_unitCb.getSelectionModel().getSelectedItem());
+        String itemCost = itemCost_textField.getText();
+        int convertedCost;
+
+        try{
+            convertedCost = Integer.parseInt(itemCost);
+        } catch (Exception e){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Item Type: " + itemName);
+            alert.setContentText("Item Type " + itemName + "'s cost is Invalid.");
+            alert.showAndWait();
+            return;
+        }
+
+        int itemUnitTypeID = handler.getItemUnitTypeID(itemTypeID,unitTypeID);
+        System.out.println(itemUnitTypeID);
+        if (!itemName.isEmpty() && !itemCost.isEmpty() && itemUnitTypeID > -1 && handler.addItem(itemName,itemUnitTypeID,convertedCost)) {
+            Item i = handler.getItem(itemName);
+            itemTable.getItems().add(i); //Adds item type to the table
+            itemName_textField.clear();
+        } else if (!itemName.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Item Type: " + itemName);
+            alert.setContentText("Item Type " + itemName + "'s Item Type and Unit Type Does not exist in Item Unit Type Table.");
+            alert.showAndWait();
+        }
+
+    }
+
+    @FXML void deleteItem(ActionEvent e){
+        //Gets the item type selected (Can be null if no item is selected)
+        int index = itemTable.getSelectionModel().getSelectedIndex();
+        if (index == -1){
+            System.out.println("ERROR: Unable to delete Item. No index is selected.");
+            return;
+        }
+
+        Item item = itemTable.getSelectionModel().getTableView().getItems().get(index);
+
+        //Error handling
+        if (item == null){
+            System.out.println("No Item Type Selected.");
+            return;
+        }
+
+        else {
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirm Item Deletion");
+            alert.setHeaderText("Are you sure you want to delete this item type? \nNumber of Affected Items: " + "(No Restocks Feature Yet)");
+            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
+
+            Optional<ButtonType> result = alert.showAndWait();
+            //Removes the list of selected items
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                handler.removeItem(item.getItemID());
+                itemTable.getSelectionModel().getTableView().getItems().remove(item);
+            }
+        }
+
+    }
 
     public ObservableList<Item> initialItemData(){
         SQL_DataHandler handler = new SQL_DataHandler();
@@ -82,8 +154,8 @@ public class controller implements Initializable {
 
     private void itemEditData(){
         //Makes the specific columns editable
-        itemName_col.setCellFactory(TextFieldTableCell.<Item>forTableColumn());
-        itemName_col.setOnEditCommit(event ->{
+        items_itemName_col.setCellFactory(TextFieldTableCell.<Item>forTableColumn());
+        items_itemName_col.setOnEditCommit(event ->{
             SQL_DataHandler handler = new SQL_DataHandler();
 
             Item item = event.getTableView().getItems().get(event.getTablePosition().getRow());
@@ -123,12 +195,12 @@ public class controller implements Initializable {
             }
 
             // Set up table columns
-            itemID_col.setCellValueFactory(new PropertyValueFactory<>("itemID"));
-            itemName_col.setCellValueFactory(new PropertyValueFactory<>("itemName"));
-            itemUnitType_col.setCellValueFactory(new PropertyValueFactory<>("itemUnitType"));
-            itemQuantity_col.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-            itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<>("unitCost"));
-            itemMovement_col.setCellValueFactory(new PropertyValueFactory<>("movement"));
+            items_itemID_col.setCellValueFactory(new PropertyValueFactory<>("itemID"));
+            items_itemName_col.setCellValueFactory(new PropertyValueFactory<>("itemName"));
+            items_itemUnitType_col.setCellValueFactory(new PropertyValueFactory<>("itemUnitType"));
+            items_itemQuantity_col.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+            items_itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<>("unitCost"));
+            items_itemMovement_col.setCellValueFactory(new PropertyValueFactory<>("movement"));
 
             // Convert array to ObservableList
             dataList = FXCollections.observableArrayList(search);
@@ -1266,16 +1338,143 @@ public class controller implements Initializable {
 
     //===============================TRANSACTION WINDOW METHODS====================================
 
-    @FXML private Button transactionWindow_addTransactionButton;
-    @FXML private Button transactionWindow_removeTransactionButton;
-    @FXML private TextField transaction_currentQty_textField;
-    @FXML private TextField transaction_sellQty_textField;
+    @FXML private Label totalCostLabel;
+    @FXML private TableView<TransactionItem> transactionWindowTable;
+    @FXML private Button transactionWindow_addButton;
+    @FXML private ComboBox<String> transactionWindow_comboBox;
+    @FXML private TextField transactionWindow_currentQty_textfield;
+    @FXML private TableColumn<TransactionItem, String> transactionWindow_itemName_col;
+    @FXML private TableColumn<TransactionItem, Integer> transactionWindow_sellQty_col;
+    @FXML private TextField transactionWindow_sellQty_textField;
+    @FXML private TableColumn<TransactionItem, Double> transactionWindow_unitCost_col;
 
-    @FXML private TableView<?> transactionWindowTable;
-    @FXML private TableColumn<?, ?> transaction_itemName_col;
-    @FXML private TableColumn<?, ?> transaction_sellQty_col;
-    @FXML private TableColumn<?, ?> transaction_unitCost_col;
+    private ObservableList<TransactionItem> transactionItems = FXCollections.observableArrayList();
 
+    /*
+    private void transactionWindow_populateComboBox() {
+        String selectAllItems = "SELECT * FROM Items";  // Adjust the query if needed
+
+        try (Connection connect = connectDB();
+             PreparedStatement pr = connect.prepareStatement(selectAllItems);
+             ResultSet rs = pr.executeQuery()) {
+
+            ObservableList<String> listData = FXCollections.observableArrayList();
+
+            while (rs.next()) {
+                String itemName = rs.getString("item_Name");
+                listData.add(itemName);
+            }
+
+            // Set the items in the ComboBox
+            transactionWindow_comboBox.setItems(listData);
+
+        } catch (SQLException e) {
+            System.err.println("SQL Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void transactionWindow_itemName_comboBox(ActionEvent event) {
+        if (transactionWindow_comboBox != null && transactionWindow_comboBox.getValue() != null) {
+            String selectedItem = transactionWindow_comboBox.getValue();
+
+            // Proceed with logic when a valid item is selected
+            String selectItemDetails = "SELECT item_ID, item_unit_ID, unit_Cost, start_Qty FROM Items I " +
+                    "JOIN Restocks R ON I.item_ID = R.item_ID WHERE item_Name = ?";
+
+            try (Connection connect = connectDB();
+                 PreparedStatement pr = connect.prepareStatement(selectItemDetails)) {
+
+                pr.setString(1, selectedItem);  // Set the selected item name as the query parameter
+
+                try (ResultSet rs = pr.executeQuery()) {
+                    if (rs.next()) {
+                        int itemID = rs.getInt("item_ID");
+                        double unitCost = rs.getDouble("unit_Cost");
+                        int currentQty = rs.getInt("start_Qty");
+
+                        // Optionally display fetched data for debugging
+                        System.out.println("Item ID: " + itemID + ", Unit Cost: " + unitCost + ", Current Qty: " + currentQty);
+
+                        // Populate TextField with current quantity
+                        transactionWindow_currentQty_textfield.setText(String.valueOf(currentQty));
+                        transactionWindow_sellQty_textField.setText("");  // Optionally clear the sell quantity field
+                    }
+                }
+
+            } catch (SQLException e) {
+                System.err.println("SQL Error: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.err.println("No item selected in ComboBox.");
+        }
+    }
+
+    @FXML
+    private void transactionWindow_addButtonOnAction(ActionEvent event) {
+        // Get selected item name from ComboBox
+        String selectedItem = transactionWindow_comboBox.getValue();
+
+        // Get the sell quantity from the text field
+        String sellQtyText = transactionWindow_sellQty_textField.getText();
+
+        if (selectedItem != null && !sellQtyText.isEmpty()) {
+            try {
+                // Parse the sell quantity entered by the user
+                int sellQty = Integer.parseInt(sellQtyText);
+
+                // Fetch the unit cost and item details from the database based on the selected item
+                String selectItemDetails = "SELECT item_ID, unit_Cost FROM Items I " +
+                        "JOIN Restocks R ON I.item_ID = R.item_ID WHERE item_Name = ?";
+
+                try (Connection connect = connectDB();
+                     PreparedStatement pr = connect.prepareStatement(selectItemDetails)) {
+
+                    pr.setString(1, selectedItem);
+                    try (ResultSet rs = pr.executeQuery()) {
+                        if (rs.next()) {
+                            // Fetch the unit cost and item ID
+                            double unitCost = rs.getDouble("unit_Cost");
+                            int itemID = rs.getInt("item_ID");
+
+                            // Create a new TransactionItem object and add it to the table
+                            TransactionItem newItem = new TransactionItem(selectedItem, sellQty, unitCost);
+                            transactionItems.add(newItem);
+                            transactionWindowTable.setItems(transactionItems);
+
+                            // Update the total cost after adding the new item
+                            updateTotalCost();
+
+                            // Clear the input fields after adding the item
+                            transactionWindow_sellQty_textField.clear();
+                            transactionWindow_comboBox.getSelectionModel().clearSelection();
+                        }
+                    }
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("Invalid quantity input.");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.err.println("Please select an item and enter a valid quantity.");
+        }
+    }
+
+
+    // Method to update the total cost dynamically
+    private void updateTotalCost() {
+        double totalCost = 0;
+        for (TransactionItem item : transactionItems) {
+            totalCost += item.getSellQuantity() * item.getUnitCost();
+        }
+        totalCostLabel.setText(String.format("Total Cost: %.2f", totalCost));
+
+    }
+
+*/
 
 
     @Override
@@ -1406,12 +1605,12 @@ public class controller implements Initializable {
 
         //Initialize ITEM
         if (itemTable != null){
-            itemID_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemID"));
-            itemName_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemName"));
-            itemUnitType_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemUnitType"));
-            itemQuantity_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("quantity"));
-            itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("unitCost"));
-            itemMovement_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("movement"));
+            items_itemID_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemID"));
+            items_itemName_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemName"));
+            items_itemUnitType_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemUnitType"));
+            items_itemQuantity_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("quantity"));
+            items_itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("unitCost"));
+            items_itemMovement_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("movement"));
             itemTable.setItems(initialItemData());
             itemEditData();
         }
@@ -1464,6 +1663,24 @@ public class controller implements Initializable {
             search_itemName();
         }
 
+//        // initialize transactionwindow
+//        if (transactionTable != null && itemsSoldTable != null) {
+//            transactionWindow_itemName_col.setCellValueFactory(new PropertyValueFactory<>("itemName"));
+//            transactionWindow_sellQty_col.setCellValueFactory(new PropertyValueFactory<>("sellQuantity"));
+//            transactionWindow_unitCost_col.setCellValueFactory(new PropertyValueFactory<>("unitCost"));
+
+//            // Initialize the total cost label
+//            totalCostLabel.setText("Total Cost: 0.00");
+//        }
+
+//        if (transactionWindow_comboBox != null) {
+//            transactionWindow_populateComboBox();
+//        }
+//
+//        if (transactionWindow_addButton != null) {
+//            transactionWindow_addButton.setOnAction(this::transactionWindow_addButtonOnAction);
+//        }
+
         // for restock
         /* uncomment if okay na methods
         if (restock_searchTextField == null) {
@@ -1491,7 +1708,8 @@ public class controller implements Initializable {
         itemType_comboBoxOnAction(new ActionEvent());
         unitType_comboBoxOnAction(new ActionEvent());
         restock_itemName_comboBoxOnAction(new ActionEvent());
-        transactionItemName_comboBoxOnAction(new ActionEvent());
+        // transactionItemName_comboBoxOnAction(new ActionEvent());
+       // transactionWindow_itemName_comboBox(new ActionEvent());
 
 
     }
@@ -1589,23 +1807,63 @@ public class controller implements Initializable {
     }
 
     public void fetchBalances() {
-        double beginning = 150000.00;  // Example value, replace with actual data
-        double issuance = 500.00;    // Example value, replace with actual data
-        double ending = 12312.73;
+        try (Connection connection = DatabaseConnection.connect()) {
+            if (connection == null) {
+                System.err.println("Failed to establish a database connection.");
+                return;
+            }
 
-        if (beginningBalance != null) {
-            beginningBalance.setText(" " + beginning);
+            // SQL Query to calculate beginning balance, issuance balance, ending balance, and overall sold quantity
+            String query = """
+        SELECT 
+            (SELECT COALESCE(SUM(start_Qty * wholesale_cost), 0) FROM Restocks) AS beginning_balance,
+            (SELECT COALESCE(SUM(SI.item_qty * I.unit_Cost), 0)
+             FROM Sold_Items SI
+             JOIN Items I ON SI.item_ID = I.item_ID
+             WHERE SI.transaction_date = CURRENT_DATE()) AS issuance_balance,
+            ((SELECT COALESCE(SUM(start_Qty * wholesale_cost), 0) FROM Restocks) - 
+             (SELECT COALESCE(SUM(SI.item_qty * I.unit_Cost), 0)
+              FROM Sold_Items SI
+              JOIN Items I ON SI.item_ID = I.item_ID
+              WHERE SI.transaction_date = CURRENT_DATE())) AS ending_balance,
+            (SELECT COALESCE(SUM(item_qty), 0)
+             FROM Sold_Items
+             WHERE transaction_date = CURRENT_DATE()) AS overall_sold_quantity
+        """;
+
+            try (PreparedStatement pstmt = connection.prepareStatement(query);
+                 ResultSet rs = pstmt.executeQuery()) {
+
+                if (rs.next()) {
+                    double beginningBalance = rs.getDouble("beginning_balance");
+                    double issuanceBalance = rs.getDouble("issuance_balance");
+                    double endingBalance = rs.getDouble("ending_balance");
+                    int overallSoldQuantity = rs.getInt("overall_sold_quantity"); // Get the overall sold quantity
+
+                    // Update the dashboard fields
+                    if (this.beginningBalance != null) {
+                        this.beginningBalance.setText(String.format("%.2f", beginningBalance));
+                    }
+                    if (this.issuanceBalance != null) {
+                        this.issuanceBalance.setText(String.format("%.2f", issuanceBalance));
+                    }
+                    if (this.endingBalance != null) {
+                        this.endingBalance.setText(String.format("%.2f", endingBalance));
+                    }
+
+                    if (this.overallSoldQuantity != null) {
+                        this.overallSoldQuantity.setText(String.valueOf(overallSoldQuantity)); // Update the label with the sold quantity
+                    }
+
+                    System.out.println("Balances and overall sold quantity updated successfully.");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        if (issuanceBalance != null) {
-            issuanceBalance.setText(" " + issuance);
-        }
-
-        if (endingBalance != null) {
-            endingBalance.setText("" + ending);
-        }
-
     }
+
+
 
     public void toggleSideBar() {
         TranslateTransition slide = new TranslateTransition();
