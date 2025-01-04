@@ -1,5 +1,6 @@
 package DBHandler;
 
+import javax.swing.plaf.nimbus.State;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -2632,6 +2633,60 @@ public class SQL_DataHandler {
 
     //TODO: Make views for the following...
 
+
+//======================================================================================================================================================================
+//Methods for the View / Statistics.
+
+    public Item [] getOverallSoldQuantity(){
+        String query = """
+            SELECT
+                i.item_ID AS "Item ID",
+                i.item_name AS "Item Name",
+                ut.unit_Type AS "Unit Type",
+                it.item_Type AS "Item Type",
+                iut.item_unit_ID AS "Item Unit ID",
+                (SUM(COALESCE(isd.item_Qty, 0))) AS "Sold Quantity",
+                i.unit_cost AS "Unit Cost"
+            FROM Items AS i
+            JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
+            JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
+            JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
+            JOIN Sold_Items AS isd ON isd.item_ID = i.item_ID
+            GROUP BY i.item_ID
+            ORDER BY "Sold Quantity" DESC
+            LIMIT 10
+        """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try (Statement stmt = connection.createStatement()){
+            ResultSet set = stmt.executeQuery(query);
+
+            List<Item> list = new ArrayList<>();
+            boolean isAdded = false;
+            while(set.next()){
+                list.add(new Item(set.getInt("Item ID"),
+                                  set.getString("Item Name"),
+                                  set.getInt("Item Unit ID"),
+                                  (set.getString("Item Type") + set.getString("Unit Type")),
+                                  set.getInt("Sold Quantity"),
+                                  set.getDouble("Unit Cost"),
+                                  0));
+                isAdded = true;
+            }
+
+            if (isAdded){
+                Item [] array = new Item[list.size()];
+                return list.toArray(array);
+            } else
+                return null;
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
 
 
 //======================================================================================================================================================================
