@@ -2350,11 +2350,12 @@ public class SQL_DataHandler {
                 t.transaction_ID AS "Transaction ID",
                 t.pharmacist_ID AS "Pharmacist ID",
                 t.transaction_date AS "Transaction Date",
-                (isd.item_qty * i.unit_cost) AS "Total Sales",
-                isd.item_qty AS "Sold Quantity"
+                SUM(isd.item_qty * i.unit_cost) AS "Total Sales",
+                SUM(isd.item_qty) AS "Sold Quantity"
             FROM Transactions AS t
             LEFT JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
             LEFT JOIN Items AS i ON i.item_ID = isd.item_ID
+            GROUP BY t.transaction_ID
             ORDER BY t.transaction_ID ASC;
         """;
 
