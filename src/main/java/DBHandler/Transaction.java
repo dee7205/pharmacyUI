@@ -7,6 +7,7 @@ public class Transaction {
     private int transactionID, pharmacistID, soldQty;
     private double income;
     private Date transactionDate;
+    private String transactionDateString;
 
     public Transaction(){ this(0, 0, 0, 0, null); }
 
@@ -20,6 +21,7 @@ public class Transaction {
         setIncome(income);
         setSoldQty(soldQty);
         setDate(transactionDate);
+        setTransactionDateString(transactionDate.toString());
     }
 
     public int getTransactionID() {
@@ -60,6 +62,14 @@ public class Transaction {
 
     public void setSoldQty(int soldQty){
         this.soldQty = soldQty;
+    }
+
+    public String getTransactionDateString() {
+        return transactionDateString;
+    }
+
+    public void setTransactionDateString(String transactionDateString) {
+        this.transactionDateString = transactionDateString;
     }
 
     public String [] getInfo(){
