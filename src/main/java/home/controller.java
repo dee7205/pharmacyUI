@@ -1332,16 +1332,143 @@ public class controller implements Initializable {
 
     //===============================TRANSACTION WINDOW METHODS====================================
 
-    @FXML private Button transactionWindow_addTransactionButton;
-    @FXML private Button transactionWindow_removeTransactionButton;
-    @FXML private TextField transaction_currentQty_textField;
-    @FXML private TextField transaction_sellQty_textField;
+    @FXML private Label totalCostLabel;
+    @FXML private TableView<TransactionItem> transactionWindowTable;
+    @FXML private Button transactionWindow_addButton;
+    @FXML private ComboBox<String> transactionWindow_comboBox;
+    @FXML private TextField transactionWindow_currentQty_textfield;
+    @FXML private TableColumn<TransactionItem, String> transactionWindow_itemName_col;
+    @FXML private TableColumn<TransactionItem, Integer> transactionWindow_sellQty_col;
+    @FXML private TextField transactionWindow_sellQty_textField;
+    @FXML private TableColumn<TransactionItem, Double> transactionWindow_unitCost_col;
 
-    @FXML private TableView<?> transactionWindowTable;
-    @FXML private TableColumn<?, ?> transaction_itemName_col;
-    @FXML private TableColumn<?, ?> transaction_sellQty_col;
-    @FXML private TableColumn<?, ?> transaction_unitCost_col;
+    private ObservableList<TransactionItem> transactionItems = FXCollections.observableArrayList();
 
+    /*
+    private void transactionWindow_populateComboBox() {
+        String selectAllItems = "SELECT * FROM Items";  // Adjust the query if needed
+
+        try (Connection connect = connectDB();
+             PreparedStatement pr = connect.prepareStatement(selectAllItems);
+             ResultSet rs = pr.executeQuery()) {
+
+            ObservableList<String> listData = FXCollections.observableArrayList();
+
+            while (rs.next()) {
+                String itemName = rs.getString("item_Name");
+                listData.add(itemName);
+            }
+
+            // Set the items in the ComboBox
+            transactionWindow_comboBox.setItems(listData);
+
+        } catch (SQLException e) {
+            System.err.println("SQL Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void transactionWindow_itemName_comboBox(ActionEvent event) {
+        if (transactionWindow_comboBox != null && transactionWindow_comboBox.getValue() != null) {
+            String selectedItem = transactionWindow_comboBox.getValue();
+
+            // Proceed with logic when a valid item is selected
+            String selectItemDetails = "SELECT item_ID, item_unit_ID, unit_Cost, start_Qty FROM Items I " +
+                    "JOIN Restocks R ON I.item_ID = R.item_ID WHERE item_Name = ?";
+
+            try (Connection connect = connectDB();
+                 PreparedStatement pr = connect.prepareStatement(selectItemDetails)) {
+
+                pr.setString(1, selectedItem);  // Set the selected item name as the query parameter
+
+                try (ResultSet rs = pr.executeQuery()) {
+                    if (rs.next()) {
+                        int itemID = rs.getInt("item_ID");
+                        double unitCost = rs.getDouble("unit_Cost");
+                        int currentQty = rs.getInt("start_Qty");
+
+                        // Optionally display fetched data for debugging
+                        System.out.println("Item ID: " + itemID + ", Unit Cost: " + unitCost + ", Current Qty: " + currentQty);
+
+                        // Populate TextField with current quantity
+                        transactionWindow_currentQty_textfield.setText(String.valueOf(currentQty));
+                        transactionWindow_sellQty_textField.setText("");  // Optionally clear the sell quantity field
+                    }
+                }
+
+            } catch (SQLException e) {
+                System.err.println("SQL Error: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.err.println("No item selected in ComboBox.");
+        }
+    }
+
+    @FXML
+    private void transactionWindow_addButtonOnAction(ActionEvent event) {
+        // Get selected item name from ComboBox
+        String selectedItem = transactionWindow_comboBox.getValue();
+
+        // Get the sell quantity from the text field
+        String sellQtyText = transactionWindow_sellQty_textField.getText();
+
+        if (selectedItem != null && !sellQtyText.isEmpty()) {
+            try {
+                // Parse the sell quantity entered by the user
+                int sellQty = Integer.parseInt(sellQtyText);
+
+                // Fetch the unit cost and item details from the database based on the selected item
+                String selectItemDetails = "SELECT item_ID, unit_Cost FROM Items I " +
+                        "JOIN Restocks R ON I.item_ID = R.item_ID WHERE item_Name = ?";
+
+                try (Connection connect = connectDB();
+                     PreparedStatement pr = connect.prepareStatement(selectItemDetails)) {
+
+                    pr.setString(1, selectedItem);
+                    try (ResultSet rs = pr.executeQuery()) {
+                        if (rs.next()) {
+                            // Fetch the unit cost and item ID
+                            double unitCost = rs.getDouble("unit_Cost");
+                            int itemID = rs.getInt("item_ID");
+
+                            // Create a new TransactionItem object and add it to the table
+                            TransactionItem newItem = new TransactionItem(selectedItem, sellQty, unitCost);
+                            transactionItems.add(newItem);
+                            transactionWindowTable.setItems(transactionItems);
+
+                            // Update the total cost after adding the new item
+                            updateTotalCost();
+
+                            // Clear the input fields after adding the item
+                            transactionWindow_sellQty_textField.clear();
+                            transactionWindow_comboBox.getSelectionModel().clearSelection();
+                        }
+                    }
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("Invalid quantity input.");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.err.println("Please select an item and enter a valid quantity.");
+        }
+    }
+
+
+    // Method to update the total cost dynamically
+    private void updateTotalCost() {
+        double totalCost = 0;
+        for (TransactionItem item : transactionItems) {
+            totalCost += item.getSellQuantity() * item.getUnitCost();
+        }
+        totalCostLabel.setText(String.format("Total Cost: %.2f", totalCost));
+
+    }
+
+*/
 
 
     @Override
@@ -1530,6 +1657,24 @@ public class controller implements Initializable {
             search_itemName();
         }
 
+//        // initialize transactionwindow
+//        if (transactionTable != null && itemsSoldTable != null) {
+//            transactionWindow_itemName_col.setCellValueFactory(new PropertyValueFactory<>("itemName"));
+//            transactionWindow_sellQty_col.setCellValueFactory(new PropertyValueFactory<>("sellQuantity"));
+//            transactionWindow_unitCost_col.setCellValueFactory(new PropertyValueFactory<>("unitCost"));
+
+//            // Initialize the total cost label
+//            totalCostLabel.setText("Total Cost: 0.00");
+//        }
+
+//        if (transactionWindow_comboBox != null) {
+//            transactionWindow_populateComboBox();
+//        }
+//
+//        if (transactionWindow_addButton != null) {
+//            transactionWindow_addButton.setOnAction(this::transactionWindow_addButtonOnAction);
+//        }
+
         // for restock
         /* uncomment if okay na methods
         if (restock_searchTextField == null) {
@@ -1551,7 +1696,8 @@ public class controller implements Initializable {
         itemType_comboBoxOnAction(new ActionEvent());
         unitType_comboBoxOnAction(new ActionEvent());
         restock_itemName_comboBoxOnAction(new ActionEvent());
-        transactionItemName_comboBoxOnAction(new ActionEvent());
+        // transactionItemName_comboBoxOnAction(new ActionEvent());
+       // transactionWindow_itemName_comboBox(new ActionEvent());
 
 
     }
