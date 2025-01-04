@@ -209,7 +209,7 @@
                   <TableView fx:id="itemTypeTable" editable="true" layoutX="14.0" layoutY="50.0" prefHeight="497.0" prefWidth="663.0" style="-fx-border-color: black;">
                      <columns>
                         <TableColumn fx:id="itemTypeIDColumn" editable="false" prefWidth="136.0" sortable="false" text="Item Type ID" />
-                        <TableColumn fx:id="itemTypeNameColumn" editable="true" prefWidth="523.0" text="Item Type Name" />
+                        <TableColumn fx:id="itemTypeNameColumn" prefWidth="523.0" text="Item Type Name" />
                      </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
