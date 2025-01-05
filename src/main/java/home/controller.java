@@ -149,6 +149,7 @@ public class controller implements Initializable {
             itemName_textField.clear();
             item_itemUnitType_textField.clear();
             itemCost_textField.clear();
+            search_itemName();
 
         } else if (!itemName.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -485,6 +486,7 @@ public class controller implements Initializable {
             alert.setContentText("Item Type: " + itemTypeName + " Successfully Added.");
             alert.showAndWait();
             itemTypeNameTextField.clear();
+            search_itemType();
 
 
             //REFRESH
@@ -844,6 +846,7 @@ public class controller implements Initializable {
             alert.setContentText("Unit Type: " + unitType + " Successfully Added.");
             alert.showAndWait();
             unitType_textField.clear();
+            search_unitType();
 
         } else if (!unitType.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -1061,6 +1064,7 @@ public class controller implements Initializable {
             restockDate_datePicker.cancelEdit();
             expirationDate_datePicker.cancelEdit();
             wholesale_textField.clear();
+            search_restocks();
         } else {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
@@ -1565,6 +1569,7 @@ public class controller implements Initializable {
             alert.setHeaderText("ADD SUCCESSFUL!");
             alert.setContentText("Item Unit Type: " + type.getItemTypeName() + "-" + type.getUnitTypeName() +" Successfully Added.");
             alert.showAndWait();
+            search_ItemUnitType();
 
         } else {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
