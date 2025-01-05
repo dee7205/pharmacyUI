@@ -915,9 +915,9 @@ public class SQL_DataHandler {
                 //Remove rows from tables with item_ID as their foreign keys
                 removeRestock(itemID, REMOVE_BY_ITEM_ID);
                 removeItemsSold(itemID);
+                removeItemUnitType(item.getItemUnitTypeID(), REMOVE_ITEM_UNIT_TYPE);
             }   else
                 return false;
-
 
             final String query = "DELETE FROM Items WHERE item_ID = " + item.getItemID();
             Statement stmt = connection.createStatement();
@@ -1217,7 +1217,6 @@ public class SQL_DataHandler {
             return false;
 
         final String query = "DELETE FROM ItemType WHERE itemType_ID = ?";
-
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, itemTypeID);
             return pstmt.executeUpdate() > 0;
@@ -1836,22 +1835,31 @@ public class SQL_DataHandler {
 
     //TODO: Add comments
     public boolean removeItemUnitType(int id, int condition) throws SQLException {
-        //First set of queries to delete items who uses the following item_unit_ID or itemType_ID or unitType_ID
+        //Get all itemUnitTypes using Item Type
+        //Get all items using this item unit types
+        //Propagate removeItem method
         final String firstA = """
                 DELETE i FROM Items as i
                 JOIN itemUnitType as iut ON i.item_unit_ID = iut.item_unit_ID
                 WHERE iut.itemType_ID = ?
-               
                 """;
+
+        //Get all itemUnitTypes using Unit Type
+        //Get all items using this item unit types
+        //Propagate removeItem method
         final String firstB = """
                 DELETE i FROM Items as i
                 JOIN itemUnitType as iut ON i.item_unit_ID = iut.item_unit_ID
                 WHERE iut.unitType_ID = ?
                 """;
+
+        //Delete Item Unit Type directly
+        //Get all items using this item unit type
+        //Propagate removeItem method
         final String firstC = """
                 DELETE i FROM Items as i
                 JOIN itemUnitType as iut ON i.item_unit_ID = iut.item_unit_ID
-                WHERE iut.item_unit_ID = ?
+                WHERE i.item_unit_ID = ?
                 """;
 
         //Second set of queries to remove the item_unit_type IDs
@@ -1859,6 +1867,9 @@ public class SQL_DataHandler {
         final String removeUnitType = "DELETE FROM ItemUnitType WHERE unitType_ID = ?";
         final String removeItemUnitType = "DELETE FROM ItemUnitType WHERE item_unit_ID = ?";
 
+        //
+        //Remove Items using this itemUnitType
+        //Remove ItemUnitType
 
         if (connection == null)
             prepareConnection();
@@ -1872,6 +1883,7 @@ public class SQL_DataHandler {
             pstmt = connection.prepareStatement(removeItemType);
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
+
         } else if (condition == REMOVE_UNIT_TYPE){
 
             PreparedStatement pstmt = connection.prepareStatement(firstB);
@@ -2096,7 +2108,8 @@ public class SQL_DataHandler {
                 r.expiry_Date AS "Expiry Date",
                 i.item_Name AS "Item Name"
             FROM Restocks AS r
-            JOIN Items AS i ON i.item_ID = r.item_ID;
+            JOIN Items AS i ON i.item_ID = r.item_ID
+            GROUP BY r.restock_ID;
         """;
 
         if (connection == null)
