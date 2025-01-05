@@ -1351,7 +1351,6 @@ public class controller implements Initializable {
         try {
             SQL_DataHandler handler = new SQL_DataHandler();
 
-            // Fetch transactions and items sold data
             Transaction[] transactions = handler.getAllTransactions(true);
             ItemsSold[] itemsSold = handler.getItemsSold(true);
 
@@ -1375,39 +1374,32 @@ public class controller implements Initializable {
             itemsSold_soldQty_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Integer>("itemQty"));
             itemsSold_unitCost_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Double>("unitCost"));
 
-            // Convert arrays to ObservableLists
             transactionList = FXCollections.observableArrayList(transactions);
             itemsSoldList = FXCollections.observableArrayList(itemsSold);
 
-            // Set the tables' items
             transactionTable.setItems(transactionList);
             itemsSoldTable.setItems(itemsSoldList);
 
-            // Add filtering logic for transactions
             FilteredList<Transaction> filteredTransactionData = new FilteredList<>(transactionList, b -> true);
             FilteredList<ItemsSold> filteredItemsSoldData = new FilteredList<>(itemsSoldList, b -> true);
 
-            // Filter based on the search field
             transaction_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
                 filteredTransactionData.setPredicate(transaction -> {
-                    // If search field is empty, show all items
                     if (newValue == null || newValue.isEmpty()) {
                         return true;
                     }
 
                     String lowerCaseFilter = newValue.toLowerCase();
 
-                    // Filter for transactions based on selected radio button
                     if (pharmacistID_radioboxButton.isSelected()) {
                         return String.valueOf(transaction.getPharmacistID()).contains(lowerCaseFilter);
                     } else if (transactionID_radioboxButton.isSelected()) {
                         return String.valueOf(transaction.getTransactionID()).contains(lowerCaseFilter);
                     }
 
-                    return false; // No match found
+                    return false;
                 });
 
-                // Filter for items sold based on item name or item ID
                 filteredItemsSoldData.setPredicate(itemSold -> {
                     if (newValue == null || newValue.isEmpty()) {
                         return true;
@@ -1419,16 +1411,14 @@ public class controller implements Initializable {
                         return String.valueOf(itemSold.getItemID()).contains(lowerCaseFilter);
                     }
 
-                    return false; // No match found
+                    return false;
                 });
             });
 
-            // Bind the sorted data to the transaction table
             SortedList<Transaction> sortedTransactionData = new SortedList<>(filteredTransactionData);
             sortedTransactionData.comparatorProperty().bind(transactionTable.comparatorProperty());
             transactionTable.setItems(sortedTransactionData);
 
-            // Bind the sorted data to the items sold table
             SortedList<ItemsSold> sortedItemsSoldData = new SortedList<>(filteredItemsSoldData);
             sortedItemsSoldData.comparatorProperty().bind(itemsSoldTable.comparatorProperty());
             itemsSoldTable.setItems(sortedItemsSoldData);

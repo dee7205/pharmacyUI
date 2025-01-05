@@ -3154,7 +3154,7 @@ public class SQL_DataHandler {
                 "    si.item_qty, \n" +
                 "    si.transaction_date, \n" +
                 "    i.unit_cost, \n" +
-                "    i.item_name \n" +  // Added item_name to the SELECT query
+                "    i.item_name \n" +
                 "FROM \n" +
                 "    Sold_Items si\n" +
                 "JOIN \n" +
@@ -3171,13 +3171,12 @@ public class SQL_DataHandler {
             while (rs.next()) {
                 int transactionID = rs.getInt("transaction_ID");
                 int itemID = rs.getInt("item_ID");
-                String itemName = rs.getString("item_name");  // Fetch item_name from the result set
+                String itemName = rs.getString("item_name");
                 int itemQty = rs.getInt("item_qty");
-                double unitCost = rs.getDouble("unit_cost");  // Fetch unit_cost from the result set
+                double unitCost = rs.getDouble("unit_cost");
                 LocalDate transactionDate = rs.getDate("transaction_date").toLocalDate();
 
-                double income = itemQty * unitCost;  // Example: calculating income based on quantity and unit cost
-
+                double income = itemQty * unitCost;
                 ItemsSold itemSold = new ItemsSold(transactionID, itemID, itemName, unitCost, itemQty, income, transactionDate);
                 itemsSoldList.add(itemSold);
             }
@@ -3185,7 +3184,6 @@ public class SQL_DataHandler {
             e.printStackTrace();
         }
 
-        // Return the itemsSoldList as an array
         return itemsSoldList.toArray(new ItemsSold[0]);
     }
 
