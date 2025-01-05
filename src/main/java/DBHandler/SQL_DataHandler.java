@@ -1932,8 +1932,8 @@ public class SQL_DataHandler {
             if (set.next()){
                 return (new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
                                      set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
-                                     set.getDouble("Wholesale Cost"), set.getDate("Restock Date"),
-                                     set.getDate("Expiry Date")));
+                                     set.getDouble("Wholesale Cost"), set.getDate("Restock Date").toString(),
+                                     set.getDate("Expiry Date").toString()));
             } else
                 return null;
 
@@ -1975,8 +1975,8 @@ public class SQL_DataHandler {
             while(set.next()){
                 list.add(new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
                                       set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
-                                      set.getDouble("Wholesale Cost"), set.getDate("Restock Date"),
-                                      set.getDate("Expiry Date")));
+                                      set.getDouble("Wholesale Cost"), set.getDate("Restock Date").toString(),
+                                      set.getDate("Expiry Date").toString()));
                 isAdded = true;
             }
 
@@ -2027,8 +2027,8 @@ public class SQL_DataHandler {
             while(set.next()){
                 list.add(new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
                         set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
-                        set.getDouble("Wholesale Cost"), set.getDate("Restock Date"),
-                        set.getDate("Expiry Date")));
+                        set.getDouble("Wholesale Cost"), set.getDate("Restock Date").toString(),
+                        set.getDate("Expiry Date").toString()));
                 isAdded = true;
             }
 
@@ -2075,8 +2075,8 @@ public class SQL_DataHandler {
             while(set.next()){
                 list.add(new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
                         set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
-                        set.getDouble("Wholesale Cost"), set.getDate("Restock Date"),
-                        set.getDate("Expiry Date")));
+                        set.getDouble("Wholesale Cost"), set.getDate("Restock Date").toString(),
+                        set.getDate("Expiry Date").toString()));
                 isAdded = true;
             }
 
@@ -2270,7 +2270,7 @@ public class SQL_DataHandler {
 
             if (set.next()){
                 return new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),
-                                       set.getInt("Sold Quantity"), set.getInt("Total Sales"), set.getDate("Transaction Date")));
+                                       set.getInt("Sold Quantity"), set.getInt("Total Sales"), set.getDate("Transaction Date"));
             } else
                 return null;
 
@@ -2433,7 +2433,7 @@ public class SQL_DataHandler {
         if (connection == null)
             prepareConnection();
 
-        if (!getTransaction(transactionID).getDate().toLocalDate().isEqual(getCurrentDate())){
+        if (!getTransaction(transactionID).getTransactionDate().toLocalDate().isEqual(getCurrentDate())){
             System.out.println("ERROR: Unable to add Item to Item Sold. \nReference Transaction and Item Sold found to have different dates");
             return false;
         }
