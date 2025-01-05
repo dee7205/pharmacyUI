@@ -450,7 +450,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "shanna05");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "Gimatag2024");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -1205,8 +1205,7 @@ public class controller implements Initializable {
 
                     // Filter items by name (case-insensitive) -> change lang sa mga iretrieve everytime mag search ka
                     String lowerCaseFilter = newValue.toLowerCase();
-                    return String.valueOf(restocks.getRestockID()).contains(lowerCaseFilter) ||
-                            restocks.getRestockDate().contains(lowerCaseFilter);
+                    return String.valueOf(restocks.getRestockID()).contains(lowerCaseFilter);
                 });
             });
 
