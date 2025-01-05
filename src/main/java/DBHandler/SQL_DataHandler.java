@@ -2,6 +2,8 @@ package DBHandler;
 
 import javax.swing.plaf.nimbus.State;
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
@@ -51,7 +53,7 @@ public class SQL_DataHandler {
 
         System.out.println(handler.itemExists("Myogesic"));
 
-        System.out.println("Add Restock: " + handler.addRestock(1, 50, 3.0, Date.valueOf(handler.getCurrentDate()), Date.valueOf(LocalDate.of(2025, 1, 15))));
+        System.out.println("Add Restock: " + handler.addRestock(1, 50, 3.0, handler.getCurrentDate().toString(), (LocalDate.of(2025, 1, 15).toString())));
         handler.reduceRestocks(1, 30);
 
         Restocks [] list = handler.getCurrentStock(1);
@@ -556,38 +558,41 @@ public class SQL_DataHandler {
     /**
      * Updates the name and price of a specific item
      *
-     * @param itemName      The original name of the item (Serves as its identifier in the database)
      * @param newName       The new name of the item
      * @param unitCost      The new cost of the item
      *
      * @return              true if the item was successfully updated, false if the item doesn't exist or
      *                      was not updated.
      */
-    public boolean updateItem(String itemName, String newName, double unitCost){
+    public boolean updateItem(int itemID, String newName, int itemUnitTypeID, double unitCost){
         if (connection == null)
             prepareConnection();
 
         try{
             //Checks if there is no existing item with this name
-            if (!itemExists(itemName)){
-                System.out.println("ERROR: Item to be updated: " + itemName + ", doesn't exist in the database.");
+            if (!itemExists(itemID)){
+                System.out.println("ERROR: Item to be updated: " + getItem(itemID).getItemName() + ", doesn't exist in the database.");
                 return false;
             }
 
             if (itemExists(newName)){
-                System.out.println("ERROR: item " + itemName + ", exists in the database.");
+                System.out.println("ERROR: item " + newName + ", exists in the database.");
                 return false;
             }
 
             ///Add the item to the database
-            String firstQuery = "UPDATE Items SET item_name = ? WHERE item_name = ?";
-            String secondQuery = "UPDATE Items SET unit_cost = ? WHERE item_name = ?";
+            String firstQuery = "UPDATE Items SET item_name = ? WHERE item_ID = ?";
+            String secondQuery = "UPDATE Items SET unit_cost = ? WHERE item_ID = ?";
+            String thirdQuery = "UPDATE Items SET item_unit_ID = ? WHERE item_ID = ?";
             PreparedStatement firstPstmt = connection.prepareStatement(firstQuery);
             PreparedStatement secondPstmt = connection.prepareStatement(secondQuery);
+            PreparedStatement thirdPstmt = connection.prepareStatement(thirdQuery);
             firstPstmt.setString(1, newName);
-            firstPstmt.setString(2, itemName);
+            firstPstmt.setInt(2, itemID);
             secondPstmt.setDouble(1, unitCost);
-            secondPstmt.setString(2, newName);
+            secondPstmt.setInt(2, itemID);
+            thirdPstmt.setDouble(1, itemUnitTypeID);
+            thirdPstmt.setInt(2, itemID);
 
             int rowsAffected = 0;
             rowsAffected += firstPstmt.executeUpdate();
@@ -908,7 +913,6 @@ public class SQL_DataHandler {
 
             if (item.getItemID() != -1){
                 //Remove rows from tables with item_ID as their foreign keys
-                removeItemUnitType(item.getItemUnitTypeID(), REMOVE_ITEM_UNIT_TYPE);
                 removeRestock(itemID, REMOVE_BY_ITEM_ID);
                 removeItemsSold(itemID);
             }   else
@@ -1198,7 +1202,7 @@ public class SQL_DataHandler {
     }
 
     //TODO: Add comments for this method
-    public boolean removeItemType(String itemTypeName){
+    public boolean removeItemType(String itemTypeName) throws SQLException {
         if (connection == null)
             prepareConnection();
 
@@ -1231,12 +1235,46 @@ public class SQL_DataHandler {
         return getAffectedItems(list.toArray(array));
     }
 
+    public int getAffectedRestocks(Item i){
+        List<Item> list = new ArrayList<>();
+        list.add(i);
+        Item [] array = new Item[1];
+        return getAffectedRestocks(list.toArray(array));
+    }
     /**
      * Gets all the items using a specific itemType
      *
      * @param list  Contains the list of items to be searched for
      * @return      Number of items using the specific ItemType
      */
+
+    public int getAffectedRestocks(Item [] list){
+        if (connection == null)
+            prepareConnection();
+
+        String query = """
+            SELECT 
+                COUNT(r.restock_ID) AS "Restock Count"
+            FROM Restocks AS r
+            JOIN Items AS i ON i.item_ID = r.item_ID
+            WHERE i.item_ID = ?
+        """;
+
+        int itemCount = 0;
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            for (Item i: list){
+                pstmt.setInt(1, i.getItemID());
+                ResultSet set = pstmt.executeQuery();
+                if (set.next())
+                    itemCount += set.getInt("Restock Count");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return itemCount;
+    }
+
 
     public int getAffectedItems(ItemType [] list){
         if (connection == null)
@@ -1460,7 +1498,7 @@ public class SQL_DataHandler {
     }
 
     //TODO: Add comments for this method
-    public boolean removeUnitType(String unitTypeName){
+    public boolean removeUnitType(String unitTypeName) throws SQLException {
         if (connection == null)
             prepareConnection();
 
@@ -1570,7 +1608,7 @@ public class SQL_DataHandler {
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, itemUnitTypeID);
-            ResultSet set = pstmt.executeQuery(query);
+            ResultSet set = pstmt.executeQuery();
             return (set.next());
 
         }   catch (Exception e){
@@ -1659,6 +1697,41 @@ public class SQL_DataHandler {
         }
     }
 
+    public ItemUnitType getItemUnitType(int itemUnitTypeID){
+        final String query = """
+            SELECT
+                 iut.item_unit_ID AS "Item Unit ID",
+                 iut.itemType_ID AS "Item Type ID",
+                 iut.unitType_ID AS "Unit Type ID",
+                 it.item_Type AS "Item Type Name",
+                 ut.unit_Type AS "Unit Type Name"
+            FROM ItemUnitType AS iut
+            JOIN ItemType AS it ON iut.itemType_ID = it.itemType_ID
+            JOIN UnitType AS ut ON iut.unitType_ID = ut.unitType_ID
+            WHERE iut.item_unit_ID = ?;
+            """;
+
+        if (connection == null)
+            prepareConnection();
+
+        if (!itemUnitTypeExists(itemUnitTypeID))
+            return null;
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
+            pstmt.setInt(1, itemUnitTypeID);
+            ResultSet set = pstmt.executeQuery();
+            if (set.next())
+                return new ItemUnitType(set.getInt("Item Unit ID"), set.getInt("Item Type ID"), set.getInt("Unit Type ID"),
+                        set.getString("Item Type Name"), set.getString("Unit Type Name"));
+
+            return null;
+        }   catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
     //TODO: Add comments to this method
     public int getItemUnitTypeID(String itemTypeName, String unitTypeName){
         int itemTypeID = getItemTypeID(itemTypeName);
@@ -1735,9 +1808,26 @@ public class SQL_DataHandler {
         }
     }
 
-//    public boolean updateItemUnitType(int itemUnitTypeID, int itemTypeID, int unitTypeID){
-//
-//    }
+    public boolean updateItemUnitType(int itemUnitTypeID, int itemTypeID, int unitTypeID){
+        final String query = "UPDATE ItemUnitType SET itemType_ID = ?, unitType_ID = ? WHERE item_unit_ID = ?";
+
+        if (connection == null)
+            prepareConnection();
+
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
+            pstmt.setInt(1, itemTypeID);
+            pstmt.setInt(2, unitTypeID);
+            pstmt.setInt(3, itemUnitTypeID);
+            System.out.println(pstmt);
+            return pstmt.executeUpdate() > 0;
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+
+    }
 
     //TODO: Add explanation for why these variables are made/used
     public static final int REMOVE_ITEM_TYPE = 6969;
@@ -1745,37 +1835,65 @@ public class SQL_DataHandler {
     public static final int REMOVE_ITEM_UNIT_TYPE = 9999;
 
     //TODO: Add comments
-    public boolean removeItemUnitType(int id, int condition){
+    public boolean removeItemUnitType(int id, int condition) throws SQLException {
         //First set of queries to delete items who uses the following item_unit_ID or itemType_ID or unitType_ID
-        final String firstA = "DELETE FROM Items WHERE (SELECT item_unit_ID FROM ItemUnitType WHERE itemType_ID = " + id + ")";
-        final String firstB = "DELETE FROM Items WHERE (SELECT item_unit_ID FROM ItemUnitType WHERE unitType_ID = " + id + ")";
-        final String firstC = "DELETE FROM Items WHERE (SELECT item_unit_ID FROM ItemUnitType WHERE item_unit_ID = " + id + ")";
+        final String firstA = """
+                DELETE i FROM Items as i
+                JOIN itemUnitType as iut ON i.item_unit_ID = iut.item_unit_ID
+                WHERE iut.itemType_ID = ?
+               
+                """;
+        final String firstB = """
+                DELETE i FROM Items as i
+                JOIN itemUnitType as iut ON i.item_unit_ID = iut.item_unit_ID
+                WHERE iut.unitType_ID = ?
+                """;
+        final String firstC = """
+                DELETE i FROM Items as i
+                JOIN itemUnitType as iut ON i.item_unit_ID = iut.item_unit_ID
+                WHERE iut.item_unit_ID = ?
+                """;
 
         //Second set of queries to remove the item_unit_type IDs
-        final String removeItemType = "DELETE FROM ItemUnitType WHERE itemType_ID = " + id;
-        final String removeUnitType = "DELETE FROM ItemUnitType WHERE unitType_ID = " + id;
-        final String removeItemUnitType = "DELETE FROM ItemUnitType WHERE item_unit_ID = " + id;
+        final String removeItemType = "DELETE FROM ItemUnitType WHERE itemType_ID = ?";
+        final String removeUnitType = "DELETE FROM ItemUnitType WHERE unitType_ID = ?";
+        final String removeItemUnitType = "DELETE FROM ItemUnitType WHERE item_unit_ID = ?";
+
 
         if (connection == null)
             prepareConnection();
 
-        try(Statement stmt = connection.createStatement();){
-            if (condition == REMOVE_ITEM_TYPE){
-                stmt.executeUpdate(firstA);
-                stmt.executeUpdate(removeItemType);
-            } else if (condition == REMOVE_UNIT_TYPE){
-                stmt.executeUpdate(firstB);
-                stmt.executeUpdate(removeUnitType);
-            } else if (condition == REMOVE_ITEM_UNIT_TYPE){
-                stmt.executeUpdate(firstC);
-                stmt.executeUpdate(removeItemUnitType);
-            } else
-                return false;
+        if (condition == REMOVE_ITEM_TYPE){
 
-        }   catch (Exception e){
-            e.printStackTrace();
+            PreparedStatement pstmt = connection.prepareStatement(firstA);
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+
+            pstmt = connection.prepareStatement(removeItemType);
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+        } else if (condition == REMOVE_UNIT_TYPE){
+
+            PreparedStatement pstmt = connection.prepareStatement(firstB);
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+
+            pstmt = connection.prepareStatement(removeUnitType);
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+
+        } else if (condition == REMOVE_ITEM_UNIT_TYPE){
+
+            PreparedStatement pstmt = connection.prepareStatement(firstC);
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+
+            pstmt = connection.prepareStatement(removeItemUnitType);
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();
+
+        } else
             return false;
-        }
 
         return true;
     }
@@ -1818,7 +1936,7 @@ public class SQL_DataHandler {
 //Methods for Restocks.
 
     //TODO: Add comments to this method
-    public boolean addRestock(int itemID, int startQuantity, double wholesaleCost, Date restockDate, Date expiryDate){
+    public boolean addRestock(int itemID, int startQuantity, double wholesaleCost, String restockDate, String expiryDate){
         final String query = """
             INSERT INTO Restocks (item_ID, start_Qty, sold_Qty, wholesale_cost, restock_Date, expiry_Date)
             VALUES (?, ?, 0, ?, ?, ?)
@@ -1831,20 +1949,22 @@ public class SQL_DataHandler {
             Statement stmt = connection.createStatement();){
 
             //Checks if an item exists
-            if (!itemTypeExists(itemID)){
+            if (!itemExists(itemID)){
                 System.out.println("ERROR: Unable to add new Restock. \n Item via Item ID doesn't exist: " + itemID);
                 return false;
             }
 
             //Checks if the expiry date is on or after the current date
-            if (!Date.valueOf(getCurrentDate()).before(expiryDate) && !Date.valueOf(getCurrentDate()).equals(expiryDate))
+            Date convertedRestockDate = Date.valueOf(restockDate);
+            Date convertedExpiryDate =  Date.valueOf(expiryDate);
+            if (!convertedRestockDate.before(convertedExpiryDate) && !convertedRestockDate.equals(convertedExpiryDate))
                 return false;
 
             pstmt.setInt(1, itemID);
             pstmt.setInt(2, startQuantity);
             pstmt.setDouble(3, wholesaleCost);
-            pstmt.setDate(4, restockDate);
-            pstmt.setDate(5, expiryDate);
+            pstmt.setDate(4, convertedRestockDate);
+            pstmt.setDate(5, convertedExpiryDate);
             return pstmt.executeUpdate() > 0;
 
         }   catch (Exception e){
@@ -1933,8 +2053,8 @@ public class SQL_DataHandler {
             if (set.next()){
                 return (new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
                                      set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
-                                     set.getDouble("Wholesale Cost"), set.getDate("Restock Date"),
-                                     set.getDate("Expiry Date")));
+                                     set.getDouble("Wholesale Cost"), set.getString("Restock Date"),
+                                     set.getString("Expiry Date")));
             } else
                 return null;
 
@@ -1944,6 +2064,60 @@ public class SQL_DataHandler {
         }
     }
 
+    public boolean updateRestock(int restockID, int itemID, int beginningQty, double wholeSaleCost){
+        final String query = "UPDATE Restocks SET item_ID = ?, start_Qty = ?, wholesale_cost = ? WHERE restock_ID = ?";
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
+            pstmt.setInt(1, itemID);
+            pstmt.setInt(2, beginningQty);
+            pstmt.setDouble(3, wholeSaleCost);
+            pstmt.setInt(4, restockID);
+
+            return pstmt.executeUpdate() > 0;
+
+        }   catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Restocks getLatestRestock(){
+        String query = """
+            SELECT
+                MAX(r.restock_ID) AS "Restock ID",
+                r.item_ID AS "Item ID",
+                r.start_Qty AS "Start Quantity",
+                r.sold_Qty AS "Sold Quantity",
+                r.wholesale_cost AS "Wholesale Cost",
+                r.restock_Date AS "Restock Date",
+                r.expiry_Date AS "Expiry Date",
+                i.item_Name AS "Item Name"
+            FROM Restocks AS r
+            JOIN Items AS i ON i.item_ID = r.item_ID;
+        """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            ResultSet set = pstmt.executeQuery();
+
+            if (set.next()){
+                return (new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
+                        set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
+                        set.getDouble("Wholesale Cost"), set.getString("Restock Date"),
+                        set.getString("Expiry Date")));
+            } else
+                return null;
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
     /**
      * Gets all valid restock (Not Expired and still has Stock, Start Qty > Sold Qty)
      */
@@ -1976,8 +2150,8 @@ public class SQL_DataHandler {
             while(set.next()){
                 list.add(new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
                                       set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
-                                      set.getDouble("Wholesale Cost"), set.getDate("Restock Date"),
-                                      set.getDate("Expiry Date")));
+                                      set.getDouble("Wholesale Cost"), set.getString("Restock Date"),
+                                      set.getString("Expiry Date")));
                 isAdded = true;
             }
 
@@ -2028,8 +2202,8 @@ public class SQL_DataHandler {
             while(set.next()){
                 list.add(new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
                         set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
-                        set.getDouble("Wholesale Cost"), set.getDate("Restock Date"),
-                        set.getDate("Expiry Date")));
+                        set.getDouble("Wholesale Cost"), set.getString("Restock Date"),
+                        set.getString("Expiry Date")));
                 isAdded = true;
             }
 
@@ -2076,8 +2250,8 @@ public class SQL_DataHandler {
             while(set.next()){
                 list.add(new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
                         set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
-                        set.getDouble("Wholesale Cost"), set.getDate("Restock Date"),
-                        set.getDate("Expiry Date")));
+                        set.getDouble("Wholesale Cost"), set.getString("Restock Date"),
+                        set.getString("Expiry Date")));
                 isAdded = true;
             }
 
@@ -2142,9 +2316,9 @@ public class SQL_DataHandler {
         String second = "SELECT * FROM Restocks AS r WHERE r.restock_ID = ?";
         String finalQuery;
 
-        if (condition == REMOVE_BY_RESTOCK_ID)
+        if (condition == SEARCH_BY_RESTOCK_ID)
             finalQuery = second;
-        else if (condition == REMOVE_BY_ITEM_ID)
+        else if (condition == SEARCH_BY_ITEM_ID)
             finalQuery = first;
         else {
             System.out.println("ERROR: Unable to remove restock. \nInvalid restock removal condition used.");
@@ -2153,8 +2327,8 @@ public class SQL_DataHandler {
 
         try(PreparedStatement pstmt = connection.prepareStatement(finalQuery);){
             pstmt.setInt(1, id);
-            return pstmt.executeUpdate() > 0;
-
+            pstmt.executeQuery();
+            return true;
         }   catch (Exception e){
             e.printStackTrace();
             return false;
@@ -2171,8 +2345,8 @@ public class SQL_DataHandler {
         if (connection == null)
             prepareConnection();
 
-        String first = "DELETE FROM Restocks AS r WHERE r.item_ID = ?";
-        String second = "DELETE FROM Restocks AS r WHERE r.restock_ID = ?";
+        String first = "DELETE r FROM Restocks AS r WHERE r.item_ID = ?";
+        String second = "DELETE r FROM Restocks AS r WHERE r.restock_ID = ?";
         String finalQuery;
 
         if (condition == REMOVE_BY_RESTOCK_ID)
@@ -2188,7 +2362,7 @@ public class SQL_DataHandler {
             Statement stmt = connection.createStatement();){
 
             //Checks if an item exists
-            if (condition == REMOVE_BY_ITEM_ID && !itemTypeExists(id)){
+            if (condition == REMOVE_BY_ITEM_ID && !itemExists(id)){
                 System.out.println("ERROR: Unable to remove from Restock. \n Item via Item ID doesn't exist: " + id);
                 return false;
             }   else if (condition == REMOVE_BY_RESTOCK_ID && !restocksExists(id, SEARCH_BY_RESTOCK_ID)){
@@ -2584,7 +2758,7 @@ public class SQL_DataHandler {
      * @return          True if the records are removed successfully, False if the item doesn't exist
      */
     public boolean removeItemsSold(int itemID){
-        final String query = "DELETE FROM Sold_Items AS isd WHERE isd.item_ID = ?";
+        final String query = "DELETE isd FROM Sold_Items AS isd WHERE isd.item_ID = ?";
 
         if (connection == null)
             prepareConnection();
@@ -2617,56 +2791,143 @@ public class SQL_DataHandler {
 //======================================================================================================================================================================
 //Methods for the View / Statistics.
 
-    public Item [] getOverallSoldQuantity(){
+    public double getOverallBeginningBalance(){
         String query = """
-            SELECT
-                i.item_ID AS "Item ID",
-                i.item_name AS "Item Name",
-                ut.unit_Type AS "Unit Type",
-                it.item_Type AS "Item Type",
-                iut.item_unit_ID AS "Item Unit ID",
-                (SUM(COALESCE(isd.item_Qty, 0))) AS "Sold Quantity",
-                i.unit_cost AS "Unit Cost"
-            FROM Items AS i
-            JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
-            JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
-            JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
-            JOIN Sold_Items AS isd ON isd.item_ID = i.item_ID
-            GROUP BY i.item_ID
-            ORDER BY "Sold Quantity" DESC
-            LIMIT 10
-        """;
-
+                SELECT SUM(r.start_Qty * r.wholesale_Cost) as "Sum" from Restocks as r
+                """;
         if (connection == null)
             prepareConnection();
 
         try (Statement stmt = connection.createStatement()){
             ResultSet set = stmt.executeQuery(query);
-
-            List<Item> list = new ArrayList<>();
-            boolean isAdded = false;
-            while(set.next()){
-                list.add(new Item(set.getInt("Item ID"),
-                                  set.getString("Item Name"),
-                                  set.getInt("Item Unit ID"),
-                                  (set.getString("Item Type") + set.getString("Unit Type")),
-                                  set.getInt("Sold Quantity"),
-                                  set.getDouble("Unit Cost"),
-                                  0));
-                isAdded = true;
-            }
-
-            if (isAdded){
-                Item [] array = new Item[list.size()];
-                return list.toArray(array);
-            } else
-                return null;
+            set.next();
+            return set.getInt("Sum");
 
         } catch (Exception e){
             e.printStackTrace();
-            return null;
         }
+        return -1;
     }
+
+    public double getOverallIssuanceBalance(){
+        //insert help wahahah
+        return -1;
+    }
+
+    public int getOverallStartQuantity(){
+        String query = """
+                SELECT SUM(r.start_Qty) as "Sum" from Restocks as r
+                """;
+        if (connection == null)
+            prepareConnection();
+
+        try (Statement stmt = connection.createStatement()){
+            ResultSet set = stmt.executeQuery(query);
+            set.next();
+            return set.getInt("Sum");
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public int getOverallSoldQuantity(){
+        String query = """
+                SELECT SUM(r.sold_Qty) as "Sum" from Restocks as r
+                """;
+        if (connection == null)
+            prepareConnection();
+
+        try (Statement stmt = connection.createStatement()){
+            ResultSet set = stmt.executeQuery(query);
+            set.next();
+            return set.getInt("Sum");
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public int getTransactionCount(){
+        String query = """
+                SELECT COUNT(transaction_ID) as "Count" from Transactions;
+                """;
+        if (connection == null)
+            prepareConnection();
+
+        try (Statement stmt = connection.createStatement()){
+            ResultSet set = stmt.executeQuery(query);
+            set.next();
+            return set.getInt("Count");
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public Item [] getTop10Fastest(){
+        //haha help
+        return null;
+    }
+
+    public Restocks [] getTop10Expiry(){
+        //help part 3
+        return null;
+    }
+
+//    public Item [] getOverallSoldQuantity(){
+//        String query = """
+//            SELECT
+//                i.item_ID AS "Item ID",
+//                i.item_name AS "Item Name",
+//                ut.unit_Type AS "Unit Type",
+//                it.item_Type AS "Item Type",
+//                iut.item_unit_ID AS "Item Unit ID",
+//                (SUM(COALESCE(isd.item_Qty, 0))) AS "Sold Quantity",
+//                i.unit_cost AS "Unit Cost"
+//            FROM Items AS i
+//            JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
+//            JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
+//            JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
+//            JOIN Sold_Items AS isd ON isd.item_ID = i.item_ID
+//            GROUP BY i.item_ID
+//            ORDER BY "Sold Quantity" DESC
+//            LIMIT 10
+//        """;
+//
+//        if (connection == null)
+//            prepareConnection();
+//
+//        try (Statement stmt = connection.createStatement()){
+//            ResultSet set = stmt.executeQuery(query);
+//
+//            List<Item> list = new ArrayList<>();
+//            boolean isAdded = false;
+//            while(set.next()){
+//                list.add(new Item(set.getInt("Item ID"),
+//                                  set.getString("Item Name"),
+//                                  set.getInt("Item Unit ID"),
+//                                  (set.getString("Item Type") + set.getString("Unit Type")),
+//                                  set.getInt("Sold Quantity"),
+//                                  set.getDouble("Unit Cost"),
+//                                  0));
+//                isAdded = true;
+//            }
+//
+//            if (isAdded){
+//                Item [] array = new Item[list.size()];
+//                return list.toArray(array);
+//            } else
+//                return null;
+//
+//        } catch (Exception e){
+//            e.printStackTrace();
+//            return null;
+//        }
+//    }
 
 
 //======================================================================================================================================================================

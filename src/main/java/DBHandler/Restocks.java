@@ -4,11 +4,11 @@ import java.sql.Date;
 public class Restocks {
     int itemID, restockID, startQty, soldQty, remainingQty;
     String itemName, restockDateString, expiryDateString;
-    Date restockDate, expiryDate;
+    String restockDate, expiryDate;
     double wholesaleCost;
 
     public Restocks(){ this(0, "", 0, 0, 0, 0, null, null); }
-    public Restocks(int itemID, String itemName, int restockID, int startQty, int soldQty, double wholesaleCost, Date restockDate, Date expiryDate){
+    public Restocks(int itemID, String itemName, int restockID, int startQty, int soldQty, double wholesaleCost, String restockDate, String expiryDate){
         setItemID(itemID);
         setItemName(itemName);
         setRestockID(restockID);
@@ -54,19 +54,19 @@ public class Restocks {
         this.soldQty = soldQty;
     }
 
-    public Date getRestockDate() {
+    public String getRestockDate() {
         return restockDate;
     }
 
-    public void setRestockDate(Date restockDate) {
+    public void setRestockDate(String restockDate) {
         this.restockDate = restockDate;
     }
 
-    public Date getExpiryDate() {
+    public String getExpiryDate() {
         return expiryDate;
     }
 
-    public void setExpiryDate(Date expiryDate) {
+    public void setExpiryDate(String expiryDate) {
         this.expiryDate = expiryDate;
     }
 
