@@ -701,21 +701,21 @@ public class SQL_DataHandler {
     public Item [] getAllItems(int limit){
         final String query = """
                 SELECT
-                	i.item_ID AS "Item ID",
-                	i.item_name AS "Item Name",
-                	ut.unit_Type AS "Unit Type",
-                	it.item_Type AS "Item Type",
-                	iut.item_unit_ID AS "Item Unit ID",
-                	(SUM(COALESCE(r.start_qty - r.sold_qty, 0))) AS "Item Quantity",
-                	i.unit_cost AS "Unit Cost"
+                    i.item_ID AS "Item ID",
+                    i.item_name AS "Item Name",
+                    ut.unit_Type AS "Unit Type",
+                    it.item_Type AS "Item Type",
+                    iut.item_unit_ID AS "Item Unit ID",
+                    SUM(COALESCE(r.start_qty - r.sold_qty, 0)) AS "Item Quantity",
+                    i.unit_cost AS "Unit Cost",
+                    COALESCE(SUM(r.sold_qty) / NULLIF(SUM(r.start_qty), 0) * 100, 0) AS "Movement"
                 FROM Items AS i
                 JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
                 JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
                 JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
                 LEFT JOIN Restocks AS r ON r.item_ID = i.item_ID
-                	AND r.expiry_Date >= CURRENT_DATE()
-                    AND r.start_Qty > r.sold_Qty
-                GROUP BY i.item_ID
+                LEFT JOIN Sold_Items AS isd ON isd.item_ID = i.item_ID
+                GROUP BY i.item_ID, r.item_ID
                 ORDER BY i.item_ID ASC
                 LIMIT ?;
                 """;
@@ -737,7 +737,7 @@ public class SQL_DataHandler {
                 Item item = new Item(set.getInt("Item ID"), set.getString("Item Name"),
                         set.getInt("Item Unit ID"), (set.getString("Item Type") + "-" +
                         set.getString("Unit Type")), set.getInt("Item Quantity"),
-                        set.getDouble("Unit Cost"), 0);
+                        set.getDouble("Unit Cost"), set.getInt("Movement"));
                 list.add(item);
                 isAdded = true;
             }
@@ -766,23 +766,25 @@ public class SQL_DataHandler {
         //Gets the item's details from the Item table
         final String query = """
                 SELECT
-                	i.item_ID AS "Item ID",
-                	i.item_name AS "Item Name",
-                	ut.unit_Type AS "Unit Type",
-                	it.item_Type AS "Item Type",
-                	iut.item_unit_ID AS "Item Unit ID",
-                	(SUM(COALESCE(r.start_qty - r.sold_qty, 0))) AS "Item Quantity",
-                	i.unit_cost AS "Unit Cost",
-                    ((SUM(COALESCE(isd.item_qty * i.unit_cost, 0))) / 800000) * 100 AS "Movement"
+                    i.item_ID AS "Item ID",
+                    i.item_name AS "Item Name",
+                    ut.unit_Type AS "Unit Type",
+                    it.item_Type AS "Item Type",
+                    iut.item_unit_ID AS "Item Unit ID",
+                    (SELECT (SUM(r.start_Qty - r.sold_Qty))
+                    FROM Restocks AS r
+                    WHERE r.expiry_Date >= CURRENT_DATE() AND r.start_Qty > r.sold_Qty AND r.item_ID = ?) AS "Item Quantity",
+                    i.unit_cost AS "Unit Cost",
+                    (SELECT COALESCE(SUM(r.sold_qty) / NULLIF(SUM(r.start_qty), 0)) * 100
+                    FROM Restocks AS r
+                    WHERE r.item_ID = ?) AS "Movement"
                 FROM Items AS i
                 JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
                 JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
                 JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
                 LEFT JOIN Sold_Items AS isd ON isd.item_ID = i.item_ID
-                LEFT JOIN Restocks AS r ON r.item_ID = i.item_ID
-                	AND r.expiry_Date >= CURRENT_DATE()
-                    AND r.start_Qty > r.sold_Qty
-                WHERE i.item_ID = ?;
+                WHERE i.item_ID = ?
+                GROUP BY i.item_ID, i.item_name, ut.unit_Type, it.item_Type, iut.item_unit_ID, i.unit_cost;
                 """;
 
         if (connection == null)
@@ -793,6 +795,8 @@ public class SQL_DataHandler {
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, itemID);
+            pstmt.setInt(2, itemID);
+            pstmt.setInt(3, itemID);
             ResultSet set = pstmt.executeQuery();
 
             if (!set.next())
@@ -2002,7 +2006,7 @@ public class SQL_DataHandler {
         Restocks [] currentStock = getCurrentStock(itemID);
 
         if (currentStock == null || currentStock.length == 0){
-            System.out.println("ERROR: Unable to reduce restocks. \nItem doesn't exist or no stock is found under this item");
+            System.out.println("ERROR: Unable to reduce restocks. \nItem doesn't exist or no stock is found under this item: " + itemID);
             return false;
         }
 
@@ -2291,20 +2295,20 @@ public class SQL_DataHandler {
         final String query = """
             SELECT (SUM(r.start_Qty - r.sold_Qty)) AS "Total Quantity"
             FROM Restocks AS r 
-            WHERE r.expiry_Date >= CURRENT_DATE() AND r.start_Qty > r.sold_Qty;
+            WHERE r.expiry_Date >= CURRENT_DATE() AND r.start_Qty > r.sold_Qty AND r.item_ID = ?;
         """;
 
         if (connection == null)
             prepareConnection();
 
-        try(Statement stmt = connection.prepareStatement(query);){
-
+        try(PreparedStatement pstmt = connection.prepareStatement(query);){
             if (!itemExists(itemID)){
                 System.out.println("ERROR: Unable to get total quantity of item. \nItem with this item id doesn't exist: " + itemID);
                 return -1;
             }
 
-            ResultSet set = stmt.executeQuery(query);
+            pstmt.setInt(1, itemID);
+            ResultSet set = pstmt.executeQuery(query);
             if (set.next())
                 return set.getInt("Total Quantity");
 
@@ -2421,7 +2425,7 @@ public class SQL_DataHandler {
     public int getLatestTransaction(){
         String query = """
             SELECT
-                MAX(t.transaction_ID) AS "Transaction ID",
+                MAX(t.transaction_ID) AS "Transaction ID"
             FROM Transactions AS t;
         """;
 

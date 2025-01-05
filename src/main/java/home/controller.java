@@ -149,7 +149,6 @@ public class controller implements Initializable {
             itemName_textField.clear();
             item_itemUnitType_textField.clear();
             itemCost_textField.clear();
-            search_itemName();
 
         } else if (!itemName.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -447,7 +446,8 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "Gimatag2024");
+//            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "Gimatag2024");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "maclang@2023-00570");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -553,16 +553,16 @@ public class controller implements Initializable {
                 itemTypeTable.setItems(initialItemTypeData());
                 search_itemType();
             }   else {
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("ERROR");
-                    alert.setHeaderText("Unable to update Item Type: " + event.getOldValue() + " to " + event.getNewValue());
-                    alert.setContentText("The item name to be updated \"" + event.getNewValue() + "\", already exists in the database.");
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("ERROR");
+                alert.setHeaderText("Unable to update Item Type: " + event.getOldValue() + " to " + event.getNewValue());
+                alert.setContentText("The item name to be updated \"" + event.getNewValue() + "\", already exists in the database.");
 
-                    Optional<ButtonType> result = alert.showAndWait();
-                    if (result.isPresent() && result.get() == ButtonType.OK) {
-                        return;
-                    }
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.isPresent() && result.get() == ButtonType.OK) {
+                    return;
                 }
+            }
         });
     }
 
@@ -991,9 +991,9 @@ public class controller implements Initializable {
 
 
     private ObservableList<Restocks> initialRestockData(){
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Restocks [] r = handler.getAllRestocks();
-            return FXCollections.<Restocks> observableArrayList(r);
+        SQL_DataHandler handler = new SQL_DataHandler();
+        Restocks [] r = handler.getAllRestocks();
+        return FXCollections.<Restocks> observableArrayList(r);
     }
 
     private void prepareRestockComboBoxListener(){
@@ -1723,7 +1723,7 @@ public class controller implements Initializable {
     @FXML private Button transactionWindow_addTransactionButton;
     @FXML private Button transactionWindow_removeTransactionButton;
     @FXML private Button confirmTransaction_button;
-    @FXML private TextField transactionWindow_currentQty_textField;
+    @FXML private TextField transactionWindow_currentQty_textfield;
     @FXML private TextField transactionWindow_sellQty_textField;
 
     @FXML private TableView<TransactionWindow> transactionWindowTable;
@@ -1731,15 +1731,153 @@ public class controller implements Initializable {
     @FXML private TableColumn<TransactionWindow, Integer> transactionWindow_sellQty_col;
     @FXML private TableColumn<TransactionWindow, Double> transactionWindow_unitCost_col;
 
+    public List<TransactionWindow> transactionWindowList;
+
+    public void prepareTransactionWindowComboBox(){
+        Item [] items = new SQL_DataHandler().getAllItems(-1);
+        ObservableList<String> listData = FXCollections.observableArrayList();
+
+        for (Item item : items)
+            listData.add(item.getItemName());
+        transactionWindow_comboBox.setItems(listData);
+
+        transactionWindow_comboBox.setOnAction(event ->{
+            String selectedItem = transactionWindow_comboBox.getValue();
+            if (selectedItem != null && !selectedItem.isEmpty()){
+                SQL_DataHandler handler = new SQL_DataHandler();
+                int itemAmount = handler.getRemainingStockQuantity(handler.getItemId(selectedItem));
+
+                if (itemAmount > -1)
+                    transactionWindow_currentQty_textfield.setText(Integer.toString(itemAmount));
+                else
+                    transactionWindow_currentQty_textfield.clear();
+            } else
+                transactionWindow_currentQty_textfield.clear();
+        });
+    }
+
+    public ObservableList<TransactionWindow> initialTransactionWindowData(){
+        TransactionWindow [] array = new TransactionWindow[transactionWindowList.size()];
+        return FXCollections.<TransactionWindow> observableArrayList(transactionWindowList.toArray(array));
+    }
+
+    @FXML
+    public void addTransactionWindow(){
+        if (transactionWindowList == null){
+            transactionWindowList = new ArrayList<>();
+        }
+
+        String itemName = transactionWindow_comboBox.getValue();
+        String currentQty = transactionWindow_currentQty_textfield.getText();
+        String soldQty = transactionWindow_sellQty_textField.getText();
+
+        if (itemName.isEmpty() || currentQty.isEmpty() || soldQty.isEmpty()){
+            System.out.println("Textbox or Combo box are empty");
+            return;
+        }
+
+        int soldQtyInt;
+        try {
+            soldQtyInt = Integer.parseInt(soldQty);
+        } catch (Exception e){
+            e.printStackTrace();
+            return;
+        }
+
+        SQL_DataHandler handler = new SQL_DataHandler();
+        Item item = handler.getItem(itemName);
+        int itemAmount = handler.getRemainingStockQuantity(item.getItemID());
+
+        TransactionWindow tw = new TransactionWindow(item.getItemName(), soldQtyInt, item.getUnitCost());
+
+        System.out.println(currentQty + " " + soldQty);
+
+
+        int itemQuantity = 0;
+        for (TransactionWindow trans : transactionWindowList){
+            if (trans.getItemName().equals(tw.getItemName()))
+                itemQuantity += trans.getSellQty();
+
+            if (itemQuantity > itemAmount) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("ERROR");
+                alert.setHeaderText("Unable to add new Item Sold.");
+                alert.setContentText("Overall quantity exceeds current quantity.");
+                alert.showAndWait();
+                return;
+            }
+        }
+
+        if (soldQtyInt + tw.getSellQty() <= itemAmount){
+            transactionWindowList.add(tw);
+            transactionWindowTable.setItems(initialTransactionWindowData());
+        }   else {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Item Sold.");
+            alert.setContentText("Overall quantity exceeds current quantity.");
+            alert.showAndWait();
+        }
+
+    }
+
+    @FXML
+    public void deleteTransactionWindow(){
+        TransactionWindow tw = transactionWindowTable.getSelectionModel().getSelectedItem();
+
+        if (tw == null){
+            System.out.println("No transaction selected");
+            return;
+        }
+
+        for (int i  = 0; i < transactionWindowList.size(); i++){
+            if (transactionWindowList.get(i).getItemName().equals(tw.getItemName())){
+                transactionWindowList.remove(i);
+                transactionWindowTable.setItems(initialTransactionWindowData());
+                return;
+            }
+        }
+
+        System.out.println("No transaction was deleted.");
+    }
+
+    @FXML
+    public void confirmTransaction(){
+        if (transactionWindowList.size() <= 0)
+            return;
+
+        SQL_DataHandler handler = new SQL_DataHandler();
+        handler.addTransaction(pharmacistID);
+        int transactionID = handler.getLatestTransaction();
+        for (TransactionWindow trans : transactionWindowList){
+            int itemID = handler.getItemTypeID(trans.getItemName());
+            handler.reduceRestocks(itemID, trans.getSellQty());
+            handler.addItemsSold(transactionID, itemID, trans.getSellQty());
+        }
+
+        transactionWindowList = new ArrayList<>();
+        transactionWindowTable.setItems(initialTransactionWindowData());
+    }
+
 
     //===============================INPUT PHARMACIST ID WINDOW METHODS====================================
     @FXML private Button inputPharmaID_nextButton;
     @FXML private TextField input_pharmacistID_textfield;
 
+    public static int pharmacistID = 0;
+
     // check if its in the database
-    private boolean isPharmacistIdValid(String pharmacistID) {
+    private boolean isPharmacistIdValid(String pharmacistIDString) {
         SQL_DataHandler handler = new SQL_DataHandler();
-        return handler.checkPharmacistIDInDatabase(pharmacistID);
+        try{
+            int pharmaID = Integer.parseInt(pharmacistIDString);
+            pharmacistID = pharmaID;
+        } catch(Exception e){
+            e.printStackTrace();
+            return false;
+        }
+
+        return handler.checkPharmacistIDInDatabase(pharmacistIDString);
     }
 
     @Override
@@ -1904,7 +2042,9 @@ public class controller implements Initializable {
             transactionWindow_itemName_col.setCellValueFactory(new PropertyValueFactory<>("itemName"));
             transactionWindow_sellQty_col.setCellValueFactory(new PropertyValueFactory<>("sellQty"));
             transactionWindow_unitCost_col.setCellValueFactory(new PropertyValueFactory<>("unitCost"));
+            transactionWindowList = new ArrayList<>();
 
+            transactionWindowTable.setItems(initialTransactionWindowData());
         }
 
         //Initialize TRANSACTIONS and ITEMS SOLD
@@ -1923,6 +2063,15 @@ public class controller implements Initializable {
             prepareTransactionTableListener();
             transactionTable.setItems(initialTransactionData());
             initializeTransactionList();
+        }
+
+        if (transactionWindowTable != null){
+            transactionWindowList = new ArrayList<>();
+            transactionWindow_itemName_col.setCellValueFactory(new PropertyValueFactory<>("itemName"));
+            transactionWindow_sellQty_col.setCellValueFactory(new PropertyValueFactory<>("sellQty"));
+            transactionWindow_unitCost_col.setCellValueFactory(new PropertyValueFactory<>("unitCost"));
+            transactionWindowTable.setItems(initialTransactionWindowData());
+            prepareTransactionWindowComboBox();
         }
 
         if (transaction_searchField == null) {
@@ -1970,13 +2119,13 @@ public class controller implements Initializable {
 
         // for restock
         if (restock_searchTextField == null) {
-                    System.out.println("field is null");
-                } else {
-                    restock_searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-                        System.out.println("Search input: " + newValue);
-                    });
-                    search_restocks();
-                }
+            System.out.println("field is null");
+        } else {
+            restock_searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+                System.out.println("Search input: " + newValue);
+            });
+            search_restocks();
+        }
 
         if (inputPharmaID_nextButton != null) {
             inputPharmaID_nextButton.setDisable(true);
@@ -2030,8 +2179,8 @@ public class controller implements Initializable {
 
         // Add dragging functionality to the root node
         root.setOnMousePressed(mouseEvent -> {
-                xOffset = mouseEvent.getSceneX();
-                yOffset = mouseEvent.getSceneY();
+            xOffset = mouseEvent.getSceneX();
+            yOffset = mouseEvent.getSceneY();
         });
 
         root.setOnMouseDragged(mouseEvent -> {
@@ -2112,7 +2261,7 @@ public class controller implements Initializable {
             alert.setContentText("Pharmacist ID is invalid.");
             alert.showAndWait();
         }
-}
+    }
 
     public void switchToInputPharmacistIDWindow (ActionEvent event) throws IOException {
         switchScene("/home/inputPharmacistIDWindow.fxml", event);
@@ -2167,18 +2316,18 @@ public class controller implements Initializable {
         int end_Qty = start_Qty - sold_Qty;
         int transactionCount = handler.getTransactionCount();
 
-            beginningBalance.setText(String.format("%.2f", beginning));
-            issuanceBalance.setText(String.format("%.2f", issuance));
-            endingBalance.setText(String.format("%.2f", ending));
+        beginningBalance.setText(String.format("%.2f", beginning));
+        issuanceBalance.setText(String.format("%.2f", issuance));
+        endingBalance.setText(String.format("%.2f", ending));
 
-            start_qty_label.setText("" + start_Qty);
-            sold_qty_label.setText("" + sold_Qty);
-            end_qty_label.setText("" + end_Qty);
-            transactionCount_label.setText("" + transactionCount);
-            recentlyRestocked_restockID.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
-            recentlyRestocked_itemName.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("itemID"));
-            recentlyRestocked_Qty.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("startQty"));
-            recentlyRestocked.setItems(recentlyRestockedData());
+        start_qty_label.setText("" + start_Qty);
+        sold_qty_label.setText("" + sold_Qty);
+        end_qty_label.setText("" + end_Qty);
+        transactionCount_label.setText("" + transactionCount);
+        recentlyRestocked_restockID.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
+        recentlyRestocked_itemName.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("itemID"));
+        recentlyRestocked_Qty.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("startQty"));
+        recentlyRestocked.setItems(recentlyRestockedData());
 
 
         //REMOVE COMMENT IF TOP 10 FASTEST AND EXPIRY DATA WITHIN SQL HANDLER IS RESOLVED.
