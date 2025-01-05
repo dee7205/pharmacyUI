@@ -446,7 +446,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "Gimatag2024");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "shanna05");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -1302,7 +1302,7 @@ public class controller implements Initializable {
     @FXML private TableColumn<ItemsSold, Double> itemsSold_unitCost_col;
     @FXML private TableColumn<ItemsSold, Integer> itemsSold_itemID_col;
 
-    @FXML private RadioButton itemName_radioboxButton;
+    @FXML private RadioButton itemID_radioboxButton;
     @FXML private RadioButton pharmacistID_radioboxButton;
     @FXML private RadioButton transactionID_radioboxButton;
 
@@ -1346,13 +1346,14 @@ public class controller implements Initializable {
     @FXML
     ObservableList<ItemsSold> itemsSoldList;
 
-    public void search_transaction() {
+    @FXML
+    private void search_transaction() {
         try {
             SQL_DataHandler handler = new SQL_DataHandler();
 
             // Fetch transactions and items sold data
             Transaction[] transactions = handler.getAllTransactions(true);
-//            ItemsSold[] itemsSold = handler.get(true);
+            ItemsSold[] itemsSold = handler.getItemsSold(true);
 
             System.out.println("Numbers fetched: " + Arrays.toString(transactions)); // Debugger
 
@@ -1376,15 +1377,15 @@ public class controller implements Initializable {
 
             // Convert arrays to ObservableLists
             transactionList = FXCollections.observableArrayList(transactions);
-//            itemsSoldList = FXCollections.observableArrayList(itemsSold);
+            itemsSoldList = FXCollections.observableArrayList(itemsSold);
 
             // Set the tables' items
             transactionTable.setItems(transactionList);
             itemsSoldTable.setItems(itemsSoldList);
 
-            // Add filtering logic
+            // Add filtering logic for transactions
             FilteredList<Transaction> filteredTransactionData = new FilteredList<>(transactionList, b -> true);
-            // FilteredList<ItemsSold> filteredItemsSoldData = new FilteredList<>(itemsSoldList, b -> true);
+            FilteredList<ItemsSold> filteredItemsSoldData = new FilteredList<>(itemsSoldList, b -> true);
 
             // Filter based on the search field
             transaction_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -1402,20 +1403,24 @@ public class controller implements Initializable {
                     } else if (transactionID_radioboxButton.isSelected()) {
                         return String.valueOf(transaction.getTransactionID()).contains(lowerCaseFilter);
                     }
-//                   } else if (itemName_radioboxButton.isSelected()) { // Use itemName here instead of itemID
-//                        return transaction.getItemName().toLowerCase().contains(lowerCaseFilter);
-//                    }
 
                     return false; // No match found
                 });
 
-//                // Filter for items sold based on item name
-//                filteredItemsSoldData.setPredicate(itemSold -> {
-//                    if (newValue == null || newValue.isEmpty()) {
-//                        return true;
-//                    }
-//                    return itemSold.getItemName().toLowerCase().contains(newValue.toLowerCase());
-//                });
+                // Filter for items sold based on item name or item ID
+                filteredItemsSoldData.setPredicate(itemSold -> {
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+
+                    String lowerCaseFilter = newValue.toLowerCase();
+
+                    if (itemID_radioboxButton.isSelected()) {
+                        return String.valueOf(itemSold.getItemID()).contains(lowerCaseFilter);
+                    }
+
+                    return false; // No match found
+                });
             });
 
             // Bind the sorted data to the transaction table
@@ -1424,9 +1429,9 @@ public class controller implements Initializable {
             transactionTable.setItems(sortedTransactionData);
 
             // Bind the sorted data to the items sold table
-//            SortedList<ItemsSold> sortedItemsSoldData = new SortedList<>(filteredItemsSoldData);
-            //sortedItemsSoldData.comparatorProperty().bind(itemsSoldTable.comparatorProperty());
-//            itemsSoldTable.setItems(sortedItemsSoldData);
+            SortedList<ItemsSold> sortedItemsSoldData = new SortedList<>(filteredItemsSoldData);
+            sortedItemsSoldData.comparatorProperty().bind(itemsSoldTable.comparatorProperty());
+            itemsSoldTable.setItems(sortedItemsSoldData);
 
             System.out.println("Search setup complete.");
         } catch (Exception e) {
@@ -1436,10 +1441,9 @@ public class controller implements Initializable {
 
 
 
-
     // radiobutton
     private void enableSearchFieldIfRadioSelected() {
-        if (pharmacistID_radioboxButton.isSelected() || transactionID_radioboxButton.isSelected()) {
+        if (pharmacistID_radioboxButton.isSelected() || transactionID_radioboxButton.isSelected() || itemID_radioboxButton.isSelected()) {
             transaction_searchField.setDisable(false);
         } else {
             transaction_searchField.setDisable(true);
@@ -1940,11 +1944,11 @@ public class controller implements Initializable {
             transaction_searchField.setDisable(true);
         }
 
-//        if (itemID_radioboxButton != null) {
-//            itemID_radioboxButton.setOnAction(e -> enableSearchFieldIfRadioSelected());
-//        } else {
-//            System.out.println("itemID_radioboxButton is null");
-//        }
+        if (itemID_radioboxButton != null) {
+            itemID_radioboxButton.setOnAction(e -> enableSearchFieldIfRadioSelected());
+        } else {
+            System.out.println("itemID_radioboxButton is null");
+        }
 
         if (pharmacistID_radioboxButton != null) {
             pharmacistID_radioboxButton.setOnAction(e -> enableSearchFieldIfRadioSelected());
@@ -2013,7 +2017,7 @@ public class controller implements Initializable {
         if (pharmacistID_radioboxButton != null || transactionID_radioboxButton != null) {
             assert pharmacistID_radioboxButton != null;
             pharmacistID_radioboxButton.setToggleGroup(transactionToggleGroup);
-//            itemID_radioboxButton.setToggleGroup(transactionToggleGroup);
+            itemID_radioboxButton.setToggleGroup(transactionToggleGroup);
             transactionID_radioboxButton.setToggleGroup(transactionToggleGroup);
         }
 

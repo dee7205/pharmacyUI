@@ -3146,6 +3146,52 @@ public class SQL_DataHandler {
         return false;
     }
 
+    public ItemsSold[] getItemsSold(boolean someFlag) {
+        // Prepare your SQL query
+        String query = "SELECT \n" +
+                "    si.transaction_ID, \n" +
+                "    si.item_ID, \n" +
+                "    si.item_qty, \n" +
+                "    si.transaction_date, \n" +
+                "    i.unit_cost, \n" +
+                "    i.item_name \n" +  // Added item_name to the SELECT query
+                "FROM \n" +
+                "    Sold_Items si\n" +
+                "JOIN \n" +
+                "    Items i ON si.item_ID = i.item_ID;";
+
+        List<ItemsSold> itemsSoldList = new ArrayList<>();
+
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            // Execute the query
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                int transactionID = rs.getInt("transaction_ID");
+                int itemID = rs.getInt("item_ID");
+                String itemName = rs.getString("item_name");  // Fetch item_name from the result set
+                int itemQty = rs.getInt("item_qty");
+                double unitCost = rs.getDouble("unit_cost");  // Fetch unit_cost from the result set
+                LocalDate transactionDate = rs.getDate("transaction_date").toLocalDate();
+
+                double income = itemQty * unitCost;  // Example: calculating income based on quantity and unit cost
+
+                ItemsSold itemSold = new ItemsSold(transactionID, itemID, itemName, unitCost, itemQty, income, transactionDate);
+                itemsSoldList.add(itemSold);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Return the itemsSoldList as an array
+        return itemsSoldList.toArray(new ItemsSold[0]);
+    }
+
+
+
+
 }
 
 
