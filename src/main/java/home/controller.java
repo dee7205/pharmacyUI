@@ -1110,57 +1110,59 @@ public class controller implements Initializable {
 //        });
     }
 
-//    public void search_restocks() {
-//        try {
-//            // Fetch data from the handler
-//            SQL_DataHandler handler = new SQL_DataHandler();
-//            Restocks[] restock = handler.getRestock(2); //-> ano lang same ra sa method sa para ma retrieve ang data
-//            System.out.println("Numbers fetched: " + Arrays.toString(restock)); // debugger
-//
-//            if (restock == null || restock.length == 0) {
-//                System.out.println("No data retrieved from the database.");
-//                return;
-//            }
-//
-//            // Set up table columns
-//            pharmacistID_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,Integer>("pharmacistID"));
-//            pharmacist_fName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("firstName"));
-//            pharmacist_mName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("middleName"));
-//            pharmacist_lName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("lastName"));
-//
-//            // Convert array to ObservableList
-//            restockList = FXCollections.observableArrayList(pharmaSearch);
-//            pharmacistTable.setItems(restockList);
-//
-//            // Add filtering logic
-//            FilteredList<Restock> filteredData = new FilteredList<>(restockList, b -> true);
-//
-//            restock_searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-//                filteredData.setPredicate(restock -> {
-//                    // If search field is empty, show all items
-//                    if (newValue == null || newValue.isEmpty()) {
-//                        return true;
-//                    }
-//
-//                    // Filter items by name (case-insensitive) -> change lang sa mga iretrieve everytime mag search ka
-//                    String lowerCaseFilter = newValue.toLowerCase();
-//                    return pharmacist.getFirstName().toLowerCase().contains(lowerCaseFilter) ||
-//                            pharmacist.getMiddleName().toLowerCase().contains(lowerCaseFilter) ||
-//                            pharmacist.getLastName().toLowerCase().contains(lowerCaseFilter) ||
-//                            String.valueOf(pharmacist.getPharmacistID()).contains(lowerCaseFilter);
-//                });
-//            });
-//
-//            // Bind the sorted data to the table
-//            SortedList<Restock> sortedData = new SortedList<>(filteredData);
-//            sortedData.comparatorProperty().bind(restockTable.comparatorProperty());
-//            restockTable.setItems(sortedData);
-//
-//            System.out.println("Search setup complete.");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    @FXML ObservableList<Restocks> restockList;
+    public void search_restocks() {
+        try {
+            // Fetch data from the handler
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Restocks[] restock = handler.getAllRestocks(); //-> ano lang same ra sa method sa para ma retrieve ang data
+            System.out.println("Numbers fetched: " + Arrays.toString(restock)); // debugger
+
+            if (restock == null || restock.length == 0) {
+                System.out.println("No data retrieved from the database.");
+                return;
+            }
+
+            // Set up table columns
+            restockID_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
+            restock_itemID_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("itemID"));
+            restock_beginningQty_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("startQty"));
+            restock_soldQty_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("soldQty"));
+            restock_restockDate_col.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("restockDate"));
+            restock_expirationDate_col.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("expiryDate"));
+            restock_wholeSaleCost_col.setCellValueFactory(new PropertyValueFactory<Restocks,Double>("wholesaleCost"));
+
+            // Convert array to ObservableList
+            restockList = FXCollections.observableArrayList(restock);
+            restockTable.setItems(restockList);
+
+            // Add filtering logic
+            FilteredList<Restocks> filteredData = new FilteredList<>(restockList, b -> true);
+
+            restock_searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(restocks -> {
+                    // If search field is empty, show all items
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+
+                    // Filter items by name (case-insensitive) -> change lang sa mga iretrieve everytime mag search ka
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    return String.valueOf(restocks.getRestockID()).contains(lowerCaseFilter) ||
+                            restocks.getRestockDate().contains(lowerCaseFilter);
+                });
+            });
+
+            // Bind the sorted data to the table
+            SortedList<Restocks> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(restockTable.comparatorProperty());
+            restockTable.setItems(sortedData);
+
+            System.out.println("Search setup complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
 
@@ -1619,7 +1621,6 @@ public class controller implements Initializable {
 
 
         // for restock
-        /* uncomment if okay na methods
         if (restock_searchTextField == null) {
                     System.out.println("field is null");
                 } else {
@@ -1628,7 +1629,7 @@ public class controller implements Initializable {
                     });
                     search_restocks();
                 }
-        */
+
 
         // combo box from database
         restock_itemName_comboBoxOnAction(new ActionEvent());
