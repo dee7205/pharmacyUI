@@ -152,7 +152,6 @@ public class controller implements Initializable {
             itemName_textField.clear();
             item_itemUnitType_textField.clear();
             itemCost_textField.clear();
-            search_itemName();
 
         } else if (!itemName.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -450,7 +449,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "Gimatag2024");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "shanna05");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -489,7 +488,6 @@ public class controller implements Initializable {
             alert.setContentText("Item Type: " + itemTypeName + " Successfully Added.");
             alert.showAndWait();
             itemTypeNameTextField.clear();
-            search_itemType();
 
 
             //REFRESH
@@ -687,6 +685,7 @@ public class controller implements Initializable {
             pharmacist_id_textField.clear();
             search_pharmacist();
 
+
         } else if (!ID.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
@@ -848,7 +847,6 @@ public class controller implements Initializable {
             alert.setContentText("Unit Type: " + unitType + " Successfully Added.");
             alert.showAndWait();
             unitType_textField.clear();
-            search_unitType();
 
         } else if (!unitType.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -1205,7 +1203,8 @@ public class controller implements Initializable {
 
                     // Filter items by name (case-insensitive) -> change lang sa mga iretrieve everytime mag search ka
                     String lowerCaseFilter = newValue.toLowerCase();
-                    return String.valueOf(restocks.getRestockID()).contains(lowerCaseFilter);
+                    return String.valueOf(restocks.getRestockID()).contains(lowerCaseFilter) ||
+                            restocks.getRestockDate().contains(lowerCaseFilter);
                 });
             });
 
@@ -1252,19 +1251,24 @@ public class controller implements Initializable {
         }
 
         boolean isRestockDateFilter = restockDateRadioButton.isSelected();
+        boolean isExpiryDateFilter = expiryDateRadioButton.isSelected();
 
         List<Restocks> filteredItems = restockList.stream()
                 .filter(item -> {
                     LocalDate dateToCompare;
+
                     if (isRestockDateFilter) {
                         dateToCompare = LocalDate.parse(item.getRestockDate());
-                    } else {
+                    } else if (isExpiryDateFilter) {
                         dateToCompare = LocalDate.parse(item.getExpiryDate());
+                    } else {
+                        return true;
                     }
-                    // Perform the filtering based on the selected date type
-                    return !dateToCompare.isBefore(fromDate) && !dateToCompare.isAfter(toDate);
+
+                    return (dateToCompare != null) && !dateToCompare.isBefore(fromDate) && !dateToCompare.isAfter(toDate);
                 })
                 .collect(Collectors.toList());
+
 
         // Convert filtered items to ObservableList
         ObservableList<Restocks> observableFilteredItems = FXCollections.observableArrayList(filteredItems);
@@ -1497,7 +1501,6 @@ public class controller implements Initializable {
             itemUnitTypeTable.setItems(initialItemUnitTypeData()); //Adds item type to the table
             itemUnitType_itemTypeID_textField.clear();
             itemUnitType_unitTypeID_textField.clear();
-            search_ItemUnitType();
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ADD ITEM UNIT TYPE");
             alert.setHeaderText("ADD SUCCESSFUL!");
