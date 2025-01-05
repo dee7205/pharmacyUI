@@ -1333,7 +1333,6 @@ public class controller implements Initializable {
     @FXML ObservableList<Transaction> transactionList;
     public void search_transaction() {
         try {
-            // Fetch data from the handler
             SQL_DataHandler handler = new SQL_DataHandler();
             Transaction[] transactions = handler.getAllTransactions(true);
             System.out.println("Numbers fetched: " + Arrays.toString(transactions)); // debugger
@@ -1387,6 +1386,18 @@ public class controller implements Initializable {
         transactionTable.setItems(originalTransactionList);
     }
 
+    void initializeTransactionList() {
+        SQL_DataHandler handler = new SQL_DataHandler();
+        Transaction[] transactionArray = handler.getAllTransactions(true);
+
+        transactionList = FXCollections.observableArrayList(
+                Arrays.stream(transactionArray)
+                        .filter(transaction -> transaction.getTransactionDate() != null)
+                        .collect(Collectors.toList())
+        );
+        transactionTable.setItems(transactionList);
+    }
+
     @FXML
     void transaction_filterButtonOnClick(ActionEvent event) {
         // Ensure fromDate and toDate are properly initialized
@@ -1395,19 +1406,16 @@ public class controller implements Initializable {
             return;
         }
 
-        // Get selected dates from the DatePickers
         LocalDate fromDate = transaction_fromDatePicker.getValue();
         LocalDate toDate = transaction_toDatePicker.getValue();
 
-        // If both dates are null (no filter), reset the table to original data (show all)
         if (fromDate == null || toDate == null) {
-            fetchOriginalTable_Transaction(); // Reset to original data
+            System.out.println("No date range selected. Showing all transactions.");
+            transactionTable.setItems(transactionList); // Show all transactions
             return;
         }
 
-        // Validate the dates
         if (fromDate.isAfter(toDate)) {
-            // Show an error if the 'From' date is after the 'To' date
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Invalid Date Range");
             alert.setHeaderText("The 'From' date cannot be after the 'To' date.");
@@ -1415,36 +1423,25 @@ public class controller implements Initializable {
             return;
         }
 
-        // Check if transactionList is not null or empty
-        if (transactionList != null && !transactionList.isEmpty()) {
-            // Filter the items based on the date range
-            List<Transaction> filteredItems = transactionList.stream()
-                    .filter(transaction -> {
-                        LocalDate dateToCompare = transaction.getTransactionDate().toLocalDate(); // Extract date from Transaction object
+        // Perform filtering
+        List<Transaction> filteredItems = transactionList.stream()
+                .filter(transaction -> {
+                    LocalDate dateToCompare = transaction.getTransactionDate().toLocalDate();
+                    return !dateToCompare.isBefore(fromDate) && !dateToCompare.isAfter(toDate);
+                })
+                .collect(Collectors.toList());
 
-                        // Perform the filtering based on the selected date range
-                        return (dateToCompare != null) && !dateToCompare.isBefore(fromDate) && !dateToCompare.isAfter(toDate);
-                    })
-                    .collect(Collectors.toList());
+        ObservableList<Transaction> observableFilteredItems = FXCollections.observableArrayList(filteredItems);
+        transactionTable.setItems(observableFilteredItems);
 
-            // Convert filtered items to ObservableList
-            ObservableList<Transaction> observableFilteredItems = FXCollections.observableArrayList(filteredItems);
-
-            // Set the filtered data in the TableView
-            transactionTable.setItems(observableFilteredItems);
-
-            // If there are no filtered items, show a warning
-            if (filteredItems.isEmpty()) {
-                Alert alert = new Alert(Alert.AlertType.WARNING);
-                alert.setTitle("No Results");
-                alert.setHeaderText("No items match the filter criteria.");
-                alert.showAndWait();
-            }
-        } else {
-            // Handle the case where the transactionList is null or empty
-            System.out.println("Transaction list is null or empty.");
+        if (filteredItems.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Results");
+            alert.setHeaderText("No items match the filter criteria.");
+            alert.showAndWait();
         }
     }
+
 
     //===============================ITEM UNIT TYPE METHODS====================================
 
@@ -1859,6 +1856,7 @@ public class controller implements Initializable {
 
             prepareTransactionTableListener();
             transactionTable.setItems(initialTransactionData());
+            initializeTransactionList();
         }
 
         // search_itemName(); (items.fxml)
