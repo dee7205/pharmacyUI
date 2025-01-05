@@ -68,9 +68,9 @@ public class controller implements Initializable {
     @FXML private TableColumn<Item, Integer> items_itemQuantity_col;
     @FXML private TableColumn<Item, Integer> items_itemUnitType_col;
     @FXML private TableColumn<Item, Double> items_itemMovement_col;
+    @FXML private TableColumn<Item, String> items_itemUnit_col;
 
     @FXML private TextField itemName_textField;
-    @FXML private TextField item_itemUnitType_textField;
     @FXML private TextField itemCost_textField;
 
     @FXML private ComboBox<String> item_TypeCb;
@@ -91,54 +91,38 @@ public class controller implements Initializable {
 
     @FXML void addItem(ActionEvent event){
         SQL_DataHandler handler = new SQL_DataHandler();
-
-        String itemName = null;
-        if (itemName_textField != null) {
-            itemName = itemName_textField.getText();
-        } else {
-            System.out.println("TextField is not initialized!");
-            return;
-        }
-
-        String itemUnitTypeID = null;
-        if (item_itemUnitType_textField != null) {
-            itemUnitTypeID = item_itemUnitType_textField.getText();
-        } else {
-            System.out.println("TextField is not initialized!");
-            return;
-        }
-
-        String itemCost = null;
-        if (itemCost_textField != null) {
-            itemCost = itemCost_textField.getText();
-        } else {
-            System.out.println("TextField is not initialized!");
-        }
-
-        int convertedCost, convertedItemUnitTypeID;
+        String itemName = itemName_textField.getText();
+        String itemUnitTypeName = itemUnitType_cb.getSelectionModel().getSelectedItem();
+        String itemCost = itemCost_textField.getText();
+        int convertedCost;
 
         try{
             convertedCost = Integer.parseInt(itemCost);
-            convertedItemUnitTypeID = Integer.parseInt(itemUnitTypeID);
         } catch (Exception e){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Item Type: " + itemName);
+            alert.setHeaderText("Unable to add new Item.");
             alert.setContentText("Invalid Input. Please Try Again");
             alert.showAndWait();
             return;
         }
-
-        if (handler.getItemUnitType(convertedItemUnitTypeID) == null){
+        String [] types;
+        int itemUnitTypeID;
+        try{
+            types = itemUnitTypeName.split(",");
+            itemUnitTypeID = handler.getItemUnitTypeID(types[0],types[1]);
+        } catch (Exception e){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Item Type: " + itemName);
-            alert.setContentText("Item Type " + itemName + "'s Item Type and Unit Type Does not exist in Item Unit Type Table.");
+            alert.setHeaderText("Unable to add new Item.");
+            alert.setContentText("Please Choose an Item Unit Type.");
             alert.showAndWait();
             return;
         }
 
-        if (!itemName.isEmpty() && !itemCost.isEmpty() && handler.addItem(itemName,convertedItemUnitTypeID,convertedCost)) {
+        System.out.println(types[0] + " " + types[1] + " " + itemUnitTypeName + " = " + itemUnitTypeID);
+
+        if (!itemName.isEmpty() && !itemCost.isEmpty() && handler.addItem(itemName,itemUnitTypeID,convertedCost)) {
             Item i = handler.getItem(itemName);
             itemTable.setItems(initialItemData()); //Adds item type to the table
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -147,10 +131,11 @@ public class controller implements Initializable {
             alert.setContentText("Item: " + i.getItemName() + " Successfully Added.");
             alert.showAndWait();
             itemName_textField.clear();
-            item_itemUnitType_textField.clear();
+            itemUnitType_cb.cancelEdit();
             itemCost_textField.clear();
+            search_itemName();
 
-        } else if (!itemName.isEmpty()) {
+        } else {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
             alert.setHeaderText("Unable to add new Item Type: " + itemName);
@@ -164,7 +149,11 @@ public class controller implements Initializable {
         //Gets the item type selected (Can be null if no item is selected)
         int index = itemTable.getSelectionModel().getSelectedIndex();
         if (index == -1){
-            System.out.println("ERROR: Unable to delete Item. No index is selected.");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to Delete Item.");
+            alert.setContentText("Please Choose an Item within the table.");
+            alert.showAndWait();
             return;
         }
 
@@ -188,6 +177,7 @@ public class controller implements Initializable {
                 handler.removeRestock(item.getItemID(),SQL_DataHandler.REMOVE_BY_ITEM_ID);
                 handler.removeItem(item.getItemID());
                 itemTable.setItems(initialItemData());
+                search_itemName();
             }
         }
 
@@ -225,7 +215,7 @@ public class controller implements Initializable {
         items_itemUnitType_col.setOnEditCommit(e -> {
             SQL_DataHandler handler = new SQL_DataHandler();
             Item item = e.getTableView().getItems().get(e.getTablePosition().getRow());
-            if(handler.getItemUnitType(e.getNewValue()) != null) {
+            if(handler.itemUnitTypeExists(e.getNewValue())) {
                 handler.updateItem(item.getItemID(), item.getItemName(), e.getNewValue(), item.getUnitCost());
                 item.setItemUnitTypeID(e.getNewValue());
                 itemTable.setItems(initialItemData());
@@ -307,73 +297,13 @@ public class controller implements Initializable {
         }
     }
 
-    public void unitType_comboBoxOnAction (ActionEvent event) {
-        if (item_unitCb != null) {
-            String selectAllData = "SELECT * FROM unitType";
-            Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
-
-            if (connect != null) { // Make sure the connection is valid
-                try (PreparedStatement pr = connect.prepareStatement(selectAllData);
-                     ResultSet rs = pr.executeQuery()) {
-
-                    ObservableList<String> listData = FXCollections.observableArrayList();
-
-                    while (rs.next()) {
-                        String unit_type = rs.getString("unit_Type");
-                        listData.add(unit_type);
-                    }
-
-                    item_unitCb.setItems(listData);
-
-                } catch (SQLException e) {
-                    System.err.println("SQL Error: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            } else {
-                System.err.println("Database connection failed.");
-            }
-        } else {
-            System.err.println("ComboBox is null");
-        }
-    }
-
-
-    public void itemType_comboBoxOnAction (ActionEvent event) {
-        if (item_TypeCb != null) {
-            String selectAllData = "SELECT * FROM itemType";
-            Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
-
-            if (connect != null) { // Make sure the connection is valid
-                try (PreparedStatement pr = connect.prepareStatement(selectAllData);
-                     ResultSet rs = pr.executeQuery()) {
-
-                    ObservableList<String> listData = FXCollections.observableArrayList();
-
-                    while (rs.next()) {
-                        String item_type = rs.getString("item_Type");
-                        listData.add(item_type);
-                    }
-
-                    item_TypeCb.setItems(listData);
-
-                } catch (SQLException e) {
-                    System.err.println("SQL Error: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            } else {
-                System.err.println("Database connection failed.");
-            }
-        } else {
-            System.err.println("ComboBox is null");
-        }
-    }
 
     // ==============COMBO BOX ITEM NAME (restock.fxml)===================
     @FXML private ChoiceBox<String> restock_item_cb;
 
     public void restock_itemName_comboBoxOnAction (ActionEvent event) {
         if (restock_item_cb != null) {
-            String selectAllData = "SELECT * FROM Items";
+            String selectAllData = "SELECT * FROM Items ORDER BY item_name";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -406,7 +336,7 @@ public class controller implements Initializable {
 
     public void transactionItemName_comboBoxOnAction (ActionEvent event) {
         if (transactionWindow_comboBox != null) {
-            String selectAllData = "SELECT * FROM Items";
+            String selectAllData = "SELECT * FROM Items ORDER BY item_name";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -434,6 +364,111 @@ public class controller implements Initializable {
         }
     }
 
+    // ==============COMBO BOX ITEM TYPE (ItemUnitType.fxml)===================
+    @FXML private ComboBox<String> itemType_cb;
+
+    public void itemType_cb_onAction (ActionEvent event) {
+        if (itemType_cb != null) {
+            String selectAllData = "SELECT * FROM ItemType ORDER BY item_type";
+            Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
+
+            if (connect != null) { // Make sure the connection is valid
+                try (PreparedStatement pr = connect.prepareStatement(selectAllData);
+                     ResultSet rs = pr.executeQuery()) {
+
+                    ObservableList<String> listData = FXCollections.observableArrayList();
+
+                    while (rs.next()) {
+                        String item_type = rs.getString("item_type");
+                        listData.add(item_type);
+                    }
+
+                    itemType_cb.setItems(listData);
+
+                } catch (SQLException e) {
+                    System.err.println("SQL Error: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("Database connection failed.");
+            }
+        } else {
+            System.err.println("ComboBox is null");
+        }
+    }
+
+    // ==============COMBO BOX UNIT TYPE (ItemUnitType.fxml)===================
+    @FXML private ComboBox<String> unitType_cb;
+
+    public void unitType_cb_onAction (ActionEvent event) {
+        if (unitType_cb != null) {
+            String selectAllData = "SELECT * FROM UnitType ORDER BY unit_type";
+            Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
+
+            if (connect != null) { // Make sure the connection is valid
+                try (PreparedStatement pr = connect.prepareStatement(selectAllData);
+                     ResultSet rs = pr.executeQuery()) {
+
+                    ObservableList<String> listData = FXCollections.observableArrayList();
+
+                    while (rs.next()) {
+                        String unit_type = rs.getString("unit_type");
+                        listData.add(unit_type);
+                    }
+
+                    unitType_cb.setItems(listData);
+
+                } catch (SQLException e) {
+                    System.err.println("SQL Error: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("Database connection failed.");
+            }
+        } else {
+            System.err.println("ComboBox is null");
+        }
+    }
+
+    // ==============COMBO BOX UNIT TYPE (ItemUnitType.fxml)===================
+    @FXML private ComboBox<String> itemUnitType_cb;
+
+    public void itemUnitType_cb_onAction (ActionEvent event) {
+        if (itemUnitType_cb != null) {
+            String selectAllData = """
+                    SELECT * FROM ItemUnitType as iut
+                    JOIN ItemType as it ON iut.itemType_ID = it.itemType_ID
+                    JOIN UnitType as ut ON iut.unitType_ID = ut.unitType_ID
+                    GROUP BY iut.item_unit_ID
+                    ORDER BY item_type
+                    """;
+            Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
+
+            if (connect != null) { // Make sure the connection is valid
+                try (PreparedStatement pr = connect.prepareStatement(selectAllData);
+                     ResultSet rs = pr.executeQuery()) {
+
+                    ObservableList<String> listData = FXCollections.observableArrayList();
+
+                    while (rs.next()) {
+                        String item_unit_type = rs.getString("item_type") + "," + rs.getString("unit_type");
+                        listData.add(item_unit_type);
+                    }
+
+                    itemUnitType_cb.setItems(listData);
+
+                } catch (SQLException e) {
+                    System.err.println("SQL Error: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("Database connection failed.");
+            }
+        } else {
+            System.err.println("ComboBox is null");
+        }
+    }
+
     int index = -1;
 
     // database tools
@@ -446,8 +481,8 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-//            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "Gimatag2024");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "maclang@2023-00570");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "Gimatag2024");
+//            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "maclang@2023-00570");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -486,6 +521,7 @@ public class controller implements Initializable {
             alert.setContentText("Item Type: " + itemTypeName + " Successfully Added.");
             alert.showAndWait();
             itemTypeNameTextField.clear();
+            search_itemType();
 
 
             //REFRESH
@@ -509,7 +545,11 @@ public class controller implements Initializable {
         //Gets the item type selected (Can be null if no item is selected)
         int index = itemTypeTable.getSelectionModel().getSelectedIndex();
         if (index == -1){
-            System.out.println("ERROR: Unable to delete Item Type. No index is selected.");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to Delete Item Type.");
+            alert.setContentText("Please Choose an Item Type within the table.");
+            alert.showAndWait();
             return;
         }
 
@@ -535,6 +575,7 @@ public class controller implements Initializable {
                 handler.removeItemUnitType(item.getItemTypeID(),SQL_DataHandler.REMOVE_ITEM_TYPE);
                 handler.removeItemType(item.getItemTypeName());
                 itemTypeTable.setItems(initialItemTypeData());
+                search_itemType();
             }
         }
     }
@@ -684,7 +725,7 @@ public class controller implements Initializable {
             search_pharmacist();
 
 
-        } else if (!ID.isEmpty()) {
+        } else {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
             alert.setHeaderText("Unable to add new Pharmacist.");
@@ -733,7 +774,11 @@ public class controller implements Initializable {
         //Gets the pharmacist selected (Can be null if no item is selected)
         int index = pharmacistTable.getSelectionModel().getSelectedIndex();
         if (index == -1){
-            System.out.println("ERROR: Unable to delete Pharmacist. No index is selected.");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to Delete Pharmacist.");
+            alert.setContentText("Please Choose a Pharmacist within the table.");
+            alert.showAndWait();
             return;
         }
 
@@ -758,6 +803,7 @@ public class controller implements Initializable {
             if (result.isPresent() && result.get() == ButtonType.OK) {
                 handler.removePharmacist(p.getPharmacistID());
                 pharmacistTable.setItems(initialPharmacistData());
+                search_pharmacist();
             }
         }
     }
@@ -845,6 +891,7 @@ public class controller implements Initializable {
             alert.setContentText("Unit Type: " + unitType + " Successfully Added.");
             alert.showAndWait();
             unitType_textField.clear();
+            search_unitType();
 
         } else if (!unitType.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -886,7 +933,11 @@ public class controller implements Initializable {
         //Gets the unit type selected (Can be null if no item is selected)
         int index = unitTypeTable.getSelectionModel().getSelectedIndex();
         if (index == -1){
-            System.out.println("ERROR: Unable to delete Unit Type. No index is selected.");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to Delete Item Unit Type.");
+            alert.setContentText("Please Choose an Item Unit Type within the table.");
+            alert.showAndWait();
             return;
         }
 
@@ -909,6 +960,7 @@ public class controller implements Initializable {
                 handler.removeItemUnitType(unit.getUnitTypeID(),SQL_DataHandler.REMOVE_UNIT_TYPE);
                 handler.removeUnitType(unit.getUnitType());
                 unitTypeTable.setItems(initialUnitTypeData());
+                search_unitType();
             }
         }
     }
@@ -983,6 +1035,7 @@ public class controller implements Initializable {
     @FXML private TableColumn<Restocks, Date> restock_restockDate_col;
     @FXML private TableColumn<Restocks, Integer> restock_soldQty_col;
     @FXML private TableColumn<Restocks, Double>  restock_wholeSaleCost_col;
+    @FXML private TableColumn<Restocks, String>  restock_itemName_col;
     @FXML private TextField restock_qty;
     @FXML private TextField wholesale_textField;
 
@@ -1076,7 +1129,11 @@ public class controller implements Initializable {
         //Gets the restock selected (Can be null if no item is selected)
         int index = restockTable.getSelectionModel().getSelectedIndex();
         if (index == -1){
-            System.out.println("ERROR: Unable to delete Item. No index is selected.");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to Delete Restock.");
+            alert.setContentText("Please Choose a Restock within the table.");
+            alert.showAndWait();
             return;
         }
 
@@ -1100,6 +1157,7 @@ public class controller implements Initializable {
             if (result.isPresent() && result.get() == ButtonType.OK) {
                 handler.removeRestock(r.getRestockID(),SQL_DataHandler.REMOVE_BY_RESTOCK_ID);
                 restockTable.setItems(initialRestockData());
+                search_restocks();
             }
         }
 
@@ -1115,6 +1173,7 @@ public class controller implements Initializable {
                 handler.updateRestock(r.getRestockID(), e.getNewValue(),r.getStartQty(),r.getWholesaleCost());
                 r.setItemID(e.getNewValue());
                 restockTable.setItems(initialRestockData());
+                search_restocks();
             } else {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("ERROR");
@@ -1295,6 +1354,7 @@ public class controller implements Initializable {
     @FXML private TableColumn<Transaction, Double> transaction_income_col;
     @FXML private TableColumn<Transaction, Integer> transaction_pharmacistID_col;
     @FXML private TableColumn<Transaction, Integer> transaction_soldQty_col;
+    @FXML private TableColumn<Transaction, String> transaction_pharmacistName_col;
 
     @FXML private TableView<ItemsSold> itemsSoldTable;
     @FXML private TableColumn<ItemsSold, Double> itemsSold_income_col;
@@ -1514,8 +1574,7 @@ public class controller implements Initializable {
     @FXML private Button addItemUnitTypeButton;
     @FXML private Button deleteItemUnitTypeButton;
     @FXML private Button updateItemUnitTypeButton;
-    @FXML private TextField itemUnitType_unitTypeID_textField;
-    @FXML private TextField itemUnitType_itemTypeID_textField;
+
 
     @FXML private TableView<ItemUnitType> itemUnitTypeTable;
     @FXML private TableColumn<ItemUnitType, Integer> itemUnitTypeID_col;
@@ -1533,46 +1592,31 @@ public class controller implements Initializable {
     @FXML
     void addItemUnitType(ActionEvent event) { //ADD ITEM TYPE
         SQL_DataHandler handler = new SQL_DataHandler();
-        String itemTypeID = itemUnitType_itemTypeID_textField.getText();
-        String unitTypeID = itemUnitType_unitTypeID_textField.getText();
+        int itemTypeID = -1, unitTypeID = -1;
+        itemTypeID = handler.getItemTypeID(itemType_cb.getSelectionModel().getSelectedItem());
+        unitTypeID = handler.getUnitTypeID(unitType_cb.getSelectionModel().getSelectedItem());
 
-        if (itemTypeID.isEmpty() || unitTypeID.isEmpty()){
-            System.out.println("ERROR: Unable to add Item Unit Type. TextBox is Blank.");
-            return;
-        }
-
-        int convertedItemID, convertedUnitID;
-
-        try {
-            convertedItemID = Integer.parseInt(itemTypeID);
-            convertedUnitID = Integer.parseInt(unitTypeID);
-        } catch(Exception e){
+        if (itemTypeID == -1 || unitTypeID == -1){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Item Unit Type.");
-            alert.setContentText("Item Type ID/Unit Type ID is not an Integer.");
+            alert.setHeaderText("Unable to Add Item Unit Type.");
+            alert.setContentText("Please Choose an Item Type ID/Unit Type ID.");
             alert.showAndWait();
             return;
         }
 
-        if (handler.addItemUnitType(convertedItemID, convertedUnitID)) {
-            ItemUnitType type = handler.getItemUnitType(convertedItemID,convertedUnitID);
-            itemUnitTypeTable.setItems(initialItemUnitTypeData()); //Adds item type to the table
-            itemUnitType_itemTypeID_textField.clear();
-            itemUnitType_unitTypeID_textField.clear();
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ADD ITEM UNIT TYPE");
-            alert.setHeaderText("ADD SUCCESSFUL!");
-            alert.setContentText("Item Unit Type: " + type.getItemTypeName() + "-" + type.getUnitTypeName() +" Successfully Added.");
-            alert.showAndWait();
+        handler.addItemUnitType(itemTypeID,unitTypeID);
+        ItemUnitType type = handler.getItemUnitType(itemTypeID,unitTypeID);
+        itemUnitTypeTable.setItems(initialItemUnitTypeData()); //Adds item type to the table
+        itemType_cb.cancelEdit();
+        unitType_cb.cancelEdit();
+        search_ItemUnitType();
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("ADD ITEM UNIT TYPE");
+        alert.setHeaderText("ADD SUCCESSFUL!");
+        alert.setContentText("Item Unit Type: " + type.getItemTypeName() + "-" + type.getUnitTypeName() +" Successfully Added.");
+        alert.showAndWait();
 
-        } else {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Item Unit Type.");
-            alert.setContentText("Combination of Item Type,Unit Type " + convertedItemID + "," + convertedUnitID + " are invalid.");
-            alert.showAndWait();
-        }
     }
 
     @FXML
@@ -1580,7 +1624,11 @@ public class controller implements Initializable {
         //Gets the unit type selected (Can be null if no item is selected)
         int index = itemUnitTypeTable.getSelectionModel().getSelectedIndex();
         if (index == -1){
-            System.out.println("ERROR: Unable to delete Item Unit Type. No index is selected.");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to Delete Item Unit Type.");
+            alert.setContentText("Please Choose an Item Unit Type within the table.");
+            alert.showAndWait();
             return;
         }
 
@@ -1602,6 +1650,7 @@ public class controller implements Initializable {
             if (result.isPresent() && result.get() == ButtonType.OK) {
                 handler.removeItemUnitType(unit.getItemUnitTypeID(), SQL_DataHandler.REMOVE_ITEM_UNIT_TYPE);
                 itemUnitTypeTable.setItems(initialItemUnitTypeData());
+                search_ItemUnitType();
             }
         }
     }
@@ -2016,6 +2065,7 @@ public class controller implements Initializable {
             items_itemQuantity_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("quantity"));
             items_itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("unitCost"));
             items_itemMovement_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("movement"));
+            items_itemUnit_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemUnitType"));
             itemTable.setItems(initialItemData());
             itemEditData();
         }
@@ -2030,6 +2080,7 @@ public class controller implements Initializable {
             restock_restockDate_col.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("restockDate"));
             restock_expirationDate_col.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("expiryDate"));
             restock_wholeSaleCost_col.setCellValueFactory(new PropertyValueFactory<Restocks,Double>("wholesaleCost"));
+            restock_itemName_col.setCellValueFactory(new PropertyValueFactory<Restocks,String>("itemName"));
 
             restockDate_datePicker.setValue(new SQL_DataHandler().getCurrentDate());
             restockTable.setItems(initialRestockData());
@@ -2054,7 +2105,7 @@ public class controller implements Initializable {
             transaction_income_col.setCellValueFactory(new PropertyValueFactory<Transaction, Double>("income"));
             transaction_pharmacistID_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("pharmacistID"));
             transaction_soldQty_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("soldQty"));
-
+            transaction_pharmacistName_col.setCellValueFactory(new PropertyValueFactory<Transaction, String>("pharmacist"));
             itemsSold_income_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Double>("income"));
             itemsSold_itemName_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, String>("itemName"));
             itemsSold_soldQty_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Integer>("itemQty"));
@@ -2147,8 +2198,10 @@ public class controller implements Initializable {
         // combo box from database
         restock_itemName_comboBoxOnAction(new ActionEvent());
         transactionItemName_comboBoxOnAction(new ActionEvent());
-        itemType_comboBoxOnAction(new ActionEvent());
-        unitType_comboBoxOnAction((new ActionEvent()));
+        itemType_cb_onAction(new ActionEvent());
+        unitType_cb_onAction((new ActionEvent()));
+        itemUnitType_cb_onAction((new ActionEvent()));
+
 
         ToggleGroup restockToggleGroup = new ToggleGroup();
         if (restockDateRadioButton != null || expiryDateRadioButton != null) {

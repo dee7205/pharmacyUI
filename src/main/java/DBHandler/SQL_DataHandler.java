@@ -487,16 +487,16 @@ public class SQL_DataHandler {
         //Add the item to the database
         String query = "INSERT INTO Items (item_name, item_unit_ID, unit_cost) VALUES (?, ?, ?)";
 
+        //Checks if there is no existing item with this name
+        if (itemExists(itemName)){
+            System.out.println("ERROR: Unable to add new item as, " + itemName + " " + itemUnitTypeID + " " + unitCost + ", already exists in the database");
+            return false;
+        }
+
         if (connection == null)
             prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
-
-            //Checks if there is no existing item with this name
-            if (itemExists(itemName)){
-                System.out.println("ERROR: Unable to add new item as, " + itemName + " " + itemUnitTypeID + " " + unitCost + ", already exists in the database");
-                return false;
-            }
 
             pstmt.setString(1, itemName);
             pstmt.setInt(2, itemUnitTypeID);
@@ -569,12 +569,7 @@ public class SQL_DataHandler {
 
         try{
             //Checks if there is no existing item with this name
-            if (!itemExists(itemID)){
-                System.out.println("ERROR: Item to be updated: " + getItem(itemID).getItemName() + ", doesn't exist in the database.");
-                return false;
-            }
-
-            if (itemExists(newName)){
+            if (!newName.equals(getItem(itemID).getItemName()) && itemExists(newName)){
                 System.out.println("ERROR: item " + newName + ", exists in the database.");
                 return false;
             }
@@ -586,16 +581,20 @@ public class SQL_DataHandler {
             PreparedStatement firstPstmt = connection.prepareStatement(firstQuery);
             PreparedStatement secondPstmt = connection.prepareStatement(secondQuery);
             PreparedStatement thirdPstmt = connection.prepareStatement(thirdQuery);
+
             firstPstmt.setString(1, newName);
             firstPstmt.setInt(2, itemID);
+
             secondPstmt.setDouble(1, unitCost);
             secondPstmt.setInt(2, itemID);
-            thirdPstmt.setDouble(1, itemUnitTypeID);
+
+            thirdPstmt.setInt(1, itemUnitTypeID);
             thirdPstmt.setInt(2, itemID);
 
             int rowsAffected = 0;
             rowsAffected += firstPstmt.executeUpdate();
             rowsAffected += secondPstmt.executeUpdate();
+            rowsAffected += thirdPstmt.executeUpdate();
 
             if (rowsAffected <= 0)
                 return false;
@@ -736,7 +735,7 @@ public class SQL_DataHandler {
             while(set.next()){
                 Item item = new Item(set.getInt("Item ID"), set.getString("Item Name"),
                         set.getInt("Item Unit ID"), (set.getString("Item Type") + "-" +
-                        set.getString("Unit Type")), set.getInt("Item Quantity"),
+                        set.getString("Unit Type")), getRemainingStockQuantity(set.getInt("Item ID")),
                         set.getDouble("Unit Cost"), set.getInt("Movement"));
                 list.add(item);
                 isAdded = true;
@@ -975,11 +974,13 @@ public class SQL_DataHandler {
             prepareConnection();
 
         try{
-            final String query = "SELECT * FROM Items WHERE item_name = ?";
+            final String query = "SELECT item_name FROM Items WHERE item_name = ?";
             PreparedStatement pstmt = connection.prepareStatement(query);
             pstmt.setString(1, itemName);
             ResultSet set = pstmt.executeQuery();
-            return set.next();
+            set.next();
+            if (set.getString("item_name").equals(null)) return false;
+            else return true;
         }   catch (Exception e){
             e.printStackTrace();
             return false;
@@ -2308,7 +2309,7 @@ public class SQL_DataHandler {
             }
 
             pstmt.setInt(1, itemID);
-            ResultSet set = pstmt.executeQuery(query);
+            ResultSet set = pstmt.executeQuery();
             if (set.next())
                 return set.getInt("Total Quantity");
 
@@ -2487,12 +2488,16 @@ public class SQL_DataHandler {
             SELECT
                 t.transaction_ID AS "Transaction ID",
                 t.pharmacist_ID AS "Pharmacist ID",
+                p.fName AS "First Name",
+                p.mName AS "Middle Name",
+                p.lName AS "Last Name",
                 t.transaction_date AS "Transaction Date",
                 SUM(isd.item_qty * i.unit_cost) AS "Total Sales",
                 SUM(isd.item_qty) AS "Sold Quantity"
             FROM Transactions AS t
             LEFT JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
             LEFT JOIN Items AS i ON i.item_ID = isd.item_ID
+            LEFT JOIN Pharmacists AS p ON t.pharmacist_ID = p.pharmacist_ID
             WHERE t.transaction_ID = ?
             GROUP BY t.transaction_ID;
         """;
@@ -2505,7 +2510,8 @@ public class SQL_DataHandler {
             ResultSet set = pstmt.executeQuery();
 
             if (set.next()){
-                return new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),
+                String pharmacist = set.getString("First Name") + " " + set.getString("Middle Name") + " " +  set.getString("Last Name");
+                return new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"), pharmacist,
                                        set.getInt("Sold Quantity"), set.getInt("Total Sales"), set.getDate("Transaction Date"));
             } else
                 return null;
@@ -2524,14 +2530,18 @@ public class SQL_DataHandler {
             SELECT
                 t.transaction_ID AS "Transaction ID",
                 t.pharmacist_ID AS "Pharmacist ID",
+                p.fName AS "First Name",
+                p.mName AS "Middle Name",
+                p.lName AS "Last Name",
                 t.transaction_date AS "Transaction Date",
                 SUM(isd.item_qty * i.unit_cost) AS "Total Sales",
                 SUM(isd.item_qty) AS "Sold Quantity"
             FROM Transactions AS t
             LEFT JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
             LEFT JOIN Items AS i ON i.item_ID = isd.item_ID
-            WHERE t.transaction_date = ?
+            LEFT JOIN Pharmacists AS p ON t.pharmacist_ID = p.pharmacist_ID
             GROUP BY t.transaction_ID
+            WHERE t.transaction_date = ?
             ORDER BY t.transaction_ID DESC;
         """;
 
@@ -2539,14 +2549,18 @@ public class SQL_DataHandler {
             SELECT
                 t.transaction_ID AS "Transaction ID",
                 t.pharmacist_ID AS "Pharmacist ID",
+                p.fName AS "First Name",
+                p.mName AS "Middle Name",
+                p.lName AS "Last Name",
                 t.transaction_date AS "Transaction Date",
                 SUM(isd.item_qty * i.unit_cost) AS "Total Sales",
                 SUM(isd.item_qty) AS "Sold Quantity"
             FROM Transactions AS t
             LEFT JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
             LEFT JOIN Items AS i ON i.item_ID = isd.item_ID
-            WHERE t.transaction_date = ?
+            LEFT JOIN Pharmacists AS p ON t.pharmacist_ID = p.pharmacist_ID
             GROUP BY t.transaction_ID
+            WHERE t.transaction_date = ?
             ORDER BY t.transaction_ID DESC;
         """;
 
@@ -2569,7 +2583,8 @@ public class SQL_DataHandler {
 
             List<Transaction> list = new ArrayList<>();
             while(set.next()){
-                list.add(new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),
+                String pharmacist = set.getString("First Name") + " " + set.getString("Middle Name") + " " +  set.getString("Last Name");
+                list.add(new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),pharmacist,
                                          set.getInt("Sold Quantity"), set.getInt("Total Sales"), set.getDate("Transaction Date")));
                 isAdded = true;
             }
@@ -2600,26 +2615,35 @@ public class SQL_DataHandler {
             SELECT
                 t.transaction_ID AS "Transaction ID",
                 t.pharmacist_ID AS "Pharmacist ID",
+                p.fName AS "First Name",
+                p.mName AS "Middle Name",
+                p.lName AS "Last Name",
                 t.transaction_date AS "Transaction Date",
                 SUM(isd.item_qty * i.unit_cost) AS "Total Sales",
                 SUM(isd.item_qty) AS "Sold Quantity"
             FROM Transactions AS t
             LEFT JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
             LEFT JOIN Items AS i ON i.item_ID = isd.item_ID
+            LEFT JOIN Pharmacists AS p ON t.pharmacist_ID = p.pharmacist_ID
             GROUP BY t.transaction_ID
             ORDER BY t.transaction_ID ASC;
         """;
 
         String second = """
             SELECT
+            SELECT
                 t.transaction_ID AS "Transaction ID",
                 t.pharmacist_ID AS "Pharmacist ID",
+                p.fName AS "First Name",
+                p.mName AS "Middle Name",
+                p.lName AS "Last Name",
                 t.transaction_date AS "Transaction Date",
                 SUM(isd.item_qty * i.unit_cost) AS "Total Sales",
                 SUM(isd.item_qty) AS "Sold Quantity"
             FROM Transactions AS t
             LEFT JOIN Sold_Items AS isd ON isd.transaction_ID = t.transaction_ID
             LEFT JOIN Items AS i ON i.item_ID = isd.item_ID
+            LEFT JOIN Pharmacists AS p ON t.pharmacist_ID = p.pharmacist_ID
             GROUP BY t.transaction_ID
             ORDER BY t.transaction_ID DESC;
         """;
@@ -2640,7 +2664,8 @@ public class SQL_DataHandler {
 
             List<Transaction> list = new ArrayList<>();
             while(set.next()){
-                list.add(new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),
+                String pharmacist = set.getString("First Name") + " " + set.getString("Middle Name") + " " +  set.getString("Last Name");
+                list.add(new Transaction(set.getInt("Transaction ID"), set.getInt("Pharmacist ID"),pharmacist,
                                          set.getInt("Sold Quantity"), set.getInt("Total Sales"), set.getDate("Transaction Date")));
                 isAdded = true;
             }

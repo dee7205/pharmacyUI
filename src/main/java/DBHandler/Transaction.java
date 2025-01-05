@@ -8,20 +8,30 @@ public class Transaction {
     private double income;
     private Date transactionDate;
     private String transactionDateString;
+    private String pharmacist;
 
-    public Transaction(){ this(0, 0, 0, 0, null); }
+    public Transaction(){ this(0, 0, "N/A", 0, 0, null); }
 
-    public Transaction(int transactionID, int pharmacistID, Date transactionDate){
-        this(transactionID, pharmacistID, 0, 0, transactionDate);
+    public Transaction(int transactionID, int pharmacistID, String Pharmacist, Date transactionDate){
+        this(transactionID, pharmacistID, Pharmacist, 0, 0, transactionDate);
     }
 
-    public Transaction(int transactionID, int pharmacistID, int soldQty, int income, Date transactionDate){
+    public Transaction(int transactionID, int pharmacistID, String pharmacist, int soldQty, int income, Date transactionDate){
         setTransactionID(transactionID);
         setPharmacistID(pharmacistID);
         setIncome(income);
         setSoldQty(soldQty);
         setTransactionDate(transactionDate);
         setTransactionDateString(transactionDate.toString());
+        setPharmacist(pharmacist);
+    }
+
+    public String getPharmacist() {
+        return pharmacist;
+    }
+
+    public void setPharmacist(String pharmacist) {
+        this.pharmacist = pharmacist;
     }
 
     public int getTransactionID() {
