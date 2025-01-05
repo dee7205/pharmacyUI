@@ -2418,6 +2418,29 @@ public class SQL_DataHandler {
         }
     }
 
+    public int getLatestTransaction(){
+        String query = """
+            SELECT
+                MAX(t.transaction_ID) AS "Transaction ID",
+            FROM Transactions AS t;
+        """;
+
+        if (connection == null)
+            prepareConnection();
+
+        try (Statement stmt = connection.createStatement()){
+            ResultSet set = stmt.executeQuery(query);
+
+            if (set.next()){
+                return set.getInt("Transaction ID");
+            } else
+                return -1;
+
+        } catch (Exception e){
+            e.printStackTrace();
+            return -1;
+        }
+    }
 
     public boolean addTransaction(int pharmacistID){
         if (connection == null)

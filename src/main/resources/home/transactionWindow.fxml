@@ -43,19 +43,19 @@
             <Font name="Nunito ExtraBold" size="15.0" />
          </font>
       </Text>
-      <TextField fx:id="transactionWindow_currentQty_textfield" layoutX="26.0" layoutY="178.0" prefHeight="25.0" prefWidth="193.0" promptText="Current Quantity" style="-fx-border-color: black;" />
+      <TextField fx:id="transactionWindow_currentQty_textfield" editable="false" layoutX="26.0" layoutY="178.0" prefHeight="25.0" prefWidth="193.0" promptText="Current Quantity" style="-fx-border-color: black;" />
       <TextField fx:id="transactionWindow_sellQty_textField" layoutX="26.0" layoutY="235.0" prefHeight="25.0" prefWidth="193.0" promptText="Sell Quantity" style="-fx-border-color: black;" />
       <Text layoutX="26.0" layoutY="229.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Sell Quantity">
          <font>
             <Font name="Nunito ExtraBold" size="15.0" />
          </font>
       </Text>
-      <Button fx:id="transactionWindow_addTransactionButton" layoutX="26.0" layoutY="296.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="193.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add">
+      <Button fx:id="transactionWindow_addTransactionButton" layoutX="26.0" layoutY="296.0" mnemonicParsing="false" onAction="#addTransactionWindow" prefHeight="25.0" prefWidth="193.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add">
          <font>
             <Font name="Nunito ExtraBold" size="16.0" />
          </font>
       </Button>
-      <Button fx:id="transactionWindow_removeTransactionButton" layoutX="26.0" layoutY="342.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="193.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Remove">
+      <Button fx:id="transactionWindow_removeTransactionButton" layoutX="26.0" layoutY="342.0" mnemonicParsing="false" onAction="#deleteTransactionWindow" prefHeight="25.0" prefWidth="193.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Remove">
          <font>
             <Font name="Nunito ExtraBold" size="16.0" />
          </font>
@@ -72,7 +72,7 @@
       </Text>
       <Label fx:id="totalCostLabel" layoutX="316.0" layoutY="392.0" text="Secret" />
       <ComboBox fx:id="transactionWindow_comboBox" layoutX="27.0" layoutY="118.0" prefHeight="26.0" prefWidth="194.0" style="-fx-border-color: black;" />
-      <Button fx:id="confirmTransaction_button" layoutX="481.0" layoutY="431.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="144.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Confirm Transaction">
+      <Button fx:id="confirmTransaction_button" layoutX="481.0" layoutY="431.0" mnemonicParsing="false" onAction="#confirmTransaction" prefHeight="27.0" prefWidth="144.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Confirm Transaction">
          <font>
             <Font name="Nunito ExtraBold" size="12.0" />
          </font>
