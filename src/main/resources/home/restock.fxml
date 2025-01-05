@@ -273,7 +273,7 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="restock_unitCostTextField" layoutX="732.0" layoutY="173.0" prefHeight="27.0" prefWidth="79.0" promptText="Cost" style="-fx-border-color: black; -fx-border-radius: 0px;" />
+                  <TextField fx:id="restock_unitCostTextField" editable="false" layoutX="732.0" layoutY="173.0" prefHeight="27.0" prefWidth="79.0" promptText="Cost" style="-fx-border-color: black; -fx-border-radius: 0px;" />
                </children>
             </AnchorPane>
          </center>
