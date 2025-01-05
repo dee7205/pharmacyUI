@@ -337,8 +337,9 @@
                         </Label>
                         <TableView fx:id="expiry" layoutX="7.0" layoutY="34.0" prefHeight="303.0" prefWidth="282.0">
                           <columns>
-                            <TableColumn fx:id="expiry_restockID" prefWidth="92.79998779296875" sortable="false" text="Restock ID" />
-                              <TableColumn fx:id="expiry_expiryDate" prefWidth="188.0" sortable="false" text="Expiry Date" />
+                            <TableColumn fx:id="expiry_restockID" editable="false" prefWidth="70.4000244140625" sortable="false" text="Restock ID" />
+                              <TableColumn fx:id="expiry_expiryDate" editable="false" minWidth="0.0" prefWidth="126.39996337890625" sortable="false" text="Days Before Expiry" />
+                              <TableColumn fx:id="expiry_Status" editable="false" prefWidth="85.5999755859375" sortable="false" text="Status" />
                           </columns>
                         </TableView>
                      </children>
