@@ -985,12 +985,27 @@ public class controller implements Initializable {
     @FXML private TextField wholesale_textField;
 
     @FXML private TextField restock_searchTextField;
+    @FXML private TextField restock_unitCostTextField;
 
 
     private ObservableList<Restocks> initialRestockData(){
             SQL_DataHandler handler = new SQL_DataHandler();
             Restocks [] r = handler.getAllRestocks();
             return FXCollections.<Restocks> observableArrayList(r);
+    }
+
+    private void prepareRestockComboBoxListener(){
+        restock_item_cb.setOnAction(event ->{
+            String selectedItem = restock_item_cb.getValue();
+            if (selectedItem != null && !selectedItem.isEmpty()){
+                Item item = new SQL_DataHandler().getItem(selectedItem);
+
+                if (item != null)
+                    restock_unitCostTextField.setText(Double.toString(item.getUnitCost()));
+                else
+                    wholesale_textField.clear();
+            }
+        });
     }
 
     @FXML void addRestock(ActionEvent event) throws ParseException {
@@ -1632,9 +1647,9 @@ public class controller implements Initializable {
             restock_expirationDate_col.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("expiryDate"));
             restock_wholeSaleCost_col.setCellValueFactory(new PropertyValueFactory<Restocks,Double>("wholesaleCost"));
 
-            SQL_DataHandler handler = new SQL_DataHandler();
-            restockDate_datePicker.setValue((LocalDate)handler.getCurrentDate());
+            restockDate_datePicker.setValue(new SQL_DataHandler().getCurrentDate());
             restockTable.setItems(initialRestockData());
+            prepareRestockComboBoxListener();
             restockEditData();
         }
 
