@@ -2801,7 +2801,7 @@ public class SQL_DataHandler {
         try (Statement stmt = connection.createStatement()){
             ResultSet set = stmt.executeQuery(query);
             set.next();
-            return set.getInt("Sum");
+            return set.getDouble("Sum");
 
         } catch (Exception e){
             e.printStackTrace();
@@ -2809,9 +2809,22 @@ public class SQL_DataHandler {
         return -1;
     }
 
-    public double getOverallIssuanceBalance(){
-        //insert help wahahah
-        return -1;
+    public double getOverallIssuanceBalance() {
+            String query = """
+            SELECT SUM(r.sold_Qty * r.wholesale_Cost) as "Sum" FROM Restocks as r
+            """;
+            if (connection == null)
+                prepareConnection();
+
+            try (Statement stmt = connection.createStatement()) {
+                ResultSet set = stmt.executeQuery(query);
+                if (set.next()) {
+                    return set.getDouble("Sum"); // Use getDouble to handle decimals properly
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return -1; // Default return value in case of failure
     }
 
     public int getOverallStartQuantity(){
