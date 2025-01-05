@@ -20,18 +20,16 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
 import java.sql.Date;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import DBHandler.*;
-import javafx.util.converter.DoubleStringConverter;
-import javafx.util.converter.IntegerStringConverter;
 
 public class controller implements Initializable {
     private Stage stage;
@@ -64,22 +62,12 @@ public class controller implements Initializable {
 
     //===================================ITEM METHODS========================================
     @FXML TableView<Item> itemTable;
-    @FXML private TableColumn<Item, Double> items_itemUnitCost_col;
-    @FXML private TableColumn<Item, String> items_itemName_col;
-    @FXML private TableColumn<Item, Integer> items_itemID_col;
-    @FXML private TableColumn<Item, Integer> items_itemQuantity_col;
-    @FXML private TableColumn<Item, Integer> items_itemUnitType_col;
-    @FXML private TableColumn<Item, Double> items_itemMovement_col;
-
-    @FXML private TextField itemName_textField;
-    @FXML private TextField item_itemUnitType_textField;
-
-    @FXML private ComboBox<String> item_TypeCb;
-    @FXML private ComboBox<String> item_unitCb;
-
-
-
-    @FXML private TextField itemCost_textField;
+    @FXML private TableColumn<Item, Double> itemUnitCost_col;
+    @FXML private TableColumn<Item, String> itemName_col;
+    @FXML private TableColumn<Item, Integer> itemID_col;
+    @FXML private TableColumn<Item, Integer> itemQuantity_col;
+    @FXML private TableColumn<Item, String> itemUnitType_col;
+    @FXML private TableColumn<Item, Double> itemMovement_col;
 
     @FXML private Button item_AddItemButton;
     @FXML private Button item_DeleteItemButton;
@@ -92,99 +80,10 @@ public class controller implements Initializable {
         return FXCollections.<Item> observableArrayList(types);
     }
 
-    @FXML void addItem(ActionEvent event){
-        SQL_DataHandler handler = new SQL_DataHandler();
-        String itemName = itemName_textField.getText();
-        String itemUnitTypeID = null;
-        if (item_itemUnitType_textField != null) {
-            itemUnitTypeID = item_itemUnitType_textField.getText();
-        } else {
-            System.out.println("TextField is not initialized!");
-            return;
-        }
-        String itemCost = itemCost_textField.getText();
-        int convertedCost, convertedItemUnitTypeID;
-
-        try{
-            convertedCost = Integer.parseInt(itemCost);
-            convertedItemUnitTypeID = Integer.parseInt(itemUnitTypeID);
-        } catch (Exception e){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Item Type: " + itemName);
-            alert.setContentText("Invalid Input. Please Try Again");
-            alert.showAndWait();
-            return;
-        }
-
-        if (handler.getItemUnitType(convertedItemUnitTypeID) == null){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Item Type: " + itemName);
-            alert.setContentText("Item Type " + itemName + "'s Item Type and Unit Type Does not exist in Item Unit Type Table.");
-            alert.showAndWait();
-            return;
-        }
-
-        if (!itemName.isEmpty() && !itemCost.isEmpty() && handler.addItem(itemName,convertedItemUnitTypeID,convertedCost)) {
-            Item i = handler.getItem(itemName);
-            itemTable.setItems(initialItemData()); //Adds item type to the table
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ADD ITEM");
-            alert.setHeaderText("ADD SUCCESSFUL!");
-            alert.setContentText("Item: " + i.getItemName() + " Successfully Added.");
-            alert.showAndWait();
-            itemName_textField.clear();
-            item_itemUnitType_textField.clear();
-            itemCost_textField.clear();
-
-        } else if (!itemName.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Item Type: " + itemName);
-            alert.setContentText("Invalid Input. Please Try Again");
-            alert.showAndWait();
-        }
-
-    }
-
-    @FXML void deleteItem(ActionEvent e){
-        //Gets the item type selected (Can be null if no item is selected)
-        int index = itemTable.getSelectionModel().getSelectedIndex();
-        if (index == -1){
-            System.out.println("ERROR: Unable to delete Item. No index is selected.");
-            return;
-        }
-
-        Item item = itemTable.getSelectionModel().getTableView().getItems().get(index);
-
-        //Error handling
-        if (item == null){
-            System.out.println("No Item Type Selected.");
-            return;
-        }
-
-        else {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirm Item Deletion");
-            alert.setHeaderText("Are you sure you want to delete this item type? \nNumber of Affected Items: " + handler.getAffectedRestocks(item));
-            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
-            Optional<ButtonType> result = alert.showAndWait();
-            //Removes the list of selected items
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                handler.removeRestock(item.getItemID(),SQL_DataHandler.REMOVE_BY_ITEM_ID);
-                handler.removeItem(item.getItemID());
-                itemTable.setItems(initialItemData());
-            }
-        }
-
-    }
-
     private void itemEditData(){
         //Makes the specific columns editable
-        items_itemName_col.setCellFactory(TextFieldTableCell.<Item>forTableColumn());
-        items_itemName_col.setOnEditCommit(event ->{
+        itemName_col.setCellFactory(TextFieldTableCell.<Item>forTableColumn());
+        itemName_col.setOnEditCommit(event ->{
             SQL_DataHandler handler = new SQL_DataHandler();
 
             Item item = event.getTableView().getItems().get(event.getTablePosition().getRow());
@@ -201,42 +100,9 @@ public class controller implements Initializable {
                 alert.setContentText("The item name to be updated \"" + event.getNewValue() + "\", already exists in the database.");
                 alert.showAndWait();
             }   else {
-                handler.updateItem(item.getItemID(), event.getNewValue(), item.getItemUnitTypeID(), item.getUnitCost());
+                handler.updateItem(item.getItemName(), event.getNewValue(), item.getUnitCost());
                 item.setItemName(event.getNewValue());
-                itemTable.setItems(initialItemData());
-                search_itemName();
             }
-        });
-
-        items_itemUnitType_col.setEditable(true);
-        items_itemUnitType_col.setCellFactory(TextFieldTableCell.<Item,Integer>forTableColumn(new IntegerStringConverter()));
-        items_itemUnitType_col.setOnEditCommit(e -> {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Item item = e.getTableView().getItems().get(e.getTablePosition().getRow());
-            if(handler.getItemUnitType(e.getNewValue()) != null) {
-                handler.updateItem(item.getItemID(), item.getItemName(), e.getNewValue(), item.getUnitCost());
-                item.setItemUnitTypeID(e.getNewValue());
-                itemTable.setItems(initialItemData());
-                search_itemName();
-            } else {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("ERROR");
-                alert.setHeaderText("Unable to edit Item Unit Type.");
-                alert.setContentText("Item Unit Type ID does not Exist.");
-                alert.showAndWait();
-            }
-        });
-
-        items_itemUnitCost_col.setEditable(true);
-        items_itemUnitCost_col.setCellFactory(TextFieldTableCell.<Item,Double>forTableColumn(new DoubleStringConverter()));
-        items_itemUnitCost_col.setOnEditCommit(e -> {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Item item = e.getTableView().getItems().get(e.getTablePosition().getRow());
-
-            handler.updateItem(item.getItemID(), item.getItemName(), item.getItemUnitTypeID(),e.getNewValue());
-            item.setUnitCost(e.getNewValue());
-            itemTable.setItems(initialItemData());
-            search_itemName();
         });
     }
 
@@ -257,12 +123,12 @@ public class controller implements Initializable {
             }
 
             // Set up table columns
-            items_itemID_col.setCellValueFactory(new PropertyValueFactory<>("itemID"));
-            items_itemName_col.setCellValueFactory(new PropertyValueFactory<>("itemName"));
-            items_itemUnitType_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemUnitTypeID"));
-            items_itemQuantity_col.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-            items_itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<>("unitCost"));
-            items_itemMovement_col.setCellValueFactory(new PropertyValueFactory<>("movement"));
+            itemID_col.setCellValueFactory(new PropertyValueFactory<>("itemID"));
+            itemName_col.setCellValueFactory(new PropertyValueFactory<>("itemName"));
+            itemUnitType_col.setCellValueFactory(new PropertyValueFactory<>("itemUnitType"));
+            itemQuantity_col.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+            itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<>("unitCost"));
+            itemMovement_col.setCellValueFactory(new PropertyValueFactory<>("movement"));
 
             // Convert array to ObservableList
             dataList = FXCollections.observableArrayList(search);
@@ -295,9 +161,11 @@ public class controller implements Initializable {
         }
     }
 
-    public void unitType_comboBoxOnAction (ActionEvent event) {
+    // ==============COMBO BOX UNIT TYPE (item.fxml)===================
+    @FXML private ComboBox<String> item_unitCb;
+    public void unitType_comboBoxOnAction(ActionEvent event) {
         if (item_unitCb != null) {
-            String selectAllData = "SELECT * FROM unitType";
+            String selectAllData = "SELECT * FROM UnitType";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -307,8 +175,8 @@ public class controller implements Initializable {
                     ObservableList<String> listData = FXCollections.observableArrayList();
 
                     while (rs.next()) {
-                        String unit_type = rs.getString("unit_Type");
-                        listData.add(unit_type);
+                        String itemPanel_unit_type = rs.getString("unit_Type");
+                        listData.add(itemPanel_unit_type);
                     }
 
                     item_unitCb.setItems(listData);
@@ -325,10 +193,12 @@ public class controller implements Initializable {
         }
     }
 
+    // ==============COMBO BOX ITEM TYPE (item.fxml)===================
+    @FXML private ComboBox<String> item_TypeCb;
 
-    public void itemType_comboBoxOnAction (ActionEvent event) {
+    public void itemType_comboBoxOnAction(ActionEvent event) {
         if (item_TypeCb != null) {
-            String selectAllData = "SELECT * FROM itemType";
+            String selectAllData = "SELECT * FROM ItemType";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -444,6 +314,25 @@ public class controller implements Initializable {
         }
     }
 
+    public void setItem_TypeCb() {
+        String selectAllData = "SELECT * FROM items";
+
+        connect = connectDB();
+
+        try {
+            pr = connect.prepareStatement(selectAllData);
+            rs = pr.executeQuery();
+
+            ObservableList itemList = FXCollections.observableArrayList();
+
+            while (rs.next()) {
+                String item = rs.getString("itemTypeID_col");
+                itemList.add(item);
+            }
+
+            item_TypeCb.setItems(itemList);
+        } catch (Exception e) { e.printStackTrace(); }
+    }
 
     //===============================ITEM TYPE METHODS====================================
     @FXML private TableColumn<ItemType, Integer> itemTypeIDColumn;
@@ -466,17 +355,8 @@ public class controller implements Initializable {
         String itemTypeName = itemTypeNameTextField.getText();
         if (!itemTypeName.isEmpty() && !itemTypeName.equals("Item Type") && handler.addItemType(itemTypeName)) {
             ItemType type = handler.getItemType(itemTypeName);
-            System.out.println(type.getItemTypeName()); //Adds item type to the table
-            itemTypeTable.setItems(initialItemTypeData());
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ADD ITEM TYPE");
-            alert.setHeaderText("ADD SUCCESSFUL!");
-            alert.setContentText("Item Type: " + itemTypeName + " Successfully Added.");
-            alert.showAndWait();
+            itemTypeTable.getItems().add(type); //Adds item type to the table
             itemTypeNameTextField.clear();
-
-
-            //REFRESH
         } else if (itemTypeName.equalsIgnoreCase("Item Type")){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
@@ -493,7 +373,7 @@ public class controller implements Initializable {
     }
 
     @FXML
-    void deleteItemType(ActionEvent event) throws SQLException {
+    void deleteItemType(ActionEvent event) {
         //Gets the item type selected (Can be null if no item is selected)
         int index = itemTypeTable.getSelectionModel().getSelectedIndex();
         if (index == -1){
@@ -520,9 +400,8 @@ public class controller implements Initializable {
 
             //Removes the list of selected items
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                handler.removeItemUnitType(item.getItemTypeID(),SQL_DataHandler.REMOVE_ITEM_TYPE);
                 handler.removeItemType(item.getItemTypeName());
-                itemTypeTable.setItems(initialItemTypeData());
+                itemTypeTable.getSelectionModel().getTableView().getItems().remove(item);
             }
         }
     }
@@ -538,8 +417,6 @@ public class controller implements Initializable {
             if (!handler.itemTypeExists(event.getNewValue())){
                 handler.updateItemType(itemType.getItemTypeID(), event.getNewValue());
                 itemType.setItemTypeName(event.getNewValue());
-                itemTypeTable.setItems(initialItemTypeData());
-                search_itemType();
             }   else {
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("ERROR");
@@ -644,27 +521,14 @@ public class controller implements Initializable {
         } catch(Exception e){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Pharmacist.");
-            alert.setContentText("Invalid Input. Please Try Again.");
-            alert.showAndWait();
-            return;
-        }
-        if (handler.getPharmacist(convertedID) != null){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Pharmacist.");
-            alert.setContentText("Pharmacist ID already exists. Please Try Again.");
+            alert.setHeaderText("Unable to add new Pharmacist: " + firstName + " " + lastName);
+            alert.setContentText("Pharmacist ID " + ID + " is not an Integer.");
             alert.showAndWait();
             return;
         }
         if (!firstName.isEmpty() && !lastName.isEmpty() && !middleName.isEmpty() && !ID.isEmpty() && handler.addPharmacist(convertedID,firstName,middleName,lastName)) {
             Pharmacist p = handler.getPharmacist(convertedID);
-            pharmacistTable.setItems(initialPharmacistData()); //Adds item type to the table
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ADD PHARMACIST");
-            alert.setHeaderText("ADD SUCCESSFUL!");
-            alert.setContentText("Pharmacist: " + p.getFirstName() + " " + p.getLastName() + " Successfully Added.");
-            alert.showAndWait();
+            pharmacistTable.getItems().add(p); //Adds item type to the table
             pharmacist_fName_textField.clear();
             pharmacist_mName_textField.clear();
             pharmacist_lName_textField.clear();
@@ -673,8 +537,8 @@ public class controller implements Initializable {
         } else if (!ID.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Pharmacist.");
-            alert.setContentText("Invalid Input. Please Try Again.");
+            alert.setHeaderText("Unable to add new Pharmacist: " + firstName + " " + lastName);
+            alert.setContentText("Pharmacist ID " + ID + " already exists in the list");
             alert.showAndWait();
         }
     }
@@ -687,8 +551,6 @@ public class controller implements Initializable {
             Pharmacist p = event.getTableView().getItems().get(event.getTablePosition().getRow());
             handler.updatePharmacist(p, event.getNewValue(), p.getMiddleName(), p.getLastName());
             p.setFirstName(event.getNewValue());
-            pharmacistTable.setItems(initialPharmacistData());
-            search_pharmacist();
         });
 
         pharmacist_mName_col.setEditable(true);
@@ -698,8 +560,6 @@ public class controller implements Initializable {
             Pharmacist p = event.getTableView().getItems().get(event.getTablePosition().getRow());
             handler.updatePharmacist(p,p.getFirstName(),event.getNewValue(),p.getLastName());
             p.setMiddleName(event.getNewValue());
-            pharmacistTable.setItems(initialPharmacistData());
-            search_pharmacist();
         });
 
         pharmacist_lName_col.setEditable(true);
@@ -709,8 +569,6 @@ public class controller implements Initializable {
             Pharmacist p = event.getTableView().getItems().get(event.getTablePosition().getRow());
             handler.updatePharmacist(p,p.getFirstName(),p.getMiddleName(),event.getNewValue());
             p.setLastName(event.getNewValue());
-            pharmacistTable.setItems(initialPharmacistData());
-            search_pharmacist();
         });
     }
 
@@ -743,7 +601,7 @@ public class controller implements Initializable {
             //Removes the list of selected items
             if (result.isPresent() && result.get() == ButtonType.OK) {
                 handler.removePharmacist(p.getPharmacistID());
-                pharmacistTable.setItems(initialPharmacistData());
+                pharmacistTable.getSelectionModel().getTableView().getItems().remove(p);
             }
         }
     }
@@ -826,12 +684,7 @@ public class controller implements Initializable {
         String unitType = unitType_textField.getText();
         if (!unitType.isEmpty() && handler.addUnitType(unitType)) {
             UnitType type = handler.getUnitType(unitType);
-            unitTypeTable.setItems(initialUnitTypeData()); //Adds item type to the table
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ADD UNIT TYPE");
-            alert.setHeaderText("ADD SUCCESSFUL!");
-            alert.setContentText("Unit Type: " + unitType + " Successfully Added.");
-            alert.showAndWait();
+            unitTypeTable.getItems().add(type); //Adds item type to the table
             unitType_textField.clear();
 
         } else if (!unitType.isEmpty()) {
@@ -853,8 +706,6 @@ public class controller implements Initializable {
             if (!handler.unitTypeExists(event.getNewValue())){
                 handler.updateUnitType(unitType.getUnitTypeID(), event.getNewValue());
                 unitType.setUnitType(event.getNewValue());
-                unitTypeTable.setItems(initialUnitTypeData());
-                search_unitType();
             }   else {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("ERROR");
@@ -870,7 +721,7 @@ public class controller implements Initializable {
     }
 
     @FXML
-    void deleteUnitType(ActionEvent event) throws SQLException {
+    void deleteUnitType(ActionEvent event) {
         //Gets the unit type selected (Can be null if no item is selected)
         int index = unitTypeTable.getSelectionModel().getSelectedIndex();
         if (index == -1){
@@ -894,9 +745,8 @@ public class controller implements Initializable {
 
             //Removes the list of selected items
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                handler.removeItemUnitType(unit.getUnitTypeID(),SQL_DataHandler.REMOVE_UNIT_TYPE);
                 handler.removeUnitType(unit.getUnitType());
-                unitTypeTable.setItems(initialUnitTypeData());
+                unitTypeTable.getSelectionModel().getTableView().getItems().remove(unit);
             }
         }
     }
@@ -963,196 +813,23 @@ public class controller implements Initializable {
     @FXML private TableView<Restocks> restockTable;
     @FXML private TableColumn<Restocks, Integer> restock_beginningQty_col;
     @FXML private TableColumn<Restocks, Date> restock_expirationDate_col;
-    @FXML private TableColumn<Restocks, Integer> restock_itemID_col;
+    @FXML private TableColumn<Restocks, String> restock_itemName_col;
     @FXML private TableColumn<Restocks, Date> restock_restockDate_col;
     @FXML private TableColumn<Restocks, Integer> restock_soldQty_col;
-    @FXML private TableColumn<Restocks, Double>  restock_wholeSaleCost_col;
+
     @FXML private TextField restock_qty;
-    @FXML private TextField wholesale_textField;
 
     @FXML private TextField restock_searchTextField;
-    @FXML private TextField restock_unitCostTextField;
 
+    /*
+    // ObservableList to hold the data for the table
+    private ObservableList<Restocks> restockL;
 
-    private ObservableList<Restocks> initialRestockData(){
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Restocks [] r = handler.getAllRestocks();
-            return FXCollections.<Restocks> observableArrayList(r);
-    }
-
-    private void prepareRestockComboBoxListener(){
-        restock_item_cb.setOnAction(event ->{
-            String selectedItem = restock_item_cb.getValue();
-            if (selectedItem != null && !selectedItem.isEmpty()){
-                Item item = new SQL_DataHandler().getItem(selectedItem);
-
-                if (item != null)
-                    restock_unitCostTextField.setText(Double.toString(item.getUnitCost()));
-                else
-                    wholesale_textField.clear();
-            }
-        });
-    }
-
-    @FXML void addRestock(ActionEvent event) throws ParseException {
-        SQL_DataHandler handler = new SQL_DataHandler();
-        int itemID = handler.getItemId(restock_item_cb.getSelectionModel().getSelectedItem());
-        String Qty = restock_qty.getText();
-        String restock = restockDate_datePicker.getValue().toString();
-        String expiry = expirationDate_datePicker.getValue().toString();
-        String wholesale = wholesale_textField.getText();
-        if (wholesale_textField == null) {
-            System.out.println("wholesale_textField is not initialized!");
-        } else {
-            System.out.println("wholesale_textField is initialized.");
-        }
-        System.out.println(restock);
-
-        int convertedQty;
-        double convertedCost;
-        try {
-            convertedQty = Integer.parseInt(Qty);
-            convertedCost = Double.parseDouble(wholesale);
-        } catch(Exception e){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Restock.");
-            alert.setContentText("Invalid Input. Please Try Again.");
-            alert.showAndWait();
-            return;
-        }
-
-        Date convertedRestockDate = Date.valueOf(restock);
-        Date convertedExpiryDate =  Date.valueOf(expiry);
-        if ((!convertedRestockDate.before(convertedExpiryDate) && !convertedRestockDate.equals(convertedExpiryDate))){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Restock");
-            alert.setContentText("Restock and Expiry Dates are either Overlapping or Invalid. Please Try Again.");
-            alert.showAndWait();
-            return;
-
-        };
-        if (!restock.toString().isEmpty() && !expiry.toString().isEmpty() && itemID > -1 && handler.addRestock(itemID,convertedQty,convertedCost,restock,expiry)) {
-            Restocks r = handler.getLatestRestock();
-            restockTable.getItems().add(r); //Adds item type to the table
-            restockTable.setItems(initialRestockData());
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ADD ITEM");
-            alert.setHeaderText("ADD SUCCESSFUL!");
-            alert.setContentText("Restock # " + r.getRestockID() + " Successfully Added.");
-            alert.showAndWait();
-            restock_qty.clear();
-            restock_item_cb.getSelectionModel().clearSelection();
-            restockDate_datePicker.cancelEdit();
-            expirationDate_datePicker.cancelEdit();
-            wholesale_textField.clear();
-        } else {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Restock");
-            alert.setContentText("Invalid Input. Please Try Again");
-            alert.showAndWait();
-        }
-
-    }
-
-    @FXML void deleteRestock(ActionEvent e){
-        //Gets the restock selected (Can be null if no item is selected)
-        int index = restockTable.getSelectionModel().getSelectedIndex();
-        if (index == -1){
-            System.out.println("ERROR: Unable to delete Item. No index is selected.");
-            return;
-        }
-
-        Restocks r = restockTable.getSelectionModel().getTableView().getItems().get(index);
-
-        //Error handling
-        if (r == null){
-            System.out.println("No Restock Selected.");
-            return;
-        }
-
-        else {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirm Item Deletion");
-            alert.setHeaderText("Are you sure you want to delete this item type?");
-            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
-
-            Optional<ButtonType> result = alert.showAndWait();
-            //Removes the list of selected items
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                handler.removeRestock(r.getRestockID(),SQL_DataHandler.REMOVE_BY_RESTOCK_ID);
-                restockTable.setItems(initialRestockData());
-            }
-        }
-
-    }
-
-    private void restockEditData(){
-        restock_itemID_col.setEditable(true);
-        restock_itemID_col.setCellFactory(TextFieldTableCell.<Restocks,Integer>forTableColumn(new IntegerStringConverter()));
-        restock_itemID_col.setOnEditCommit(e -> {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Restocks r = e.getTableView().getItems().get(e.getTablePosition().getRow());
-            if(handler.getItem(e.getNewValue()) != null) {
-                handler.updateRestock(r.getRestockID(), e.getNewValue(),r.getStartQty(),r.getWholesaleCost());
-                r.setItemID(e.getNewValue());
-                restockTable.setItems(initialRestockData());
-            } else {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("ERROR");
-                alert.setHeaderText("Unable to Update Restock.");
-                alert.setContentText("Item ID does not Exist.");
-                alert.showAndWait();
-            }
-        });
-
-        restock_beginningQty_col.setEditable(true);
-        restock_beginningQty_col.setCellFactory(TextFieldTableCell.<Restocks,Integer>forTableColumn(new IntegerStringConverter()));
-        restock_beginningQty_col.setOnEditCommit(e -> {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Restocks r = e.getTableView().getItems().get(e.getTablePosition().getRow());
-            if(e.getNewValue() > -1 && e.getNewValue() >= r.getSoldQty()) {
-                handler.updateRestock(r.getRestockID(),r.getItemID(),e.getNewValue(),r.getWholesaleCost());
-                r.setStartQty(e.getNewValue());
-                restockTable.setItems(initialRestockData());
-                search_itemName();
-            } else {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("ERROR");
-                alert.setHeaderText("Unable to Update Restock.");
-                alert.setContentText("Invalid Input. Please Try A Positive Integer OR A Number greater than or equal to Sold Quantity.");
-                alert.showAndWait();
-            }
-        });
-
-        restock_wholeSaleCost_col.setEditable(true);
-        restock_wholeSaleCost_col.setCellFactory(TextFieldTableCell.<Restocks,Double>forTableColumn(new DoubleStringConverter()));
-        restock_wholeSaleCost_col.setOnEditCommit(e -> {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Restocks r = e.getTableView().getItems().get(e.getTablePosition().getRow());
-            if(e.getNewValue() > -1) {
-                handler.updateRestock(r.getRestockID(),r.getItemID(),r.getStartQty(),e.getNewValue());
-                r.setWholesaleCost(e.getNewValue());
-                restockTable.setItems(initialRestockData());
-            } else {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("ERROR");
-                alert.setHeaderText("Unable to Update Restock.");
-                alert.setContentText("Invalid Input. Please Try A Positive Number.");
-                alert.showAndWait();
-            }
-        });
-    }
-
-    @FXML ObservableList<Restocks> restockList;
     public void search_restocks() {
         try {
             // Fetch data from the handler
             SQL_DataHandler handler = new SQL_DataHandler();
-            Restocks[] restock = handler.getAllRestocks(); //-> ano lang same ra sa method sa para ma retrieve ang data
+            // Restocks[] restock = handler.getRestock(2); -> ano lang same ra sa method sa para ma retrieve ang data
             System.out.println("Numbers fetched: " + Arrays.toString(restock)); // debugger
 
             if (restock == null || restock.length == 0) {
@@ -1161,23 +838,20 @@ public class controller implements Initializable {
             }
 
             // Set up table columns
-            restockID_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
-            restock_itemID_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("itemID"));
-            restock_beginningQty_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("startQty"));
-            restock_soldQty_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("soldQty"));
-            restock_restockDate_col.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("restockDate"));
-            restock_expirationDate_col.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("expiryDate"));
-            restock_wholeSaleCost_col.setCellValueFactory(new PropertyValueFactory<Restocks,Double>("wholesaleCost"));
+            pharmacistID_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,Integer>("pharmacistID"));
+            pharmacist_fName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("firstName"));
+            pharmacist_mName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("middleName"));
+            pharmacist_lName_col.setCellValueFactory(new PropertyValueFactory<Pharmacist,String>("lastName"));
 
             // Convert array to ObservableList
-            restockList = FXCollections.observableArrayList(restock);
-            restockTable.setItems(restockList);
+            restockList = FXCollections.observableArrayList(pharmaSearch);
+            pharmacistTable.setItems(restockList);
 
             // Add filtering logic
-            FilteredList<Restocks> filteredData = new FilteredList<>(restockList, b -> true);
+            FilteredList<Restock> filteredData = new FilteredList<>(restockList, b -> true);
 
             restock_searchTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-                filteredData.setPredicate(restocks -> {
+                filteredData.setPredicate(restock -> {
                     // If search field is empty, show all items
                     if (newValue == null || newValue.isEmpty()) {
                         return true;
@@ -1185,13 +859,15 @@ public class controller implements Initializable {
 
                     // Filter items by name (case-insensitive) -> change lang sa mga iretrieve everytime mag search ka
                     String lowerCaseFilter = newValue.toLowerCase();
-                    return String.valueOf(restocks.getRestockID()).contains(lowerCaseFilter) ||
-                            restocks.getRestockDate().contains(lowerCaseFilter);
+                    return pharmacist.getFirstName().toLowerCase().contains(lowerCaseFilter) ||
+                            pharmacist.getMiddleName().toLowerCase().contains(lowerCaseFilter) ||
+                            pharmacist.getLastName().toLowerCase().contains(lowerCaseFilter) ||
+                            String.valueOf(pharmacist.getPharmacistID()).contains(lowerCaseFilter);
                 });
             });
 
             // Bind the sorted data to the table
-            SortedList<Restocks> sortedData = new SortedList<>(filteredData);
+            SortedList<Restock> sortedData = new SortedList<>(filteredData);
             sortedData.comparatorProperty().bind(restockTable.comparatorProperty());
             restockTable.setItems(sortedData);
 
@@ -1201,7 +877,7 @@ public class controller implements Initializable {
         }
     }
 
-
+     */
 
 
     //===============================TRANSACTION METHODS====================================
@@ -1276,7 +952,7 @@ public class controller implements Initializable {
         String itemTypeID = itemUnitType_itemTypeID_textField.getText();
         String unitTypeID = itemUnitType_unitTypeID_textField.getText();
 
-        if (itemTypeID.isEmpty() || unitTypeID.isEmpty()){
+        if (!itemTypeID.isEmpty() || !unitTypeID.isEmpty()){
             System.out.println("ERROR: Unable to add Item Unit Type. TextBox is Blank.");
             return;
         }
@@ -1297,14 +973,9 @@ public class controller implements Initializable {
 
         if (handler.addItemUnitType(convertedItemID, convertedUnitID)) {
             ItemUnitType type = handler.getItemUnitType(convertedItemID,convertedUnitID);
-            itemUnitTypeTable.setItems(initialItemUnitTypeData()); //Adds item type to the table
+            itemUnitTypeTable.getItems().add(type); //Adds item type to the table
             itemUnitType_itemTypeID_textField.clear();
             itemUnitType_unitTypeID_textField.clear();
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ADD ITEM UNIT TYPE");
-            alert.setHeaderText("ADD SUCCESSFUL!");
-            alert.setContentText("Item Unit Type: " + type.getItemTypeName() + "-" + type.getUnitTypeName() +" Successfully Added.");
-            alert.showAndWait();
 
         } else {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -1316,7 +987,7 @@ public class controller implements Initializable {
     }
 
     @FXML
-    void deleteItemUnitType(ActionEvent event) throws SQLException {
+    void deleteItemUnitType(ActionEvent event) {
         //Gets the unit type selected (Can be null if no item is selected)
         int index = itemUnitTypeTable.getSelectionModel().getSelectedIndex();
         if (index == -1){
@@ -1341,50 +1012,14 @@ public class controller implements Initializable {
             //Removes the list of selected items
             if (result.isPresent() && result.get() == ButtonType.OK) {
                 handler.removeItemUnitType(unit.getItemUnitTypeID(), SQL_DataHandler.REMOVE_ITEM_UNIT_TYPE);
-                itemUnitTypeTable.setItems(initialItemUnitTypeData());
+                itemUnitTypeTable.getSelectionModel().getTableView().getItems().remove(unit);
             }
         }
     }
 
     @FXML
-    void itemUnitTypeEditData(){
-        itemUnitType_itemTypeID_col.setEditable(true);
-        itemUnitType_itemTypeID_col.setCellFactory(TextFieldTableCell.<ItemUnitType,Integer>forTableColumn(new IntegerStringConverter()));
-        itemUnitType_itemTypeID_col.setOnEditCommit(e -> {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            ItemUnitType p = e.getTableView().getItems().get(e.getTablePosition().getRow());
-            if(handler.getItemType(e.getNewValue()) != null) {
-                handler.updateItemUnitType(p.getItemUnitTypeID(), e.getNewValue(), p.getUnitTypeID());
-                p.setItemTypeID(e.getNewValue());
-                itemUnitTypeTable.setItems(initialItemUnitTypeData());
-                search_ItemUnitType();
-            } else {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("ERROR");
-                alert.setHeaderText("Unable to edit Item Unit Type.");
-                alert.setContentText("Item Type ID/Unit Type ID does not Exist.");
-                alert.showAndWait();
-            }
-        });
+    void updateItemUnitType(ActionEvent event){
 
-        itemUnitType_unitTypeID_col.setEditable(true);
-        itemUnitType_unitTypeID_col.setCellFactory(TextFieldTableCell.<ItemUnitType,Integer>forTableColumn(new IntegerStringConverter()));
-        itemUnitType_unitTypeID_col.setOnEditCommit(e -> {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            ItemUnitType p = e.getTableView().getItems().get(e.getTablePosition().getRow());
-            if(handler.getUnitType(e.getNewValue()) != null) {
-                handler.updateItemUnitType(p.getItemUnitTypeID(),p.getItemTypeID(),e.getNewValue());
-                p.setUnitTypeID(e.getNewValue());
-                itemUnitTypeTable.setItems(initialItemUnitTypeData());
-                search_ItemUnitType();
-            } else {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("ERROR");
-                alert.setHeaderText("Unable to edit Item Unit Type.");
-                alert.setContentText("Item Type ID/Unit Type ID does not Exist.");
-                alert.showAndWait();
-            }
-        });
     }
 
     // searching
@@ -1406,8 +1041,8 @@ public class controller implements Initializable {
 
             // Set up table columns
             itemUnitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("itemUnitTypeID"));
-            itemUnitType_itemTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType, Integer>("itemTypeID"));
-            itemUnitType_unitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType, Integer>("unitTypeID"));
+            itemUnitType_itemTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("itemTypeID"));
+            itemUnitType_unitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("unitTypeID"));
             itemUnitType_itemTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("itemTypeName"));
             itemUnitType_unitTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("unitTypeName"));
 
@@ -1512,11 +1147,9 @@ public class controller implements Initializable {
             System.out.println("Menu label is not initialized.");
         }
 
+        fetchBalances();
 
-        //Initialize Dashboard
         if (dashboardDate != null) {
-
-            loadDashboardData();
             displayDate();
         } else {
             System.out.println("dashboardDate is null");
@@ -1561,12 +1194,12 @@ public class controller implements Initializable {
         //Initialize ITEM UNIT TYPE
         if (itemUnitTypeTable != null){
             itemUnitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("itemUnitTypeID"));
-            itemUnitType_itemTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType, Integer>("itemTypeID"));
-            itemUnitType_unitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType, Integer>("unitTypeID"));
+            itemUnitType_itemTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("itemTypeID"));
+            itemUnitType_unitTypeID_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,Integer>("unitTypeID"));
             itemUnitType_itemTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("itemTypeName"));
             itemUnitType_unitTypeName_col.setCellValueFactory(new PropertyValueFactory<ItemUnitType,String>("unitTypeName"));
             itemUnitTypeTable.setItems(initialItemUnitTypeData());
-            itemUnitTypeEditData();
+//           itemUnitTypeEditData();
         }
 
         //  search_ItemUnitType(); (itemUnitType.fxml)
@@ -1602,31 +1235,14 @@ public class controller implements Initializable {
 
         //Initialize ITEM
         if (itemTable != null){
-            items_itemID_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemID"));
-            items_itemName_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemName"));
-            items_itemUnitType_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemUnitTypeID"));
-            items_itemQuantity_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("quantity"));
-            items_itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("unitCost"));
-            items_itemMovement_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("movement"));
+            itemID_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("itemID"));
+            itemName_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemName"));
+            itemUnitType_col.setCellValueFactory(new PropertyValueFactory<Item, String>("itemUnitType"));
+            itemQuantity_col.setCellValueFactory(new PropertyValueFactory<Item, Integer>("quantity"));
+            itemUnitCost_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("unitCost"));
+            itemMovement_col.setCellValueFactory(new PropertyValueFactory<Item, Double>("movement"));
             itemTable.setItems(initialItemData());
             itemEditData();
-        }
-
-
-        //Initialize Restock
-        if (restockTable != null){
-            restockID_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
-            restock_itemID_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("itemID"));
-            restock_beginningQty_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("startQty"));
-            restock_soldQty_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("soldQty"));
-            restock_restockDate_col.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("restockDate"));
-            restock_expirationDate_col.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("expiryDate"));
-            restock_wholeSaleCost_col.setCellValueFactory(new PropertyValueFactory<Restocks,Double>("wholesaleCost"));
-
-            restockDate_datePicker.setValue(new SQL_DataHandler().getCurrentDate());
-            restockTable.setItems(initialRestockData());
-            prepareRestockComboBoxListener();
-            restockEditData();
         }
 
         //Initialize TRANSACTIONS and ITEMS SOLD
@@ -1656,8 +1272,8 @@ public class controller implements Initializable {
             search_itemName();
         }
 
-
         // for restock
+        /* uncomment if okay na methods
         if (restock_searchTextField == null) {
                     System.out.println("field is null");
                 } else {
@@ -1666,13 +1282,13 @@ public class controller implements Initializable {
                     });
                     search_restocks();
                 }
-
+        */
 
         // combo box from database
+        itemType_comboBoxOnAction(new ActionEvent());
+        unitType_comboBoxOnAction(new ActionEvent());
         restock_itemName_comboBoxOnAction(new ActionEvent());
         transactionItemName_comboBoxOnAction(new ActionEvent());
-        itemType_comboBoxOnAction(new ActionEvent());
-        unitType_comboBoxOnAction((new ActionEvent()));
 
 
     }
@@ -1769,88 +1385,23 @@ public class controller implements Initializable {
         dashboardDate.setText(formattedDate);
     }
 
-    @FXML Label start_qty_label;
-    @FXML Label sold_qty_label;
-    @FXML Label end_qty_label;
-    @FXML Label transactionCount_label;
-
-    @FXML TableView <Restocks> recentlyRestocked;
-    @FXML TableColumn <Restocks,Integer> recentlyRestocked_restockID;
-    @FXML TableColumn <Restocks,Integer> recentlyRestocked_itemName;
-    @FXML TableColumn <Restocks,Integer> recentlyRestocked_Qty;
-
-    @FXML TableView <Item> fastestMovement;
-    @FXML TableColumn <Item,String> fastestMovement_itemName;
-    @FXML TableColumn <Item,Double> fastestMovement_movement;
-
-    @FXML TableView <Restocks> expiry;
-    @FXML
-    TableColumn<Restocks, Integer> expiry_restockID;
-    @FXML
-    TableColumn<Restocks, Date> expiry_expiryDate;
-
-    public void loadDashboardData() {
-        SQL_DataHandler handler = new SQL_DataHandler();
-        double beginning = handler.getOverallBeginningBalance();  // Example value, replace with actual data
-        double issuance = handler.getOverallIssuanceBalance();    // Example value, replace with actual data
-        double ending = beginning - issuance;
-        int start_Qty = handler.getOverallStartQuantity();
-        int sold_Qty = handler.getOverallSoldQuantity();
-        int end_Qty = start_Qty - sold_Qty;
-        int transactionCount = handler.getTransactionCount();
+    public void fetchBalances() {
+        double beginning = 150000.00;  // Example value, replace with actual data
+        double issuance = 500.00;    // Example value, replace with actual data
+        double ending = 12312.73;
 
         if (beginningBalance != null) {
-            beginningBalance.setText("" + beginning);
+            beginningBalance.setText(" " + beginning);
         }
+
         if (issuanceBalance != null) {
-            issuanceBalance.setText("" + issuance);
-        }
-        if (start_qty_label != null) {
-            start_qty_label.setText("" + start_Qty);
-        }
-        if (sold_qty_label != null) {
-            sold_qty_label.setText("" + sold_Qty);
-        }
-        if (end_qty_label != null) {
-            end_qty_label.setText("" + end_Qty);
-        }
-        if (transactionCount_label != null) {
-            transactionCount_label.setText("" + transactionCount);
+            issuanceBalance.setText(" " + issuance);
         }
 
-        if (restockTable != null) {
-            recentlyRestocked_restockID.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
-            recentlyRestocked_itemName.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("itemID"));
-            recentlyRestocked_Qty.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("startQty"));
-            recentlyRestocked.setItems(recentlyRestockedData());
+        if (endingBalance != null) {
+            endingBalance.setText("" + ending);
         }
 
-        //REMOVE COMMENT IF TOP 10 FASTEST AND EXPIRY DATA WITHIN SQL HANDLER IS RESOLVED.
-//        fastestMovement_itemName.setCellValueFactory(new PropertyValueFactory<Item,String>("itemName"));
-//        fastestMovement_movement.setCellValueFactory(new PropertyValueFactory<Item,Double>("movement"));
-//        fastestMovement.setItems(top10FastestData());
-//
-//        expiry_restockID.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("restockID"));
-//        expiry_expiryDate.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("expiryDate"));
-//        expiry.setItems(top10ExpiryData());
-    }
-
-    public ObservableList<Restocks> recentlyRestockedData (){
-        SQL_DataHandler handler = new SQL_DataHandler();
-        Restocks types = handler.getLatestRestock();
-        return FXCollections.<Restocks> observableArrayList(types);
-    }
-
-    public ObservableList<Restocks> top10ExpiryData (){
-        SQL_DataHandler handler = new SQL_DataHandler();
-        Restocks types = handler.getLatestRestock();
-        return FXCollections.<Restocks> observableArrayList(types);
-    }
-
-    public ObservableList<Item> top10FastestData (){
-        SQL_DataHandler handler = new SQL_DataHandler();
-        Item [] items = handler.getTop10Fastest();
-        return FXCollections.<Item> observableArrayList(items);
     }
 
     public void toggleSideBar() {
