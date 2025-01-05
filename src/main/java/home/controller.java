@@ -1300,6 +1300,7 @@ public class controller implements Initializable {
     @FXML private TableColumn<ItemsSold, String> itemsSold_itemName_col;
     @FXML private TableColumn<ItemsSold, Integer> itemsSold_soldQty_col;
     @FXML private TableColumn<ItemsSold, Double> itemsSold_unitCost_col;
+    @FXML private TableColumn<ItemsSold, Integer> itemsSold_itemID_col;
 
     @FXML private RadioButton itemName_radioboxButton;
     @FXML private RadioButton pharmacistID_radioboxButton;
@@ -1918,6 +1919,7 @@ public class controller implements Initializable {
             itemsSold_itemName_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, String>("itemName"));
             itemsSold_soldQty_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Integer>("itemQty"));
             itemsSold_unitCost_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Double>("unitCost"));
+            itemsSold_itemID_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Integer>("itemID"));
 
             prepareTransactionTableListener();
             transactionTable.setItems(initialTransactionData());
