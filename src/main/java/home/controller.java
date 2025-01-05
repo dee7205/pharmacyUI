@@ -446,7 +446,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "shanna05");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "Gimatag2024");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -2146,7 +2146,9 @@ public class controller implements Initializable {
     @FXML
     TableColumn<Restocks, Integer> expiry_restockID;
     @FXML
-    TableColumn<Restocks, Date> expiry_expiryDate;
+    TableColumn<Restocks, Integer> expiry_expiryDate;
+
+    @FXML TableColumn<Restocks, String> expiry_Status;
 
     @FXML private Label beginningBalance;
     @FXML private Label issuanceBalance;
@@ -2179,13 +2181,14 @@ public class controller implements Initializable {
 
 
         //REMOVE COMMENT IF TOP 10 FASTEST AND EXPIRY DATA WITHIN SQL HANDLER IS RESOLVED.
-//        fastestMovement_itemName.setCellValueFactory(new PropertyValueFactory<Item,String>("itemName"));
-//        fastestMovement_movement.setCellValueFactory(new PropertyValueFactory<Item,Double>("movement"));
-//        fastestMovement.setItems(top10FastestData());
+        fastestMovement_itemName.setCellValueFactory(new PropertyValueFactory<Item,String>("itemName"));
+        fastestMovement_movement.setCellValueFactory(new PropertyValueFactory<Item,Double>("movement"));
+        fastestMovement.setItems(top10FastestData());
 //
-//        expiry_restockID.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("restockID"));
-//        expiry_expiryDate.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("expiryDate"));
-//        expiry.setItems(top10ExpiryData());
+        expiry_restockID.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("restockID"));
+        expiry_expiryDate.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("daysBeforeExpiry"));
+        expiry_Status.setCellValueFactory(new PropertyValueFactory<Restocks,String>("status"));
+        expiry.setItems(top10ExpiryData());
     }
 
     public ObservableList<Restocks> recentlyRestockedData (){
@@ -2196,7 +2199,7 @@ public class controller implements Initializable {
 
     public ObservableList<Restocks> top10ExpiryData (){
         SQL_DataHandler handler = new SQL_DataHandler();
-        Restocks types = handler.getLatestRestock();
+        Restocks [] types = handler.getTop10Expiry();
         return FXCollections.<Restocks> observableArrayList(types);
     }
 

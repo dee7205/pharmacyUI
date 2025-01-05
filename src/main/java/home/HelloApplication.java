@@ -41,6 +41,8 @@ public class HelloApplication extends Application {
         root.setOnMousePressed(event -> {
             xOffset = event.getSceneX();
             yOffset = event.getSceneY();
+
+
         });
 
         root.setOnMouseDragged(event -> {
