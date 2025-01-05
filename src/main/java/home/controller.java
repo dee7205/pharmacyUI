@@ -126,6 +126,7 @@ public class controller implements Initializable {
             itemName_textField.clear();
             item_itemUnitType_textField.clear();
             itemCost_textField.clear();
+            search_itemName();
 
         } else if (!itemName.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -402,6 +403,7 @@ public class controller implements Initializable {
             alert.setContentText("Item Type: " + itemTypeName + " Successfully Added.");
             alert.showAndWait();
             itemTypeNameTextField.clear();
+            search_itemType();
 
 
             //REFRESH
@@ -597,6 +599,7 @@ public class controller implements Initializable {
             pharmacist_mName_textField.clear();
             pharmacist_lName_textField.clear();
             pharmacist_id_textField.clear();
+            search_pharmacist();
 
         } else if (!ID.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -761,6 +764,7 @@ public class controller implements Initializable {
             alert.setContentText("Unit Type: " + unitType + " Successfully Added.");
             alert.showAndWait();
             unitType_textField.clear();
+            search_unitType();
 
         } else if (!unitType.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -1206,6 +1210,7 @@ public class controller implements Initializable {
             itemUnitTypeTable.setItems(initialItemUnitTypeData()); //Adds item type to the table
             itemUnitType_itemTypeID_textField.clear();
             itemUnitType_unitTypeID_textField.clear();
+            search_ItemUnitType();
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ADD ITEM UNIT TYPE");
             alert.setHeaderText("ADD SUCCESSFUL!");
