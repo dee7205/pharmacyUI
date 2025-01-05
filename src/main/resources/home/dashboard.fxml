@@ -5,8 +5,9 @@
 <?import javafx.geometry.Rectangle2D?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -168,18 +169,6 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="statisticsButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToStatistics" onMouseClicked="#switchToStatistics" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0;" styleClass="sidebarItems" text="Statistics" textFill="WHITE">
-                           <font>
-                              <Font name="System Bold" size="20.0" />
-                           </font>
-                           <graphic>
-                              <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/statisticsicon.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
                         <Button fx:id="addButton" depthTest="DISABLE" graphicTextGap="10.0" mnemonicParsing="false" onAction="#switchToInputPharmacistIDWindow" prefHeight="39.0" prefWidth="219.0" style="-fx-background-color: #672886; -fx-background-radius: 0px; -fx-cursor: hand;" textFill="WHITE">
                            <opaqueInsets>
                               <Insets top="5.0" />
@@ -209,41 +198,6 @@
          <center>
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
-                  <HBox layoutX="14.0" layoutY="228.0" prefHeight="325.0" prefWidth="393.0">
-                     <children>
-                        <ScrollPane prefHeight="325.0" prefWidth="401.0">
-                          <content>
-                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="325.0" prefWidth="362.0">
-                                 <children>
-                                    <VBox prefHeight="322.0" prefWidth="381.0">
-                                       <children>
-                                          <HBox prefHeight="39.0" prefWidth="259.0" style="-fx-background-color: lightgray;">
-                                             <children>
-                                                <Label contentDisplay="CENTER" prefHeight="42.0" prefWidth="54.0" text="Item ID">
-                                                   <HBox.margin>
-                                                      <Insets left="45.0" />
-                                                   </HBox.margin>
-                                                </Label>
-                                                <Label contentDisplay="CENTER" prefHeight="39.0" prefWidth="70.0" text="Item Name">
-                                                   <HBox.margin>
-                                                      <Insets left="45.0" />
-                                                   </HBox.margin>
-                                                </Label>
-                                                <Label contentDisplay="CENTER" prefHeight="39.0" prefWidth="71.0" text="Percentage">
-                                                   <HBox.margin>
-                                                      <Insets left="45.0" />
-                                                   </HBox.margin>
-                                                </Label>
-                                             </children>
-                                          </HBox>
-                                       </children>
-                                    </VBox>
-                                 </children>
-                              </AnchorPane>
-                          </content>
-                        </ScrollPane>
-                     </children>
-                  </HBox>
                   <VBox id="pane" fx:id="pane" layoutX="40.0" layoutY="-1.0" prefHeight="187.0" prefWidth="829.0" style="-fx-background-color: #C5ACF0; -fx-background-radius: 0px 0px 30px 30px;" styleClass="pane" stylesheets="@css/style.css" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="49.0" AnchorPane.topAnchor="-1.0">
                      <children>
                         <HBox prefHeight="37.0" prefWidth="827.0">
@@ -369,30 +323,92 @@
                         </HBox>
                      </children>
                   </VBox>
-                  <Label layoutX="14.0" layoutY="201.0" text="Top 10 Fastest Movement">
+                  <Label layoutX="50.0" layoutY="201.0" text="Top 10 Fastest Movement">
                      <font>
                         <Font name="Nunito ExtraBold" size="18.0" />
                      </font>
                   </Label>
-                  <AnchorPane layoutX="432.0" layoutY="227.0" prefHeight="137.0" prefWidth="457.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;" />
-                  <AnchorPane layoutX="432.0" layoutY="416.0" prefHeight="137.0" prefWidth="457.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;">
+                  <AnchorPane layoutX="297.0" layoutY="201.0" prefHeight="347.0" prefWidth="298.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;">
                      <children>
-                        <Label fx:id="overallSoldQuantity" alignment="CENTER" layoutX="75.0" layoutY="21.0" prefHeight="96.0" prefWidth="306.0" text="15">
+                        <Label layoutX="49.0" layoutY="3.0" text="Top 10 Expiry Restocks">
                            <font>
-                              <Font name="Nunito ExtraBold" size="66.0" />
+                              <Font name="Nunito ExtraBold" size="18.0" />
                            </font>
                         </Label>
-                     </children></AnchorPane>
-                  <Label layoutX="432.0" layoutY="201.0" text="Short Expiry">
+                        <TableView fx:id="expiry" layoutX="7.0" layoutY="34.0" prefHeight="303.0" prefWidth="282.0">
+                          <columns>
+                            <TableColumn fx:id="expiry_restockID" prefWidth="92.79998779296875" sortable="false" text="Restock ID" />
+                              <TableColumn fx:id="expiry_expiryDate" prefWidth="188.0" sortable="false" text="Expiry Date" />
+                          </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+                  <Label layoutX="617.0" layoutY="273.0" text="Sold Quantity">
+                     <font>
+                        <Font name="Nunito ExtraBold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="615.0" layoutY="213.0" text="Start Quantity">
+                     <font>
+                        <Font name="Nunito ExtraBold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="619.0" layoutY="335.0" text="End Quantity">
+                     <font>
+                        <Font name="Nunito ExtraBold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="start_qty_label" alignment="CENTER" layoutX="617.0" layoutY="232.0" prefHeight="34.0" prefWidth="90.0" text="-1" textAlignment="CENTER">
                      <font>
                         <Font name="Nunito ExtraBold" size="18.0" />
                      </font>
                   </Label>
-                  <Label layoutX="432.0" layoutY="391.0" text="Overall Sold Quantity">
+                  <Label fx:id="sold_qty_label" alignment="CENTER" layoutX="616.0" layoutY="290.0" prefHeight="34.0" prefWidth="90.0" text="-1" textAlignment="CENTER">
                      <font>
                         <Font name="Nunito ExtraBold" size="18.0" />
                      </font>
                   </Label>
+                  <Label fx:id="end_qty_label" alignment="CENTER" layoutX="616.0" layoutY="353.0" prefHeight="34.0" prefWidth="90.0" text="-1" textAlignment="CENTER">
+                     <font>
+                        <Font name="Nunito ExtraBold" size="18.0" />
+                     </font>
+                  </Label>
+                  <AnchorPane layoutX="606.0" layoutY="409.0" prefHeight="138.0" prefWidth="266.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;">
+                     <children>
+                        <Label layoutX="12.0" layoutY="9.0" text="Recently Restocked">
+                           <font>
+                              <Font name="Nunito ExtraBold" size="18.0" />
+                           </font>
+                        </Label>
+                        <TableView fx:id="recentlyRestocked" layoutX="8.0" layoutY="53.0" prefHeight="63.0" prefWidth="250.0">
+                          <columns>
+                            <TableColumn fx:id="recentlyRestocked_restockID" prefWidth="73.60003662109375" sortable="false" text="Restock ID" />
+                            <TableColumn fx:id="recentlyRestocked_itemName" prefWidth="94.39996337890625" sortable="false" text="Item ID" />
+                              <TableColumn fx:id="recentlyRestocked_Qty" minWidth="1.5999755859375" prefWidth="78.933349609375" sortable="false" text="Quantity" />
+                          </columns>
+                        </TableView>
+                     </children>
+                  </AnchorPane>
+                  <TableView fx:id="fastestMovement" layoutX="40.0" layoutY="234.0" prefHeight="314.0" prefWidth="240.0">
+                    <columns>
+                      <TableColumn fx:id="fastestMovement_itemName" prefWidth="150.39999771118164" sortable="false" text="Item Name" />
+                      <TableColumn fx:id="fastestMovement_movement" prefWidth="89.59999084472656" sortType="DESCENDING" sortable="false" text="Movement" />
+                    </columns>
+                  </TableView>
+                  <AnchorPane layoutX="741.0" layoutY="221.0" prefHeight="165.0" prefWidth="132.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;">
+                     <children>
+                        <Label layoutX="10.0" layoutY="14.0" text="No. Of Transactions">
+                           <font>
+                              <Font name="Nunito ExtraBold" size="12.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="transactionCount_label" alignment="CENTER" layoutX="21.0" layoutY="48.0" prefHeight="52.0" prefWidth="90.0" text="-1" textAlignment="CENTER">
+                           <font>
+                              <Font name="Nunito ExtraBold" size="33.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </AnchorPane>
                </children>
             </AnchorPane>
          </center>

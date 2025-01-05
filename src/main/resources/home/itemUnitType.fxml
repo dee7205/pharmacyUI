@@ -165,18 +165,6 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="statisticsButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToStatistics" onMouseClicked="#switchToStatistics" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0; -fx-cursor: hand;" styleClass="sidebarItems" text="Statistics" textFill="WHITE">
-                           <font>
-                              <Font name="System Bold" size="20.0" />
-                           </font>
-                           <graphic>
-                              <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/statisticsicon.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
                         <Button fx:id="addButton" depthTest="DISABLE" graphicTextGap="10.0" mnemonicParsing="false" onAction="#switchToInputPharmacistIDWindow" prefHeight="39.0" prefWidth="219.0" style="-fx-background-color: #672886; -fx-background-radius: 0px;" textFill="WHITE">
                            <opaqueInsets>
                               <Insets top="5.0" />
@@ -218,17 +206,12 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <Button fx:id="addItemUnitTypeButton" alignment="CENTER" contentDisplay="BOTTOM" layoutX="684.0" layoutY="406.0" mnemonicParsing="false" onAction="#addItemUnitType" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item Unit Type">
+                  <Button fx:id="addItemUnitTypeButton" alignment="CENTER" contentDisplay="BOTTOM" layoutX="684.0" layoutY="298.0" mnemonicParsing="false" onAction="#addItemUnitType" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Item Unit Type">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="updateItemUnitTypeButton" alignment="CENTER" layoutX="684.0" layoutY="457.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Update Item Unit Type">
-                     <font>
-                        <Font name="Nunito ExtraBold" size="16.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="deleteItemUnitTypeButton" alignment="CENTER" layoutX="684.0" layoutY="509.0" mnemonicParsing="false" onAction="#deleteItemUnitType" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item Unit Type">
+                  <Button fx:id="deleteItemUnitTypeButton" alignment="CENTER" layoutX="684.0" layoutY="356.0" mnemonicParsing="false" onAction="#deleteItemUnitType" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item Unit Type">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>

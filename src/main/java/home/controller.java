@@ -1251,19 +1251,21 @@ public class controller implements Initializable {
 
         List<Restocks> filteredItems = restockList.stream()
                 .filter(item -> {
-                    LocalDate dateToCompare;
+                    LocalDate dateToCompare = null;
 
                     if (isRestockDateFilter) {
                         dateToCompare = LocalDate.parse(item.getRestockDate());
                     } else if (isExpiryDateFilter) {
                         dateToCompare = LocalDate.parse(item.getExpiryDate());
                     } else {
-                        return true;
+                        return false;
                     }
 
-                    return (dateToCompare != null) && !dateToCompare.isBefore(fromDate) && !dateToCompare.isAfter(toDate);
+                    return !dateToCompare.isBefore(fromDate) && !dateToCompare.isAfter(toDate);
                 })
                 .collect(Collectors.toList());
+
+
 
 
         // Convert filtered items to ObservableList
@@ -1299,6 +1301,14 @@ public class controller implements Initializable {
     @FXML private TableColumn<ItemsSold, Integer> itemsSold_soldQty_col;
     @FXML private TableColumn<ItemsSold, Double> itemsSold_unitCost_col;
 
+    @FXML private RadioButton itemName_radioboxButton;
+    @FXML private RadioButton pharmacistID_radioboxButton;
+    @FXML private RadioButton transactionID_radioboxButton;
+
+    @FXML private TextField transaction_searchField;
+    @FXML private DatePicker transaction_fromDatePicker;
+    @FXML private DatePicker transaction_toDatePicker;
+
     public ObservableList<Transaction> initialTransactionData(){
         SQL_DataHandler handler = new SQL_DataHandler();
         Transaction [] transactions = handler.getAllTransactions(true);
@@ -1329,57 +1339,109 @@ public class controller implements Initializable {
         return FXCollections.<ItemsSold> observableArrayList(items);
     }
 
-    @FXML private TextField transaction_searchField;
-    @FXML private DatePicker transaction_fromDatePicker;
-    @FXML private DatePicker transaction_toDatePicker;
 
-    @FXML ObservableList<Transaction> transactionList;
+    @FXML
+    ObservableList<Transaction> transactionList;
+    @FXML
+    ObservableList<ItemsSold> itemsSoldList;
+
     public void search_transaction() {
         try {
             SQL_DataHandler handler = new SQL_DataHandler();
+
+            // Fetch transactions and items sold data
             Transaction[] transactions = handler.getAllTransactions(true);
-            System.out.println("Numbers fetched: " + Arrays.toString(transactions)); // debugger
+//            ItemsSold[] itemsSold = handler.get(true);
+
+            System.out.println("Numbers fetched: " + Arrays.toString(transactions)); // Debugger
 
             if (transactions == null || transactions.length == 0) {
                 System.out.println("No data retrieved from the database.");
                 return;
             }
 
-            // Set up table columns
+            // Set up table columns for the transactions
             transactionDate_col.setCellValueFactory(new PropertyValueFactory<Transaction, Date>("transactionDate"));
             transactionNo_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("transactionID"));
             transaction_income_col.setCellValueFactory(new PropertyValueFactory<Transaction, Double>("income"));
             transaction_pharmacistID_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("pharmacistID"));
             transaction_soldQty_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("soldQty"));
 
-            // Convert array to ObservableList
+            // Set up table columns for items sold
+            itemsSold_income_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Double>("income"));
+            itemsSold_itemName_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, String>("itemName"));
+            itemsSold_soldQty_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Integer>("itemQty"));
+            itemsSold_unitCost_col.setCellValueFactory(new PropertyValueFactory<ItemsSold, Double>("unitCost"));
+
+            // Convert arrays to ObservableLists
             transactionList = FXCollections.observableArrayList(transactions);
+//            itemsSoldList = FXCollections.observableArrayList(itemsSold);
+
+            // Set the tables' items
             transactionTable.setItems(transactionList);
+            itemsSoldTable.setItems(itemsSoldList);
 
             // Add filtering logic
-            FilteredList<Transaction> filteredData = new FilteredList<>(transactionList, b -> true);
+            FilteredList<Transaction> filteredTransactionData = new FilteredList<>(transactionList, b -> true);
+            // FilteredList<ItemsSold> filteredItemsSoldData = new FilteredList<>(itemsSoldList, b -> true);
 
+            // Filter based on the search field
             transaction_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-                filteredData.setPredicate(transaction -> {
+                filteredTransactionData.setPredicate(transaction -> {
                     // If search field is empty, show all items
                     if (newValue == null || newValue.isEmpty()) {
                         return true;
                     }
 
-                    // Filter items by name (case-insensitive) -> change lang sa mga iretrieve everytime mag search ka
                     String lowerCaseFilter = newValue.toLowerCase();
-                    return String.valueOf(transaction.getTransactionID()).contains(lowerCaseFilter);
+
+                    // Filter for transactions based on selected radio button
+                    if (pharmacistID_radioboxButton.isSelected()) {
+                        return String.valueOf(transaction.getPharmacistID()).contains(lowerCaseFilter);
+                    } else if (transactionID_radioboxButton.isSelected()) {
+                        return String.valueOf(transaction.getTransactionID()).contains(lowerCaseFilter);
+                    }
+//                   } else if (itemName_radioboxButton.isSelected()) { // Use itemName here instead of itemID
+//                        return transaction.getItemName().toLowerCase().contains(lowerCaseFilter);
+//                    }
+
+                    return false; // No match found
                 });
+
+//                // Filter for items sold based on item name
+//                filteredItemsSoldData.setPredicate(itemSold -> {
+//                    if (newValue == null || newValue.isEmpty()) {
+//                        return true;
+//                    }
+//                    return itemSold.getItemName().toLowerCase().contains(newValue.toLowerCase());
+//                });
             });
 
-            // Bind the sorted data to the table
-            SortedList<Transaction> sortedData = new SortedList<>(filteredData);
-            sortedData.comparatorProperty().bind(transactionTable.comparatorProperty());
-            transactionTable.setItems(sortedData);
+            // Bind the sorted data to the transaction table
+            SortedList<Transaction> sortedTransactionData = new SortedList<>(filteredTransactionData);
+            sortedTransactionData.comparatorProperty().bind(transactionTable.comparatorProperty());
+            transactionTable.setItems(sortedTransactionData);
+
+            // Bind the sorted data to the items sold table
+//            SortedList<ItemsSold> sortedItemsSoldData = new SortedList<>(filteredItemsSoldData);
+            //sortedItemsSoldData.comparatorProperty().bind(itemsSoldTable.comparatorProperty());
+//            itemsSoldTable.setItems(sortedItemsSoldData);
 
             System.out.println("Search setup complete.");
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+
+
+
+    // radiobutton
+    private void enableSearchFieldIfRadioSelected() {
+        if (pharmacistID_radioboxButton.isSelected() || transactionID_radioboxButton.isSelected()) {
+            transaction_searchField.setDisable(false);
+        } else {
+            transaction_searchField.setDisable(true);
         }
     }
 
@@ -1862,6 +1924,38 @@ public class controller implements Initializable {
             initializeTransactionList();
         }
 
+        if (transaction_searchField == null) {
+            System.out.println("unitType_searchField is null");
+        } else {
+            transaction_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                System.out.println("Search input: " + newValue);
+            });
+            search_transaction();
+        }
+
+        // Disable the search field initially
+        if (transaction_searchField != null){
+            transaction_searchField.setDisable(true);
+        }
+
+//        if (itemID_radioboxButton != null) {
+//            itemID_radioboxButton.setOnAction(e -> enableSearchFieldIfRadioSelected());
+//        } else {
+//            System.out.println("itemID_radioboxButton is null");
+//        }
+
+        if (pharmacistID_radioboxButton != null) {
+            pharmacistID_radioboxButton.setOnAction(e -> enableSearchFieldIfRadioSelected());
+        } else {
+            System.out.println("pharmacistID_radioboxButton is null");
+        }
+
+        if (transactionID_radioboxButton != null) {
+            transactionID_radioboxButton.setOnAction(e -> enableSearchFieldIfRadioSelected());
+        } else {
+            System.out.println("transactionID_radioboxButton is null");
+        }
+
         // search_itemName(); (items.fxml)
         if (item_filterTextField == null) {
             System.out.println("item_filterTextField is null");
@@ -1905,6 +1999,21 @@ public class controller implements Initializable {
         transactionItemName_comboBoxOnAction(new ActionEvent());
         itemType_comboBoxOnAction(new ActionEvent());
         unitType_comboBoxOnAction((new ActionEvent()));
+
+        ToggleGroup restockToggleGroup = new ToggleGroup();
+        if (restockDateRadioButton != null || expiryDateRadioButton != null) {
+            assert restockDateRadioButton != null;
+            restockDateRadioButton.setToggleGroup(restockToggleGroup);
+            expiryDateRadioButton.setToggleGroup(restockToggleGroup);
+        }
+
+        ToggleGroup transactionToggleGroup = new ToggleGroup();
+        if (pharmacistID_radioboxButton != null || transactionID_radioboxButton != null) {
+            assert pharmacistID_radioboxButton != null;
+            pharmacistID_radioboxButton.setToggleGroup(transactionToggleGroup);
+//            itemID_radioboxButton.setToggleGroup(transactionToggleGroup);
+            transactionID_radioboxButton.setToggleGroup(transactionToggleGroup);
+        }
 
 
     }
@@ -2045,7 +2154,7 @@ public class controller implements Initializable {
     @FXML private Label dashboardDate;
 
     public void loadDashboardData() {
-        DecimalFormat df = new DecimalFormat("#.##");
+
         SQL_DataHandler handler = new SQL_DataHandler();
         double beginning = handler.getOverallBeginningBalance();  // Example value, replace with actual data
         double issuance = handler.getOverallIssuanceBalance();    // Example value, replace with actual data
@@ -2055,9 +2164,9 @@ public class controller implements Initializable {
         int end_Qty = start_Qty - sold_Qty;
         int transactionCount = handler.getTransactionCount();
 
-            beginningBalance.setText("" + df.format(beginning));
-            issuanceBalance.setText("" + df.format(issuance));
-            endingBalance.setText("" + df.format(ending));
+            beginningBalance.setText(String.format("%.2f", beginning));
+            issuanceBalance.setText(String.format("%.2f", issuance));
+            endingBalance.setText(String.format("%.2f", ending));
 
             start_qty_label.setText("" + start_Qty);
             sold_qty_label.setText("" + sold_Qty);

@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.geometry.Rectangle2D?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -166,18 +165,6 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="statisticsButton" alignment="BASELINE_LEFT" graphicTextGap="5.0" mnemonicParsing="false" onAction="#switchToStatistics" onMouseClicked="#switchToStatistics" prefHeight="36.0" prefWidth="180.0" style="-fx-background-color: #C5ACF0; -fx-cursor: hand;" styleClass="sidebarItems" text="Statistics" textFill="WHITE">
-                           <font>
-                              <Font name="System Bold" size="20.0" />
-                           </font>
-                           <graphic>
-                              <ImageView fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true">
-                                 <image>
-                                    <Image url="@images/statisticsicon.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </Button>
                         <Button fx:id="addTransactionButton" depthTest="DISABLE" graphicTextGap="10.0" mnemonicParsing="false" onAction="#switchToInputPharmacistIDWindow" prefHeight="39.0" prefWidth="219.0" style="-fx-background-color: #672886; -fx-background-radius: 0px; -fx-cursor: hand;" textFill="WHITE">
                            <opaqueInsets>
                               <Insets top="5.0" />
@@ -211,9 +198,9 @@
                     <columns>
                       <TableColumn fx:id="items_itemID_col" editable="false" prefWidth="75.0" text="Item ID" />
                       <TableColumn fx:id="items_itemName_col" prefWidth="75.0" text="Item Name" />
-                        <TableColumn fx:id="items_itemUnitType_col" editable="false" prefWidth="75.0" text="Item Unit Type" />
+                        <TableColumn fx:id="items_itemUnitType_col" prefWidth="75.0" text="Item Unit Type" />
                         <TableColumn fx:id="items_itemQuantity_col" editable="false" prefWidth="75.0" text="Quantity" />
-                        <TableColumn fx:id="items_itemUnitCost_col" editable="false" prefWidth="75.0" text="Unit Cost" />
+                        <TableColumn fx:id="items_itemUnitCost_col" prefWidth="75.0" text="Unit Cost" />
                         <TableColumn fx:id="items_itemMovement_col" editable="false" prefWidth="75.0" text="Movement" />
                     </columns>
                      <columnResizePolicy>
@@ -225,17 +212,12 @@
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="item_UpdateItemButton" alignment="CENTER" layoutX="732.0" layoutY="426.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Update Item">
+                  <Button fx:id="item_DeleteItemButton" alignment="CENTER" layoutX="732.0" layoutY="429.0" mnemonicParsing="false" onAction="#deleteItem" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="item_DeleteItemButton" alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" onAction="#deleteItem" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Item">
-                     <font>
-                        <Font name="Nunito ExtraBold" size="16.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="item_TransactionHistoryButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Transaction History">
+                  <Button fx:id="item_TransactionHistoryButton" alignment="CENTER" layoutX="732.0" layoutY="481.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Transaction History">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -246,25 +228,19 @@
                      </font>
                   </Label>
                   <TextField fx:id="itemName_textField" layoutX="732.0" layoutY="92.0" prefHeight="29.0" prefWidth="177.0" promptText="Type Item Name here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
-                  <Label layoutX="731.0" layoutY="137.0" text="Type">
+                  <Label layoutX="732.0" layoutY="138.0" text="Item Unit Type ID">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <Label layoutX="829.0" layoutY="207.0" text="Unit Cost">
+                  <Label layoutX="732.0" layoutY="199.0" text="Unit Cost">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <Label layoutX="731.0" layoutY="207.0" text="Unit">
-                     <font>
-                        <Font name="AauxNext-Bold" size="15.0" />
-                     </font>
-                  </Label>
-                  <TextField fx:id="itemCost_textField" layoutX="830.0" layoutY="226.0" prefHeight="27.0" prefWidth="79.0" promptText="Amount" style="-fx-border-color: black; -fx-border-radius: 0px;" />
-                  <ComboBox fx:id="item_TypeCb" layoutX="732.0" layoutY="157.0" onAction="#itemType_comboBoxOnAction" prefHeight="29.0" prefWidth="177.0" style="-fx-border-color: black;" />
-                  <ComboBox fx:id="item_unitCb" layoutX="732.0" layoutY="226.0" onAction="#unitType_comboBoxOnAction" prefHeight="27.0" prefWidth="79.0" style="-fx-border-color: black;" />
+                  <TextField fx:id="itemCost_textField" layoutX="732.0" layoutY="218.0" prefHeight="27.0" prefWidth="177.0" promptText="Type Unit Cost Here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
                   <TextField fx:id="item_filterTextField" layoutX="14.0" layoutY="14.0" prefHeight="27.0" prefWidth="243.0" promptText="Search" style="-fx-border-color: BLACK;" />
+                  <TextField fx:id="item_itemUnitType_textField" layoutX="732.0" layoutY="157.0" prefHeight="29.0" prefWidth="177.0" promptText="Type Item Unit Type ID here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
                </children>
             </AnchorPane>
          </center>
