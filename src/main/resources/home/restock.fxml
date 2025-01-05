@@ -221,7 +221,7 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <Button fx:id="addRestockButton" alignment="CENTER" layoutX="732.0" layoutY="426.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Restock">
+                  <Button fx:id="addRestockButton" alignment="CENTER" layoutX="732.0" layoutY="426.0" mnemonicParsing="false" onAction="#addRestock" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Restock">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -231,7 +231,7 @@
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="deleteRestockButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Restock">
+                  <Button fx:id="deleteRestockButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" onAction="#deleteRestock" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Restock">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -248,19 +248,31 @@
                      </font>
                   </Label>
                   <TextField fx:id="restock_qty" layoutX="833.0" layoutY="110.0" prefHeight="27.0" prefWidth="74.0" promptText="Qty" style="-fx-border-color: black; -fx-border-radius: 0px;" />
-                  <Label layoutX="732.0" layoutY="154.0" text="Restock Date">
+                  <Label layoutX="732.0" layoutY="216.0" text="Restock Date">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <DatePicker fx:id="restockDate_datePicker" layoutX="733.0" layoutY="174.0" prefHeight="28.0" prefWidth="172.0" promptText="MM/DD/YYYY" />
-                  <Label layoutX="731.0" layoutY="216.0" text="Expiration Date">
+                  <DatePicker fx:id="restockDate_datePicker" layoutX="733.0" layoutY="236.0" prefHeight="28.0" prefWidth="172.0" promptText="MM/DD/YYYY" />
+                  <Label layoutX="731.0" layoutY="278.0" text="Expiration Date">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <DatePicker fx:id="expirationDate_datePicker" layoutX="732.0" layoutY="236.0" prefHeight="28.0" prefWidth="172.0" promptText="MM/DD/YYYY" />
+                  <DatePicker fx:id="expirationDate_datePicker" layoutX="732.0" layoutY="298.0" prefHeight="28.0" prefWidth="172.0" promptText="MM/DD/YYYY" />
                   <TextField fx:id="restock_searchTextField" layoutX="14.0" layoutY="11.0" prefHeight="27.0" prefWidth="243.0" promptText="Search" style="-fx-border-color: BLACK;" />
+                  <TextField fx:id="restock_unitCostTextField" disable="true" editable="false" layoutX="731.0" layoutY="173.0" prefHeight="27.0" prefWidth="80.0" promptText="Cost" style="-fx-border-color: black; -fx-border-radius: 0px;" />
+                  <TextField fx:id="restock_wholesaleCostTextField" layoutX="829.0" layoutY="173.0" prefHeight="27.0" prefWidth="79.0" promptText="Amount" style="-fx-border-color: black; -fx-border-radius: 0px;" />
+                  <Label layoutX="731.0" layoutY="151.0" text="Unit Cost">
+                     <font>
+                        <Font name="AauxNext-Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="830.0" layoutY="151.0" text="Wholesale">
+                     <font>
+                        <Font name="AauxNext-Bold" size="15.0" />
+                     </font>
+                  </Label>
                </children>
             </AnchorPane>
          </center>
