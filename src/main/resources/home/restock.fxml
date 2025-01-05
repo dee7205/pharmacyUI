@@ -6,7 +6,6 @@
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -19,6 +18,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
+<?import javafx.scene.control.RadioButton?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="647.0" prefWidth="1137.0" stylesheets="@css/style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="home.controller">
    <children>
       <BorderPane layoutX="278.0" layoutY="117.0" prefHeight="428.0" prefWidth="955.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -274,6 +274,7 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
+                  <TextField fx:id="restock_unitCostTextField" editable="false" layoutX="732.0" layoutY="173.0" prefHeight="27.0" prefWidth="79.0" promptText="Cost" style="-fx-border-color: black; -fx-border-radius: 0px;" />
                   <TextField fx:id="restock_unitCostTextField" layoutX="732.0" layoutY="173.0" prefHeight="27.0" prefWidth="79.0" promptText="Cost" style="-fx-border-color: black; -fx-border-radius: 0px;" />
                   <DatePicker fx:id="restock_toDatePicker" layoutX="574.0" layoutY="14.0" prefHeight="26.0" prefWidth="100.0" promptText="To" style="-fx-border-color: black;" />
                   <DatePicker fx:id="restock_fromDatePicker" layoutX="452.0" layoutY="14.0" prefHeight="26.0" prefWidth="100.0" promptText="From" style="-fx-border-color: black;" />
