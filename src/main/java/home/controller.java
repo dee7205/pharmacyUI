@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
 import java.sql.Date;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -51,11 +52,7 @@ public class controller implements Initializable {
     @FXML private Button restockButton;
     @FXML private Button statisticsButton;
 
-    // dashboard
-    @FXML private Label beginningBalance;
-    @FXML private Label issuanceBalance;
-    @FXML private Label endingBalance;
-    @FXML private Label dashboardDate;
+
 
     // restock
     @FXML private Button addRestockButton;
@@ -1055,7 +1052,6 @@ public class controller implements Initializable {
         };
         if (!restock.toString().isEmpty() && !expiry.toString().isEmpty() && itemID > -1 && handler.addRestock(itemID,convertedQty,convertedCost,restock,expiry)) {
             Restocks r = handler.getLatestRestock();
-            restockTable.getItems().add(r); //Adds item type to the table
             restockTable.setItems(initialRestockData());
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ADD ITEM");
@@ -2040,7 +2036,13 @@ public class controller implements Initializable {
     @FXML
     TableColumn<Restocks, Date> expiry_expiryDate;
 
+    @FXML private Label beginningBalance;
+    @FXML private Label issuanceBalance;
+    @FXML private Label endingBalance;
+    @FXML private Label dashboardDate;
+
     public void loadDashboardData() {
+        DecimalFormat df = new DecimalFormat("#.##");
         SQL_DataHandler handler = new SQL_DataHandler();
         double beginning = handler.getOverallBeginningBalance();  // Example value, replace with actual data
         double issuance = handler.getOverallIssuanceBalance();    // Example value, replace with actual data
@@ -2050,31 +2052,19 @@ public class controller implements Initializable {
         int end_Qty = start_Qty - sold_Qty;
         int transactionCount = handler.getTransactionCount();
 
-        if (beginningBalance != null) {
-            beginningBalance.setText("" + beginning);
-        }
-        if (issuanceBalance != null) {
-            issuanceBalance.setText("" + issuance);
-        }
-        if (start_qty_label != null) {
-            start_qty_label.setText("" + start_Qty);
-        }
-        if (sold_qty_label != null) {
-            sold_qty_label.setText("" + sold_Qty);
-        }
-        if (end_qty_label != null) {
-            end_qty_label.setText("" + end_Qty);
-        }
-        if (transactionCount_label != null) {
-            transactionCount_label.setText("" + transactionCount);
-        }
+            beginningBalance.setText("" + df.format(beginning));
+            issuanceBalance.setText("" + df.format(issuance));
+            endingBalance.setText("" + df.format(ending));
 
-        if (restockTable != null) {
+            start_qty_label.setText("" + start_Qty);
+            sold_qty_label.setText("" + sold_Qty);
+            end_qty_label.setText("" + end_Qty);
+            transactionCount_label.setText("" + transactionCount);
             recentlyRestocked_restockID.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
             recentlyRestocked_itemName.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("itemID"));
             recentlyRestocked_Qty.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("startQty"));
             recentlyRestocked.setItems(recentlyRestockedData());
-        }
+
 
         //REMOVE COMMENT IF TOP 10 FASTEST AND EXPIRY DATA WITHIN SQL HANDLER IS RESOLVED.
 //        fastestMovement_itemName.setCellValueFactory(new PropertyValueFactory<Item,String>("itemName"));

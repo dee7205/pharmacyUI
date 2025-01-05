@@ -2847,7 +2847,10 @@ public class SQL_DataHandler {
 
     public double getOverallIssuanceBalance() {
             String query = """
-            SELECT SUM(r.sold_Qty * r.wholesale_Cost) as "Sum" FROM Restocks as r
+                    SELECT
+                    SUM(r.sold_Qty * i.unit_cost) as "Sum"
+                    FROM Restocks as r
+                    JOIN Items as i ON i.item_ID = r.item_ID;
             """;
             if (connection == null)
                 prepareConnection();
