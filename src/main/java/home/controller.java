@@ -1136,6 +1136,20 @@ public class controller implements Initializable {
         });
     }
 
+    private void prepareRestockComboBoxListener(){
+        restock_item_cb.setOnAction(event ->{
+            String selectedItem = restock_item_cb.getValue();
+            if (selectedItem != null && !selectedItem.isEmpty()){
+                Item item = new SQL_DataHandler().getItem(selectedItem);
+
+                if (item != null)
+                    restock_unitCostTextField.setText(Double.toString(item.getUnitCost()));
+                else
+                    wholesale_textField.clear();
+            }
+        });
+    }
+
     @FXML void addRestock(ActionEvent event) throws ParseException {
         SQL_DataHandler handler = new SQL_DataHandler();
         int itemID = handler.getItemId(restock_item_cb.getSelectionModel().getSelectedItem());
