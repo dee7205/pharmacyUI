@@ -2621,7 +2621,7 @@ public class SQL_DataHandler {
         if (connection == null)
             prepareConnection();
 
-        if (!getTransaction(transactionID).getDate().toLocalDate().isEqual(getCurrentDate())){
+        if (!getTransaction(transactionID).getTransactionDate().toLocalDate().isEqual(getCurrentDate())){
             System.out.println("ERROR: Unable to add Item to Item Sold. \nReference Transaction and Item Sold found to have different dates");
             return false;
         }
