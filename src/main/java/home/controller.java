@@ -74,13 +74,12 @@ public class controller implements Initializable {
 
     @FXML private TextField itemName_textField;
     @FXML private TextField item_itemUnitType_textField;
+    @FXML private TextField itemCost_textField;
 
     @FXML private ComboBox<String> item_TypeCb;
     @FXML private ComboBox<String> item_unitCb;
 
 
-
-    @FXML private TextField itemCost_textField;
 
     @FXML private Button item_AddItemButton;
     @FXML private Button item_DeleteItemButton;
@@ -450,7 +449,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "maclang@2023-00570");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "shanna05");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -459,7 +458,6 @@ public class controller implements Initializable {
             throw new RuntimeException(e);
         }
     }
-
 
     //===============================ITEM TYPE METHODS====================================
     @FXML private TableColumn<ItemType, Integer> itemTypeIDColumn;
@@ -972,6 +970,10 @@ public class controller implements Initializable {
 
     @FXML private DatePicker expirationDate_datePicker;
     @FXML private DatePicker restockDate_datePicker;
+    @FXML private DatePicker restock_fromDatePicker;
+    @FXML private DatePicker restock_toDatePicker;
+    @FXML private RadioButton restockDateRadioButton;
+    @FXML private RadioButton expiryDateRadioButton;
 
     @FXML private TableColumn<Restocks, Integer> restockID_col;
     @FXML private TableView<Restocks> restockTable;
@@ -1200,7 +1202,68 @@ public class controller implements Initializable {
         }
     }
 
+    // filtering date
+    void fetchOriginalTable_Restocks() {
+        ObservableList<Restocks> originalRestockList = FXCollections.observableArrayList(restockList);
+        restockTable.setItems(originalRestockList);
+    }
+    @FXML
+    void restock_filterButtonOnClick(ActionEvent event) {
 
+        if (restock_fromDatePicker == null || restock_toDatePicker == null) {
+            System.out.print("DatePicker controls are not properly initialized.");
+            fetchOriginalTable_Restocks();
+            return;
+        }
+
+        // Get selected dates from the DatePickers
+        LocalDate fromDate = restock_fromDatePicker.getValue();
+        LocalDate toDate = restock_toDatePicker.getValue();
+
+        if (fromDate == null || toDate == null) {
+            fetchOriginalTable_Restocks();
+            return;
+        }
+
+        if (fromDate.isAfter(toDate)) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Date Range");
+            alert.setHeaderText("The 'From' date cannot be after the 'To' date.");
+            alert.showAndWait();
+            return;
+        }
+
+        boolean isRestockDateFilter = restockDateRadioButton.isSelected();
+
+        List<Restocks> filteredItems = restockList.stream()
+                .filter(item -> {
+                    LocalDate dateToCompare;
+                    if (isRestockDateFilter) {
+                        dateToCompare = LocalDate.parse(item.getRestockDate());
+                    } else {
+                        dateToCompare = LocalDate.parse(item.getExpiryDate());
+                    }
+                    // Perform the filtering based on the selected date type
+                    return !dateToCompare.isBefore(fromDate) && !dateToCompare.isAfter(toDate);
+                })
+                .collect(Collectors.toList());
+
+        // Convert filtered items to ObservableList
+        ObservableList<Restocks> observableFilteredItems = FXCollections.observableArrayList(filteredItems);
+
+        // If there are no filtered items, show a warning and reset to original list
+        if (filteredItems.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Results");
+            alert.setHeaderText("No items match the filter criteria.");
+            alert.showAndWait();
+            fetchOriginalTable_Restocks();
+        } else {
+            // Set the filtered data in the TableView
+            restockTable.setItems(observableFilteredItems);
+        }
+
+    }
 
 
     //===============================TRANSACTION METHODS====================================
@@ -1246,6 +1309,126 @@ public class controller implements Initializable {
         SQL_DataHandler handler = new SQL_DataHandler();
         ItemsSold [] items = handler.getItemsSold_Transaction(transactionID);
         return FXCollections.<ItemsSold> observableArrayList(items);
+    }
+
+    @FXML private TextField transaction_searchField;
+    @FXML private DatePicker transaction_fromDatePicker;
+    @FXML private DatePicker transaction_toDatePicker;
+
+    @FXML ObservableList<Transaction> transactionList;
+    public void search_transaction() {
+        try {
+            // Fetch data from the handler
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Transaction[] transactions = handler.getAllTransactions(true);
+            System.out.println("Numbers fetched: " + Arrays.toString(transactions)); // debugger
+
+            if (transactions == null || transactions.length == 0) {
+                System.out.println("No data retrieved from the database.");
+                return;
+            }
+
+            // Set up table columns
+            transactionDate_col.setCellValueFactory(new PropertyValueFactory<Transaction, Date>("transactionDate"));
+            transactionNo_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("transactionID"));
+            transaction_income_col.setCellValueFactory(new PropertyValueFactory<Transaction, Double>("income"));
+            transaction_pharmacistID_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("pharmacistID"));
+            transaction_soldQty_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("soldQty"));
+
+            // Convert array to ObservableList
+            transactionList = FXCollections.observableArrayList(transactions);
+            transactionTable.setItems(transactionList);
+
+            // Add filtering logic
+            FilteredList<Transaction> filteredData = new FilteredList<>(transactionList, b -> true);
+
+            transaction_searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate(transaction -> {
+                    // If search field is empty, show all items
+                    if (newValue == null || newValue.isEmpty()) {
+                        return true;
+                    }
+
+                    // Filter items by name (case-insensitive) -> change lang sa mga iretrieve everytime mag search ka
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    return String.valueOf(transaction.getTransactionID()).contains(lowerCaseFilter);
+                });
+            });
+
+            // Bind the sorted data to the table
+            SortedList<Transaction> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(transactionTable.comparatorProperty());
+            transactionTable.setItems(sortedData);
+
+            System.out.println("Search setup complete.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // filtering date
+    void fetchOriginalTable_Transaction() {
+        ObservableList<Transaction> originalTransactionList = FXCollections.observableArrayList(transactionList);
+        transactionTable.setItems(originalTransactionList);
+    }
+
+    @FXML
+    void transaction_filterButtonOnClick(ActionEvent event) {
+        // Ensure fromDate and toDate are properly initialized
+        if (transaction_fromDatePicker == null || transaction_toDatePicker == null) {
+            System.out.println("DatePickers are not properly initialized.");
+            return;
+        }
+
+        // Get selected dates from the DatePickers
+        LocalDate fromDate = transaction_fromDatePicker.getValue();
+        LocalDate toDate = transaction_toDatePicker.getValue();
+
+        // If both dates are null (no filter), reset the table to original data (show all)
+        if (fromDate == null || toDate == null) {
+            fetchOriginalTable_Transaction(); // Reset to original data
+            return;
+        }
+
+        // Validate the dates
+        if (fromDate.isAfter(toDate)) {
+            // Show an error if the 'From' date is after the 'To' date
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Date Range");
+            alert.setHeaderText("The 'From' date cannot be after the 'To' date.");
+            alert.showAndWait();
+            return;
+        }
+
+        // Check if transactionList is not null or empty
+        if (transactionList != null && !transactionList.isEmpty()) {
+            // Filter the items based on the date range
+            List<Transaction> filteredItems = transactionList.stream()
+                    .filter(transaction -> {
+                        LocalDate dateToCompare = transaction.getTransactionDate().toLocalDate(); // Extract date from Transaction object
+
+                        // Perform the filtering based on the selected date range
+                        return (dateToCompare != null) && !dateToCompare.isBefore(fromDate) && !dateToCompare.isAfter(toDate);
+                    })
+                    .collect(Collectors.toList());
+
+            // Convert filtered items to ObservableList
+            ObservableList<Transaction> observableFilteredItems = FXCollections.observableArrayList(filteredItems);
+
+            // Set the filtered data in the TableView
+            transactionTable.setItems(observableFilteredItems);
+
+            // If there are no filtered items, show a warning
+            if (filteredItems.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("No Results");
+                alert.setHeaderText("No items match the filter criteria.");
+                alert.showAndWait();
+            }
+        } else {
+            // Handle the case where the transactionList is null or empty
+            System.out.println("Transaction list is null or empty.");
+        }
     }
 
     //===============================ITEM UNIT TYPE METHODS====================================
