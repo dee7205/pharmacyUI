@@ -1,9 +1,8 @@
 package DBHandler;
 
-import javax.swing.plaf.nimbus.State;
+import javafx.scene.control.Label;
+
 import java.sql.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
@@ -915,9 +914,9 @@ public class SQL_DataHandler {
                 //Remove rows from tables with item_ID as their foreign keys
                 removeRestock(itemID, REMOVE_BY_ITEM_ID);
                 removeItemsSold(itemID);
+                removeItemUnitType(item.getItemUnitTypeID(), REMOVE_ITEM_UNIT_TYPE);
             }   else
                 return false;
-
 
             final String query = "DELETE FROM Items WHERE item_ID = " + item.getItemID();
             Statement stmt = connection.createStatement();
@@ -1217,7 +1216,6 @@ public class SQL_DataHandler {
             return false;
 
         final String query = "DELETE FROM ItemType WHERE itemType_ID = ?";
-
         try(PreparedStatement pstmt = connection.prepareStatement(query);){
             pstmt.setInt(1, itemTypeID);
             return pstmt.executeUpdate() > 0;
@@ -1836,22 +1834,31 @@ public class SQL_DataHandler {
 
     //TODO: Add comments
     public boolean removeItemUnitType(int id, int condition) throws SQLException {
-        //First set of queries to delete items who uses the following item_unit_ID or itemType_ID or unitType_ID
+        //Get all itemUnitTypes using Item Type
+        //Get all items using this item unit types
+        //Propagate removeItem method
         final String firstA = """
                 DELETE i FROM Items as i
                 JOIN itemUnitType as iut ON i.item_unit_ID = iut.item_unit_ID
                 WHERE iut.itemType_ID = ?
-               
                 """;
+
+        //Get all itemUnitTypes using Unit Type
+        //Get all items using this item unit types
+        //Propagate removeItem method
         final String firstB = """
                 DELETE i FROM Items as i
                 JOIN itemUnitType as iut ON i.item_unit_ID = iut.item_unit_ID
                 WHERE iut.unitType_ID = ?
                 """;
+
+        //Delete Item Unit Type directly
+        //Get all items using this item unit type
+        //Propagate removeItem method
         final String firstC = """
                 DELETE i FROM Items as i
                 JOIN itemUnitType as iut ON i.item_unit_ID = iut.item_unit_ID
-                WHERE iut.item_unit_ID = ?
+                WHERE i.item_unit_ID = ?
                 """;
 
         //Second set of queries to remove the item_unit_type IDs
@@ -1859,6 +1866,9 @@ public class SQL_DataHandler {
         final String removeUnitType = "DELETE FROM ItemUnitType WHERE unitType_ID = ?";
         final String removeItemUnitType = "DELETE FROM ItemUnitType WHERE item_unit_ID = ?";
 
+        //
+        //Remove Items using this itemUnitType
+        //Remove ItemUnitType
 
         if (connection == null)
             prepareConnection();
@@ -1872,6 +1882,7 @@ public class SQL_DataHandler {
             pstmt = connection.prepareStatement(removeItemType);
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
+
         } else if (condition == REMOVE_UNIT_TYPE){
 
             PreparedStatement pstmt = connection.prepareStatement(firstB);
@@ -2096,7 +2107,8 @@ public class SQL_DataHandler {
                 r.expiry_Date AS "Expiry Date",
                 i.item_Name AS "Item Name"
             FROM Restocks AS r
-            JOIN Items AS i ON i.item_ID = r.item_ID;
+            JOIN Items AS i ON i.item_ID = r.item_ID
+            GROUP BY r.restock_ID;
         """;
 
         if (connection == null)
@@ -2385,6 +2397,28 @@ public class SQL_DataHandler {
 
     //TODO: Add methods for transactions (CR & RT)
 
+    public boolean addTransactionItem(int pharmacistID, String itemName, int sellQty, double unitCost) {
+        if (connection == null) {
+            prepareConnection();
+        }
+
+        String query = "INSERT INTO Transactions (pharmacist_ID, transaction_date, item_name, sell_qty, unit_cost) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, pharmacistID);
+            pstmt.setDate(2, Date.valueOf(getCurrentDate()));
+            pstmt.setString(3, itemName);
+            pstmt.setInt(4, sellQty);
+            pstmt.setDouble(5, unitCost);
+
+            return pstmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
     public boolean addTransaction(int pharmacistID){
         if (connection == null)
             prepareConnection();
@@ -2458,7 +2492,7 @@ public class SQL_DataHandler {
     /**
      * Gets all transactions based on a specific date
      */
-    public Transaction [] getTransactions(Date referenceDate, boolean isAscending){
+    public Transaction [] getTransactions(Label referenceDate, boolean isAscending){
         String first = """
             SELECT
                 t.transaction_ID AS "Transaction ID",
@@ -2500,7 +2534,9 @@ public class SQL_DataHandler {
             prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(finalQuery)){
-            pstmt.setDate(1, referenceDate);
+            String referenceDateString = referenceDate.getText();
+            java.sql.Date refDate = java.sql.Date.valueOf(referenceDateString);
+            pstmt.setDate(1, refDate);
             ResultSet set = pstmt.executeQuery();
             boolean isAdded = false;
 
@@ -2608,7 +2644,7 @@ public class SQL_DataHandler {
         if (connection == null)
             prepareConnection();
 
-        if (!getTransaction(transactionID).getDate().toLocalDate().isEqual(getCurrentDate())){
+        if (!getTransaction(transactionID).getTransactionDate().toLocalDate().isEqual(getCurrentDate())){
             System.out.println("ERROR: Unable to add Item to Item Sold. \nReference Transaction and Item Sold found to have different dates");
             return false;
         }
@@ -2801,7 +2837,7 @@ public class SQL_DataHandler {
         try (Statement stmt = connection.createStatement()){
             ResultSet set = stmt.executeQuery(query);
             set.next();
-            return set.getInt("Sum");
+            return set.getDouble("Sum");
 
         } catch (Exception e){
             e.printStackTrace();
@@ -2809,9 +2845,22 @@ public class SQL_DataHandler {
         return -1;
     }
 
-    public double getOverallIssuanceBalance(){
-        //insert help wahahah
-        return -1;
+    public double getOverallIssuanceBalance() {
+            String query = """
+            SELECT SUM(r.sold_Qty * r.wholesale_Cost) as "Sum" FROM Restocks as r
+            """;
+            if (connection == null)
+                prepareConnection();
+
+            try (Statement stmt = connection.createStatement()) {
+                ResultSet set = stmt.executeQuery(query);
+                if (set.next()) {
+                    return set.getDouble("Sum"); // Use getDouble to handle decimals properly
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return -1; // Default return value in case of failure
     }
 
     public int getOverallStartQuantity(){
@@ -2981,6 +3030,24 @@ public class SQL_DataHandler {
             return getCurrentDate();
         }
     }
+
+    public boolean checkPharmacistIDInDatabase(String pharmacistID) {
+
+        String query = "SELECT COUNT(*) FROM Pharmacists WHERE pharmacist_ID = ?";
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, pharmacistID);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next() && rs.getInt(1) > 0) {
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }
 
 

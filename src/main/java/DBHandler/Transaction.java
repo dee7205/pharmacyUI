@@ -20,7 +20,7 @@ public class Transaction {
         setPharmacistID(pharmacistID);
         setIncome(income);
         setSoldQty(soldQty);
-        setDate(transactionDate);
+        setTransactionDate(transactionDate);
         setTransactionDateString(transactionDate.toString());
     }
 
@@ -40,11 +40,11 @@ public class Transaction {
         this.pharmacistID = pharmacistID;
     }
 
-    public Date getDate() {
+    public Date getTransactionDate() {
         return transactionDate;
     }
 
-    public void setDate(Date transactionDate) {
+    public void setTransactionDate(Date transactionDate) {
         this.transactionDate = transactionDate;
     }
 
@@ -75,7 +75,7 @@ public class Transaction {
     public String [] getInfo(){
         return new String [] {Integer.toString(getTransactionID()), Integer.toString(getPharmacistID()),
                               Integer.toString(getSoldQty()), Double.toString(getIncome()),
-                              getDate().toString()};
+                              getTransactionDate().toString()};
     }
 
     public static String [][] getInfoTable(Transaction [] trans){

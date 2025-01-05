@@ -223,7 +223,7 @@
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="updateItemUnitTypeButton" alignment="CENTER" layoutX="684.0" layoutY="457.0" mnemonicParsing="false" onAction="#updateItemUnitType" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Update Item Unit Type">
+                  <Button fx:id="updateItemUnitTypeButton" alignment="CENTER" layoutX="684.0" layoutY="457.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="228.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Update Item Unit Type">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
