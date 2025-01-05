@@ -2921,13 +2921,108 @@ public class SQL_DataHandler {
     }
 
     public Item [] getTop10Fastest(){
-        //haha help
-        return null;
+        String query = """
+                SELECT
+                    i.item_ID AS "Item ID",
+                    i.item_name AS "Item Name",
+                    ut.unit_Type AS "Unit Type",
+                    it.item_Type AS "Item Type",
+                    iut.item_unit_ID AS "Item Unit ID",
+                    SUM(COALESCE(r.start_qty - r.sold_qty, 0)) AS "Item Quantity",
+                    i.unit_cost AS "Unit Cost",
+                    COALESCE(SUM(r.sold_qty) / NULLIF(SUM(r.start_qty), 0) * 100, 0) AS "Movement"
+                FROM Items AS i
+                JOIN ItemUnitType AS iut ON i.item_unit_ID = iut.item_unit_ID
+                JOIN ItemType AS it ON it.itemType_ID = iut.itemType_ID
+                JOIN UnitType AS ut ON ut.unitType_ID = iut.unitType_ID
+                LEFT JOIN Restocks AS r ON r.item_ID = i.item_ID
+                LEFT JOIN Sold_Items AS isd ON isd.item_ID = i.item_ID
+                GROUP BY i.item_ID, r.item_ID
+                ORDER BY (SUM(r.sold_qty) / SUM(r.start_qty) * 100) DESC
+                LIMIT 10;
+                """;
+
+        boolean isAdded = false;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            List<Item> list = new ArrayList<>();
+            ResultSet set = pstmt.executeQuery();
+
+            while(set.next()){
+                Item item = new Item(set.getInt("Item ID"), set.getString("Item Name"),
+                        set.getInt("Item Unit ID"), (set.getString("Item Type") + "-" +
+                        set.getString("Unit Type")), set.getInt("Item Quantity"),
+                        set.getDouble("Unit Cost"), set.getDouble("Movement"));
+                list.add(item);
+                isAdded = true;
+            }
+
+            if (isAdded){
+                Item [] newList = new Item[list.size()];
+                return list.toArray(newList);
+            } else {
+                System.out.println("Unable to generate Item list");
+                return null;
+            }
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public Restocks [] getTop10Expiry(){
-        //help part 3
-        return null;
+        String query = """
+                SELECT
+                r.restock_ID AS "Restock ID",
+                r.item_ID AS "Item ID",
+                r.start_Qty AS "Start Quantity",
+                r.sold_Qty AS "Sold Quantity",
+                r.wholesale_cost AS "Wholesale Cost",
+                r.restock_Date AS "Restock Date",
+                r.expiry_Date AS "Expiry Date",
+                i.item_Name AS "Item Name",
+                DATEDIFF(r.expiry_Date, r.restock_Date) AS "Days Before Expiry"
+                FROM Restocks AS r
+                JOIN Items AS i ON i.item_ID = r.item_ID
+                WHERE r.expiry_Date >= r.restock_Date AND DATEDIFF(r.expiry_Date, r.restock_Date) <= 30
+                ORDER BY DATEDIFF(r.expiry_Date, r.restock_Date) ASC
+                LIMIT 10;
+                """;
+
+        boolean isAdded = false;
+
+        if (connection == null)
+            prepareConnection();
+
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            List<Restocks> list = new ArrayList<>();
+            ResultSet set = pstmt.executeQuery();
+
+            while(set.next()){
+                list.add(new Restocks(set.getInt("Item ID"), set.getString("Item Name"), set.getInt("Restock ID"),
+                        set.getInt("Start Quantity"), set.getInt("Sold Quantity"),
+                        set.getDouble("Wholesale Cost"), set.getString("Restock Date"),
+                        set.getString("Expiry Date"),set.getInt("Days Before Expiry")));
+                isAdded = true;
+                isAdded = true;
+            }
+
+            if (isAdded){
+                Restocks [] newList = new Restocks[list.size()];
+                return list.toArray(newList);
+            } else {
+                System.out.println("Unable to generate Item list");
+                return null;
+            }
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
 //    public Item [] getOverallSoldQuantity(){

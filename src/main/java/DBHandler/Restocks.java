@@ -1,11 +1,16 @@
 package DBHandler;
-import java.sql.Date;
 
 public class Restocks {
-    int itemID, restockID, startQty, soldQty, remainingQty;
+    int itemID;
+    int restockID;
+    int startQty;
+    int soldQty;
+    int remainingQty;
+    private int daysBeforeExpiry = 0;
     String itemName, restockDateString, expiryDateString;
     String restockDate, expiryDate;
     double wholesaleCost;
+    private String status = "";
 
     public Restocks(){ this(0, "", 0, 0, 0, 0, null, null); }
     public Restocks(int itemID, String itemName, int restockID, int startQty, int soldQty, double wholesaleCost, String restockDate, String expiryDate){
@@ -20,6 +25,21 @@ public class Restocks {
         setRestockDateString(restockDate.toString());
         setExpiryDate(expiryDate);
         setExpiryDateString(expiryDate.toString());
+    }
+
+    public Restocks(int itemID, String itemName, int restockID, int startQty, int soldQty, double wholesaleCost, String restockDate, String expiryDate, int daysBeforeExpiry){
+        setItemID(itemID);
+        setItemName(itemName);
+        setRestockID(restockID);
+        setStartQty(startQty);
+        setSoldQty(soldQty);
+        setWholesaleCost(wholesaleCost);
+        setRemainingQty(startQty - soldQty);
+        setRestockDate(restockDate);
+        setRestockDateString(restockDate.toString());
+        setExpiryDate(expiryDate);
+        setExpiryDateString(expiryDate.toString());
+        setDaysBeforeExpiry(daysBeforeExpiry);
     }
 
     public int getItemID() {
@@ -138,5 +158,24 @@ public class Restocks {
         for (String i : info)
             System.out.print(i + " ");
         System.out.println();
+    }
+
+    public int getDaysBeforeExpiry() {
+        return daysBeforeExpiry;
+    }
+
+    public void setDaysBeforeExpiry(int daysBeforeExpiry) {
+        this.daysBeforeExpiry = daysBeforeExpiry;
+        if (daysBeforeExpiry > 90) status = "Good";
+        else if (daysBeforeExpiry > 30) status = "Near Expiry";
+        else status = "Short Expiry";
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
