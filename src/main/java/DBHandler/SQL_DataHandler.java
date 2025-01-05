@@ -1735,30 +1735,9 @@ public class SQL_DataHandler {
         }
     }
 
-    public boolean updateItemUnitType(int itemUnitTypeID, int itemTypeID, int unitTypeID){
-        final String query = """
-                UPDATE
-                ItemUnitType AS iut
-                SET iut.itemType_ID = ?, iut.unitType_ID = ? WHERE iut.itemUnitType_ID = ?
-
-                """;
-
-        if (connection == null)
-            prepareConnection();
-
-        try(PreparedStatement pstmt = connection.prepareStatement(query);){
-            pstmt.setInt(1, itemTypeID);
-            pstmt.setInt(2, unitTypeID);
-            pstmt.setInt(3, itemUnitTypeID);
-
-            return pstmt.executeUpdate() > 0;
-
-        }   catch (Exception e){
-            e.printStackTrace();
-            return false;
-        }
-
-    }
+//    public boolean updateItemUnitType(int itemUnitTypeID, int itemTypeID, int unitTypeID){
+//
+//    }
 
     //TODO: Add explanation for why these variables are made/used
     public static final int REMOVE_ITEM_TYPE = 6969;
