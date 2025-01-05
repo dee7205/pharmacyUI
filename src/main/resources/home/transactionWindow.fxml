@@ -50,12 +50,12 @@
             <Font name="Nunito ExtraBold" size="15.0" />
          </font>
       </Text>
-      <Button fx:id="transactionWindow_addButton" layoutX="26.0" layoutY="296.0" mnemonicParsing="false" onAction="#transactionWindow_addButtonOnAction" prefHeight="25.0" prefWidth="193.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add">
+      <Button fx:id="transactionWindow_addTransactionButton" layoutX="26.0" layoutY="296.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="193.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add">
          <font>
             <Font name="Nunito ExtraBold" size="16.0" />
          </font>
       </Button>
-      <Button layoutX="26.0" layoutY="342.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="193.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Remove">
+      <Button fx:id="transactionWindow_removeTransactionButton" layoutX="26.0" layoutY="342.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="193.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Remove">
          <font>
             <Font name="Nunito ExtraBold" size="16.0" />
          </font>
@@ -72,5 +72,10 @@
       </Text>
       <Label fx:id="totalCostLabel" layoutX="316.0" layoutY="392.0" text="Secret" />
       <ComboBox fx:id="transactionWindow_comboBox" layoutX="27.0" layoutY="118.0" prefHeight="26.0" prefWidth="194.0" style="-fx-border-color: black;" />
+      <Button fx:id="confirmTransaction_button" layoutX="481.0" layoutY="431.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="144.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Confirm Transaction">
+         <font>
+            <Font name="Nunito ExtraBold" size="12.0" />
+         </font>
+      </Button>
    </children>
 </AnchorPane>

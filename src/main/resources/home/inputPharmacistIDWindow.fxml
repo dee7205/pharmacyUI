@@ -20,13 +20,13 @@
             </ImageView>
          </center>
       </BorderPane>
-      <TextField layoutX="130.0" layoutY="145.0" prefHeight="27.0" prefWidth="210.0" promptText="Type your Pharmacist ID here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
+      <TextField fx:id="input_pharmacistID_textfield" layoutX="130.0" layoutY="145.0" prefHeight="27.0" prefWidth="210.0" promptText="Enter Pharmacist ID" style="-fx-border-color: black; -fx-border-radius: 0px;" />
       <Text layoutX="130.0" layoutY="138.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Pharmacist ID">
          <font>
             <Font name="Nunito Black" size="15.0" />
          </font>
       </Text>
-      <Button layoutX="248.0" layoutY="229.0" mnemonicParsing="false" onAction="#switchToTransactionWindow" prefHeight="26.0" prefWidth="92.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Next">
+      <Button fx:id="inputPharmaID_nextButton" layoutX="248.0" layoutY="229.0" mnemonicParsing="false" onAction="#switchToTransactionWindow" prefHeight="26.0" prefWidth="92.0" style="-fx-background-color: #C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Next">
          <font>
             <Font name="Nunito ExtraBold" size="12.0" />
          </font>

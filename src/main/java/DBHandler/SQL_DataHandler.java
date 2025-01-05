@@ -1,9 +1,8 @@
 package DBHandler;
 
-import javax.swing.plaf.nimbus.State;
+import javafx.scene.control.Label;
+
 import java.sql.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
@@ -2398,6 +2397,28 @@ public class SQL_DataHandler {
 
     //TODO: Add methods for transactions (CR & RT)
 
+    public boolean addTransactionItem(int pharmacistID, String itemName, int sellQty, double unitCost) {
+        if (connection == null) {
+            prepareConnection();
+        }
+
+        String query = "INSERT INTO Transactions (pharmacist_ID, transaction_date, item_name, sell_qty, unit_cost) " +
+                "VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, pharmacistID);
+            pstmt.setDate(2, Date.valueOf(getCurrentDate()));
+            pstmt.setString(3, itemName);
+            pstmt.setInt(4, sellQty);
+            pstmt.setDouble(5, unitCost);
+
+            return pstmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
     public boolean addTransaction(int pharmacistID){
         if (connection == null)
             prepareConnection();
@@ -2471,7 +2492,7 @@ public class SQL_DataHandler {
     /**
      * Gets all transactions based on a specific date
      */
-    public Transaction [] getTransactions(Date referenceDate, boolean isAscending){
+    public Transaction [] getTransactions(Label referenceDate, boolean isAscending){
         String first = """
             SELECT
                 t.transaction_ID AS "Transaction ID",
@@ -2513,7 +2534,9 @@ public class SQL_DataHandler {
             prepareConnection();
 
         try(PreparedStatement pstmt = connection.prepareStatement(finalQuery)){
-            pstmt.setDate(1, referenceDate);
+            String referenceDateString = referenceDate.getText();
+            java.sql.Date refDate = java.sql.Date.valueOf(referenceDateString);
+            pstmt.setDate(1, refDate);
             ResultSet set = pstmt.executeQuery();
             boolean isAdded = false;
 
@@ -3007,6 +3030,24 @@ public class SQL_DataHandler {
             return getCurrentDate();
         }
     }
+
+    public boolean checkPharmacistIDInDatabase(String pharmacistID) {
+
+        String query = "SELECT COUNT(*) FROM Pharmacists WHERE pharmacist_ID = ?";
+        try (Connection conn = DatabaseConnection.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, pharmacistID);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next() && rs.getInt(1) > 0) {
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }
 
 

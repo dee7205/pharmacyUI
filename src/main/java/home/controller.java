@@ -28,6 +28,7 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import DBHandler.*;
 import javafx.util.converter.DoubleStringConverter;
@@ -94,7 +95,15 @@ public class controller implements Initializable {
 
     @FXML void addItem(ActionEvent event){
         SQL_DataHandler handler = new SQL_DataHandler();
-        String itemName = itemName_textField.getText();
+
+        String itemName = null;
+        if (itemName_textField != null) {
+            itemName = itemName_textField.getText();
+        } else {
+            System.out.println("TextField is not initialized!");
+            return;
+        }
+
         String itemUnitTypeID = null;
         if (item_itemUnitType_textField != null) {
             itemUnitTypeID = item_itemUnitType_textField.getText();
@@ -102,7 +111,14 @@ public class controller implements Initializable {
             System.out.println("TextField is not initialized!");
             return;
         }
-        String itemCost = itemCost_textField.getText();
+
+        String itemCost = null;
+        if (itemCost_textField != null) {
+            itemCost = itemCost_textField.getText();
+        } else {
+            System.out.println("TextField is not initialized!");
+        }
+
         int convertedCost, convertedItemUnitTypeID;
 
         try{
@@ -390,10 +406,10 @@ public class controller implements Initializable {
     }
 
     // ==============COMBO BOX ITEM NAME (transactionWindow.fxml)===================
-    @FXML private ComboBox<String> transaction_itemName_comboBox;
+    @FXML private ComboBox<String> transactionWindow_comboBox;
 
     public void transactionItemName_comboBoxOnAction (ActionEvent event) {
-        if (transaction_itemName_comboBox != null) {
+        if (transactionWindow_comboBox != null) {
             String selectAllData = "SELECT * FROM Items";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
@@ -408,7 +424,7 @@ public class controller implements Initializable {
                         listData.add(transaction_item_name);
                     }
 
-                    transaction_itemName_comboBox.setItems(listData);
+                    transactionWindow_comboBox.setItems(listData);
 
                 } catch (SQLException e) {
                     System.err.println("SQL Error: " + e.getMessage());
@@ -749,12 +765,10 @@ public class controller implements Initializable {
     }
 
     @FXML private TextField pharmacist_searchName;
-    // ObservableList to hold the data for the table
     private ObservableList<Pharmacist> pharmaList;
 
     public void search_pharmacist() {
         try {
-            // Fetch data from the handler
             SQL_DataHandler handler = new SQL_DataHandler();
             Pharmacist[] pharmaSearch = handler.getAllPharmacists();
             System.out.println("Numbers fetched: " + Arrays.toString(pharmaSearch)); // debugger
@@ -1447,15 +1461,25 @@ public class controller implements Initializable {
 
     @FXML private Button transactionWindow_addTransactionButton;
     @FXML private Button transactionWindow_removeTransactionButton;
-    @FXML private TextField transaction_currentQty_textField;
-    @FXML private TextField transaction_sellQty_textField;
+    @FXML private Button confirmTransaction_button;
+    @FXML private TextField transactionWindow_currentQty_textField;
+    @FXML private TextField transactionWindow_sellQty_textField;
 
-    @FXML private TableView<?> transactionWindowTable;
-    @FXML private TableColumn<?, ?> transaction_itemName_col;
-    @FXML private TableColumn<?, ?> transaction_sellQty_col;
-    @FXML private TableColumn<?, ?> transaction_unitCost_col;
+    @FXML private TableView<TransactionWindow> transactionWindowTable;
+    @FXML private TableColumn<TransactionWindow, String> transactionWindow_itemName_col;
+    @FXML private TableColumn<TransactionWindow, Integer> transactionWindow_sellQty_col;
+    @FXML private TableColumn<TransactionWindow, Double> transactionWindow_unitCost_col;
 
 
+    //===============================INPUT PHARMACIST ID WINDOW METHODS====================================
+    @FXML private Button inputPharmaID_nextButton;
+    @FXML private TextField input_pharmacistID_textfield;
+
+    // check if its in the database
+    private boolean isPharmacistIdValid(String pharmacistID) {
+        SQL_DataHandler handler = new SQL_DataHandler();
+        return handler.checkPharmacistIDInDatabase(pharmacistID);
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -1614,6 +1638,14 @@ public class controller implements Initializable {
             restockEditData();
         }
 
+        //Initialize TRANSACTION WINDOW
+        if (transactionWindowTable != null){
+            transactionWindow_itemName_col.setCellValueFactory(new PropertyValueFactory<>("itemName"));
+            transactionWindow_sellQty_col.setCellValueFactory(new PropertyValueFactory<>("sellQty"));
+            transactionWindow_unitCost_col.setCellValueFactory(new PropertyValueFactory<>("unitCost"));
+
+        }
+
         //Initialize TRANSACTIONS and ITEMS SOLD
         if (transactionTable != null && itemsSoldTable != null){
             transactionDate_col.setCellValueFactory(new PropertyValueFactory<Transaction, Date>("transactionDate"));
@@ -1652,6 +1684,22 @@ public class controller implements Initializable {
                     search_restocks();
                 }
 
+        if (inputPharmaID_nextButton != null) {
+            inputPharmaID_nextButton.setDisable(true);
+        }
+        // Add listener to the TextField to check the pharmacist ID as it's typed
+        if (input_pharmacistID_textfield != null) {
+            // If not null, we proceed to add the listener
+            input_pharmacistID_textfield.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (isPharmacistIdValid(newValue)) {
+                    inputPharmaID_nextButton.setDisable(false);
+                } else {
+                    inputPharmaID_nextButton.setDisable(true);
+                }
+            });
+        } else {
+            System.out.println("TextField is null!");
+        }
 
         // combo box from database
         restock_itemName_comboBoxOnAction(new ActionEvent());
@@ -1735,9 +1783,27 @@ public class controller implements Initializable {
         switchScene("/home/itemUnitType.fxml", event);
     }
 
-    public void switchToTransactionWindow(ActionEvent event) throws IOException {
-        switchScene("/home/transactionWindow.fxml", event);
-    }
+    @FXML
+    void switchToTransactionWindow(ActionEvent event) {
+        if (isPharmacistIdValid(input_pharmacistID_textfield.getText())) {
+            // Switch to Transaction Window if ID is valid
+            try {
+                Stage stage = (Stage) inputPharmaID_nextButton.getScene().getWindow();
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/home/transactionWindow.fxml"));
+                Scene scene = new Scene(loader.load());
+                stage.setScene(scene);
+                stage.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Pharmacist ID is invalid.");
+            alert.showAndWait();
+        }
+}
 
     public void switchToInputPharmacistIDWindow (ActionEvent event) throws IOException {
         switchScene("/home/inputPharmacistIDWindow.fxml", event);
