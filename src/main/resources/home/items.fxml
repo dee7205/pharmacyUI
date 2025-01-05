@@ -217,11 +217,6 @@
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="item_TransactionHistoryButton" alignment="CENTER" layoutX="732.0" layoutY="481.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Transaction History">
-                     <font>
-                        <Font name="Nunito ExtraBold" size="16.0" />
-                     </font>
-                  </Button>
                   <Label layoutX="731.0" layoutY="73.0" text="Name">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
