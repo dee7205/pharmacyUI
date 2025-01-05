@@ -211,11 +211,12 @@
                   <TableView fx:id="restockTable" layoutX="14.0" layoutY="47.0" prefHeight="510.0" prefWidth="707.0" style="-fx-border-color: black;">
                      <columns>
                         <TableColumn fx:id="restockID_col" prefWidth="75.0" text="Restock ID" />
-                        <TableColumn fx:id="restock_itemName_col" prefWidth="75.0" text="Item Name" />
+                        <TableColumn fx:id="restock_itemID_col" prefWidth="75.0" text="Item ID" />
                         <TableColumn fx:id="restock_beginningQty_col" prefWidth="75.0" text="Beginning Qty." />
                         <TableColumn fx:id="restock_soldQty_col" prefWidth="75.0" text="Sold Quantity" />
                         <TableColumn fx:id="restock_restockDate_col" prefWidth="75.0" text="Restock Date" />
                         <TableColumn fx:id="restock_expirationDate_col" prefWidth="75.0" text="Expiration Date" />
+                        <TableColumn fx:id="restock_wholeSaleCost_col" prefWidth="75.0" text="Wholesale Cost" />
                      </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -261,8 +262,7 @@
                   </Label>
                   <DatePicker fx:id="expirationDate_datePicker" layoutX="732.0" layoutY="298.0" prefHeight="28.0" prefWidth="172.0" promptText="MM/DD/YYYY" />
                   <TextField fx:id="restock_searchTextField" layoutX="14.0" layoutY="11.0" prefHeight="27.0" prefWidth="243.0" promptText="Search" style="-fx-border-color: BLACK;" />
-                  <TextField fx:id="restock_unitCostTextField" disable="true" editable="false" layoutX="731.0" layoutY="173.0" prefHeight="27.0" prefWidth="80.0" promptText="Cost" style="-fx-border-color: black; -fx-border-radius: 0px;" />
-                  <TextField fx:id="restock_wholesaleCostTextField" layoutX="829.0" layoutY="173.0" prefHeight="27.0" prefWidth="79.0" promptText="Amount" style="-fx-border-color: black; -fx-border-radius: 0px;" />
+                  <TextField fx:id="wholesale_textField" layoutX="829.0" layoutY="173.0" prefHeight="27.0" prefWidth="79.0" promptText="Amount" style="-fx-border-color: black; -fx-border-radius: 0px;" />
                   <Label layoutX="731.0" layoutY="151.0" text="Unit Cost">
                      <font>
                         <Font name="AauxNext-Bold" size="15.0" />
@@ -273,6 +273,7 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
+                  <TextField fx:id="restock_unitCostTextField" layoutX="732.0" layoutY="173.0" prefHeight="27.0" prefWidth="79.0" promptText="Cost" style="-fx-border-color: black; -fx-border-radius: 0px;" />
                </children>
             </AnchorPane>
          </center>

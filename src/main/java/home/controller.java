@@ -92,32 +92,22 @@ public class controller implements Initializable {
         return FXCollections.<Item> observableArrayList(types);
     }
 
-    public void prepareItemUnitComboBox(){
-
-    }
-
     @FXML void addItem(ActionEvent event){
         SQL_DataHandler handler = new SQL_DataHandler();
         String itemName = itemName_textField.getText();
-//        String itemUnitTypeID = item_itemUnitType_textField.getText();
-        String itemType = item_TypeCb.getValue();
-        String unitType = item_unitCb.getValue();
-        int itemTypeID, unitTypeID, convertedCost;
+        String itemUnitTypeID = null;
+        if (item_itemUnitType_textField != null) {
+            itemUnitTypeID = item_itemUnitType_textField.getText();
+        } else {
+            System.out.println("TextField is not initialized!");
+            return;
+        }
         String itemCost = itemCost_textField.getText();
+        int convertedCost, convertedItemUnitTypeID;
 
         try{
             convertedCost = Integer.parseInt(itemCost);
-
-            if (convertedCost <= 0){
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("ERROR");
-                alert.setHeaderText("Unable to add new Item: " + itemName);
-                alert.setContentText("Unit Cost cannot be negative.");
-                alert.showAndWait();
-                itemCost_textField.clear();
-                return;
-            }
-
+            convertedItemUnitTypeID = Integer.parseInt(itemUnitTypeID);
         } catch (Exception e){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
@@ -127,25 +117,16 @@ public class controller implements Initializable {
             return;
         }
 
-        //Check if combo box's contents are selected
-        if (!itemName.isEmpty() && !itemType.isEmpty() && !unitType.isEmpty()){
-            itemTypeID = handler.getItemTypeID(itemType);
-            unitTypeID = handler.getUnitTypeID(unitType);
-
-            if (itemTypeID == -1 || unitTypeID == -1){
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("ERROR");
-                alert.setHeaderText("Unable to add new Item: " + itemName);
-                alert.setContentText("Item: " + itemName + "'s Item Type and Unit Type does not exist.");
-                alert.showAndWait();
-            }
-
-        }   else{
-            System.out.println("ERROR: Unable to add new Item. Combo box or Textfields are empty");
+        if (handler.getItemUnitType(convertedItemUnitTypeID) == null){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to add new Item Type: " + itemName);
+            alert.setContentText("Item Type " + itemName + "'s Item Type and Unit Type Does not exist in Item Unit Type Table.");
+            alert.showAndWait();
             return;
         }
 
-        if (handler.addItem(itemName, itemTypeID, unitTypeID, convertedCost)) {
+        if (!itemName.isEmpty() && !itemCost.isEmpty() && handler.addItem(itemName,convertedItemUnitTypeID,convertedCost)) {
             Item i = handler.getItem(itemName);
             itemTable.setItems(initialItemData()); //Adds item type to the table
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -154,12 +135,13 @@ public class controller implements Initializable {
             alert.setContentText("Item: " + i.getItemName() + " Successfully Added.");
             alert.showAndWait();
             itemName_textField.clear();
+            item_itemUnitType_textField.clear();
             itemCost_textField.clear();
-//            item_itemUnitType_textField.clear();
-        } else {
+
+        } else if (!itemName.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Item: " + itemName);
+            alert.setHeaderText("Unable to add new Item Type: " + itemName);
             alert.setContentText("Invalid Input. Please Try Again");
             alert.showAndWait();
         }
@@ -313,27 +295,64 @@ public class controller implements Initializable {
         }
     }
 
-    // ==============COMBO BOX ITEM TYPE (items.fxml)===================
-    public void itemType_comboBoxOnAction(ActionEvent event){
-        if (item_TypeCb != null) {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            ItemType [] items = handler.getAllItemTypes();
-            ObservableList<String> listData = FXCollections.observableArrayList();
-            for (ItemType item : items)
-                listData.add(item.getItemTypeName());
-            item_TypeCb.setItems(listData);
+    public void unitType_comboBoxOnAction (ActionEvent event) {
+        if (item_unitCb != null) {
+            String selectAllData = "SELECT * FROM unitType";
+            Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
+
+            if (connect != null) { // Make sure the connection is valid
+                try (PreparedStatement pr = connect.prepareStatement(selectAllData);
+                     ResultSet rs = pr.executeQuery()) {
+
+                    ObservableList<String> listData = FXCollections.observableArrayList();
+
+                    while (rs.next()) {
+                        String unit_type = rs.getString("unit_Type");
+                        listData.add(unit_type);
+                    }
+
+                    item_unitCb.setItems(listData);
+
+                } catch (SQLException e) {
+                    System.err.println("SQL Error: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("Database connection failed.");
+            }
+        } else {
+            System.err.println("ComboBox is null");
         }
     }
 
-    // ==============COMBO BOX ITEM TYPE (items.fxml)===================
-    public void unitType_comboBoxOnAction(ActionEvent event){
-        if (item_unitCb != null) {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            UnitType [] items = handler.getAllUnitTypes();
-            ObservableList<String> listData = FXCollections.observableArrayList();
-            for (UnitType item : items)
-                listData.add(item.getUnitType());
-            item_unitCb.setItems(listData);
+
+    public void itemType_comboBoxOnAction (ActionEvent event) {
+        if (item_TypeCb != null) {
+            String selectAllData = "SELECT * FROM itemType";
+            Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
+
+            if (connect != null) { // Make sure the connection is valid
+                try (PreparedStatement pr = connect.prepareStatement(selectAllData);
+                     ResultSet rs = pr.executeQuery()) {
+
+                    ObservableList<String> listData = FXCollections.observableArrayList();
+
+                    while (rs.next()) {
+                        String item_type = rs.getString("item_Type");
+                        listData.add(item_type);
+                    }
+
+                    item_TypeCb.setItems(listData);
+
+                } catch (SQLException e) {
+                    System.err.println("SQL Error: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("Database connection failed.");
+            }
+        } else {
+            System.err.println("ComboBox is null");
         }
     }
 
@@ -342,7 +361,7 @@ public class controller implements Initializable {
 
     public void restock_itemName_comboBoxOnAction (ActionEvent event) {
         if (restock_item_cb != null) {
-            String selectAllData = "SELECT * FROM Items ORDER BY item_Name ASC";
+            String selectAllData = "SELECT * FROM Items";
             Connection connect = connectDB(); // Ensure connectDB() is correctly implemented and returns a valid Connection
 
             if (connect != null) { // Make sure the connection is valid
@@ -350,8 +369,12 @@ public class controller implements Initializable {
                      ResultSet rs = pr.executeQuery()) {
 
                     ObservableList<String> listData = FXCollections.observableArrayList();
-                    while (rs.next())
-                        listData.add(rs.getString("item_name"));
+
+                    while (rs.next()) {
+                        String restock_item_name = rs.getString("item_name");
+                        listData.add(restock_item_name);
+                    }
+
                     restock_item_cb.setItems(listData);
 
                 } catch (SQLException e) {
@@ -411,7 +434,7 @@ public class controller implements Initializable {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "maclang@2023-00570");
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/gimatagobrero", "root", "shanna05");
             System.out.println("Connected to database");
             return conn;
         } catch (ClassNotFoundException e) {
@@ -938,16 +961,17 @@ public class controller implements Initializable {
 
     @FXML private TableColumn<Restocks, Integer> restockID_col;
     @FXML private TableView<Restocks> restockTable;
-    @FXML private TableColumn<Restocks, String> restock_itemName_col;
     @FXML private TableColumn<Restocks, Integer> restock_beginningQty_col;
-    @FXML private TableColumn<Restocks, Integer> restock_soldQty_col;
     @FXML private TableColumn<Restocks, Date> restock_expirationDate_col;
+    @FXML private TableColumn<Restocks, Integer> restock_itemID_col;
     @FXML private TableColumn<Restocks, Date> restock_restockDate_col;
+    @FXML private TableColumn<Restocks, Integer> restock_soldQty_col;
+    @FXML private TableColumn<Restocks, Double>  restock_wholeSaleCost_col;
     @FXML private TextField restock_qty;
-    @FXML private TextField restock_unitCostTextField;
-    @FXML private TextField restock_wholesaleCostTextField;
+    @FXML private TextField wholesale_textField;
 
     @FXML private TextField restock_searchTextField;
+
 
     private ObservableList<Restocks> initialRestockData(){
             SQL_DataHandler handler = new SQL_DataHandler();
@@ -955,62 +979,36 @@ public class controller implements Initializable {
             return FXCollections.<Restocks> observableArrayList(r);
     }
 
-    //Adds listener to the combo box
-    //When an item is clicked, reveal the unit cost in the GUI
-    private void prepareRestockComboBoxListener(){
-        restock_item_cb.setOnAction(event ->{
-            String selectedItem = restock_item_cb.getValue();
-            if (selectedItem != null && !selectedItem.isEmpty()){
-                Item item = new SQL_DataHandler().getItem(selectedItem);
-
-                if (item != null)
-                    restock_unitCostTextField.setText(Double.toString(item.getUnitCost()));
-                else
-                    restock_wholesaleCostTextField.clear();
-            }
-        });
-    }
-
     @FXML void addRestock(ActionEvent event) throws ParseException {
         SQL_DataHandler handler = new SQL_DataHandler();
         int itemID = handler.getItemId(restock_item_cb.getSelectionModel().getSelectedItem());
         String Qty = restock_qty.getText();
-        LocalDate restock = restockDate_datePicker.getValue();
-        LocalDate expiry = expirationDate_datePicker.getValue();
-        String wholesale = restock_wholesaleCostTextField.getText();
-        String unitCost = restock_unitCostTextField.getText();
+        String restock = restockDate_datePicker.getValue().toString();
+        String expiry = expirationDate_datePicker.getValue().toString();
+        String wholesale = wholesale_textField.getText();
+        if (wholesale_textField == null) {
+            System.out.println("wholesale_textField is not initialized!");
+        } else {
+            System.out.println("wholesale_textField is initialized.");
+        }
+        System.out.println(restock);
 
         int convertedQty;
-        double convertedWholesale, convertedUnitCost;
-
-        if (Qty.isEmpty() || unitCost.isEmpty() || wholesale.isEmpty() || restock == null || expiry == null || itemID <= 0)
-            return;
-
+        double convertedCost;
         try {
             convertedQty = Integer.parseInt(Qty);
-            convertedWholesale = Double.parseDouble(wholesale);
-            convertedUnitCost = Double.parseDouble(unitCost);
+            convertedCost = Double.parseDouble(wholesale);
         } catch(Exception e){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
             alert.setHeaderText("Unable to add new Restock.");
-            alert.setContentText("Invalid Input. Only enter integers in the Quantity and Wholesale text field.");
-            alert.showAndWait();
-            return;
-        }
-
-        if (convertedWholesale >= convertedUnitCost){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ERROR");
-            alert.setHeaderText("Unable to add new Restock.");
-            alert.setContentText("Wholesale Cost must be less than the Unit Cost.");
+            alert.setContentText("Invalid Input. Please Try Again.");
             alert.showAndWait();
             return;
         }
 
         Date convertedRestockDate = Date.valueOf(restock);
         Date convertedExpiryDate =  Date.valueOf(expiry);
-
         if ((!convertedRestockDate.before(convertedExpiryDate) && !convertedRestockDate.equals(convertedExpiryDate))){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
@@ -1018,14 +1016,14 @@ public class controller implements Initializable {
             alert.setContentText("Restock and Expiry Dates are either Overlapping or Invalid. Please Try Again.");
             alert.showAndWait();
             return;
-        };
 
-        if (handler.addRestock(itemID,convertedQty,convertedWholesale, restock.toString(), expiry.toString())) {
+        };
+        if (!restock.toString().isEmpty() && !expiry.toString().isEmpty() && itemID > -1 && handler.addRestock(itemID,convertedQty,convertedCost,restock,expiry)) {
             Restocks r = handler.getLatestRestock();
             restockTable.getItems().add(r); //Adds item type to the table
             restockTable.setItems(initialRestockData());
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("ADD RESTOCK");
+            alert.setTitle("ADD ITEM");
             alert.setHeaderText("ADD SUCCESSFUL!");
             alert.setContentText("Restock # " + r.getRestockID() + " Successfully Added.");
             alert.showAndWait();
@@ -1033,7 +1031,7 @@ public class controller implements Initializable {
             restock_item_cb.getSelectionModel().clearSelection();
             restockDate_datePicker.cancelEdit();
             expirationDate_datePicker.cancelEdit();
-            restock_wholesaleCostTextField.clear();
+            wholesale_textField.clear();
         } else {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
@@ -1045,7 +1043,7 @@ public class controller implements Initializable {
     }
 
     @FXML void deleteRestock(ActionEvent e){
-        //Gets the restocks selected (Can be null if no item is selected)
+        //Gets the restock selected (Can be null if no item is selected)
         int index = restockTable.getSelectionModel().getSelectedIndex();
         if (index == -1){
             System.out.println("ERROR: Unable to delete Item. No index is selected.");
@@ -1054,24 +1052,48 @@ public class controller implements Initializable {
 
         Restocks r = restockTable.getSelectionModel().getTableView().getItems().get(index);
 
+        //Error handling
         if (r == null){
             System.out.println("No Restock Selected.");
-        } else {
+            return;
+        }
+
+        else {
             SQL_DataHandler handler = new SQL_DataHandler();
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirm Restock Deletion");
-            alert.setHeaderText("Are you sure you want to delete this restock?");
+            alert.setTitle("Confirm Item Deletion");
+            alert.setHeaderText("Are you sure you want to delete this item type?");
             alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
 
             Optional<ButtonType> result = alert.showAndWait();
+            //Removes the list of selected items
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                handler.removeRestock(r.getRestockID(), SQL_DataHandler.REMOVE_BY_RESTOCK_ID);
+                handler.removeRestock(r.getRestockID(),SQL_DataHandler.REMOVE_BY_RESTOCK_ID);
                 restockTable.setItems(initialRestockData());
             }
         }
+
     }
 
     private void restockEditData(){
+        restock_itemID_col.setEditable(true);
+        restock_itemID_col.setCellFactory(TextFieldTableCell.<Restocks,Integer>forTableColumn(new IntegerStringConverter()));
+        restock_itemID_col.setOnEditCommit(e -> {
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Restocks r = e.getTableView().getItems().get(e.getTablePosition().getRow());
+            if(handler.getItem(e.getNewValue()) != null) {
+                handler.updateRestock(r.getRestockID(), e.getNewValue(),r.getStartQty(),r.getWholesaleCost());
+                r.setItemID(e.getNewValue());
+                restockTable.setItems(initialRestockData());
+            } else {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("ERROR");
+                alert.setHeaderText("Unable to Update Restock.");
+                alert.setContentText("Item ID does not Exist.");
+                alert.showAndWait();
+            }
+        });
+
         restock_beginningQty_col.setEditable(true);
         restock_beginningQty_col.setCellFactory(TextFieldTableCell.<Restocks,Integer>forTableColumn(new IntegerStringConverter()));
         restock_beginningQty_col.setOnEditCommit(e -> {
@@ -1091,23 +1113,23 @@ public class controller implements Initializable {
             }
         });
 
-//        restock_wholeSaleCost_col.setEditable(true);
-//        restock_wholeSaleCost_col.setCellFactory(TextFieldTableCell.<Restocks,Double>forTableColumn(new DoubleStringConverter()));
-//        restock_wholeSaleCost_col.setOnEditCommit(e -> {
-//            SQL_DataHandler handler = new SQL_DataHandler();
-//            Restocks r = e.getTableView().getItems().get(e.getTablePosition().getRow());
-//            if(e.getNewValue() > -1) {
-//                handler.updateRestock(r.getRestockID(),r.getItemID(),r.getStartQty(),e.getNewValue());
-//                r.setWholesaleCost(e.getNewValue());
-//                restockTable.setItems(initialRestockData());
-//            } else {
-//                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-//                alert.setTitle("ERROR");
-//                alert.setHeaderText("Unable to Update Restock.");
-//                alert.setContentText("Invalid Input. Please Try A Positive Number.");
-//                alert.showAndWait();
-//            }
-//        });
+        restock_wholeSaleCost_col.setEditable(true);
+        restock_wholeSaleCost_col.setCellFactory(TextFieldTableCell.<Restocks,Double>forTableColumn(new DoubleStringConverter()));
+        restock_wholeSaleCost_col.setOnEditCommit(e -> {
+            SQL_DataHandler handler = new SQL_DataHandler();
+            Restocks r = e.getTableView().getItems().get(e.getTablePosition().getRow());
+            if(e.getNewValue() > -1) {
+                handler.updateRestock(r.getRestockID(),r.getItemID(),r.getStartQty(),e.getNewValue());
+                r.setWholesaleCost(e.getNewValue());
+                restockTable.setItems(initialRestockData());
+            } else {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("ERROR");
+                alert.setHeaderText("Unable to Update Restock.");
+                alert.setContentText("Invalid Input. Please Try A Positive Number.");
+                alert.showAndWait();
+            }
+        });
     }
 
 //    public void search_restocks() {
@@ -1168,7 +1190,7 @@ public class controller implements Initializable {
     //===============================TRANSACTION METHODS====================================
 
     @FXML private TableView<Transaction> transactionTable;
-    @FXML private TableColumn<Transaction, String> transactionDate_col;
+    @FXML private TableColumn<Transaction, Date> transactionDate_col;
     @FXML private TableColumn<Transaction, Integer> transactionNo_col;
     @FXML private TableColumn<Transaction, Double> transaction_income_col;
     @FXML private TableColumn<Transaction, Integer> transaction_pharmacistID_col;
@@ -1431,9 +1453,7 @@ public class controller implements Initializable {
     @FXML private TableColumn<?, ?> transaction_sellQty_col;
     @FXML private TableColumn<?, ?> transaction_unitCost_col;
 
-    public void transactionWindow_addButtonOnAction (){
 
-    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -1579,20 +1599,22 @@ public class controller implements Initializable {
         //Initialize Restock
         if (restockTable != null){
             restockID_col.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
-            restock_itemName_col.setCellValueFactory(new PropertyValueFactory<Restocks,String>("itemName"));
+            restock_itemID_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("itemID"));
             restock_beginningQty_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("startQty"));
             restock_soldQty_col.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("soldQty"));
             restock_restockDate_col.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("restockDate"));
             restock_expirationDate_col.setCellValueFactory(new PropertyValueFactory<Restocks,Date>("expiryDate"));
-            restockDate_datePicker.setValue(new SQL_DataHandler().getCurrentDate());
-            prepareRestockComboBoxListener();
+            restock_wholeSaleCost_col.setCellValueFactory(new PropertyValueFactory<Restocks,Double>("wholesaleCost"));
+
+            SQL_DataHandler handler = new SQL_DataHandler();
+            restockDate_datePicker.setValue((LocalDate)handler.getCurrentDate());
             restockTable.setItems(initialRestockData());
             restockEditData();
         }
 
         //Initialize TRANSACTIONS and ITEMS SOLD
         if (transactionTable != null && itemsSoldTable != null){
-            transactionDate_col.setCellValueFactory(new PropertyValueFactory<Transaction, String>("transactionDateString"));
+            transactionDate_col.setCellValueFactory(new PropertyValueFactory<Transaction, Date>("transactionDate"));
             transactionNo_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("transactionID"));
             transaction_income_col.setCellValueFactory(new PropertyValueFactory<Transaction, Double>("income"));
             transaction_pharmacistID_col.setCellValueFactory(new PropertyValueFactory<Transaction, Integer>("pharmacistID"));
@@ -1634,7 +1656,8 @@ public class controller implements Initializable {
         restock_itemName_comboBoxOnAction(new ActionEvent());
         transactionItemName_comboBoxOnAction(new ActionEvent());
         itemType_comboBoxOnAction(new ActionEvent());
-        unitType_comboBoxOnAction(new ActionEvent());
+        unitType_comboBoxOnAction((new ActionEvent()));
+
 
     }
 
@@ -1760,19 +1783,31 @@ public class controller implements Initializable {
         int end_Qty = start_Qty - sold_Qty;
         int transactionCount = handler.getTransactionCount();
 
-//        beginningBalance.setText("" + beginning);
-//        issuanceBalance.setText("" + issuance);
-//        endingBalance.setText("" + ending);
-//        start_qty_label.setText("" + start_Qty);
-//        sold_qty_label.setText("" + sold_Qty);
-//        end_qty_label.setText("" + end_Qty);
-//        transactionCount_label.setText("" + transactionCount);
+        if (beginningBalance != null) {
+            beginningBalance.setText("" + beginning);
+        }
+        if (issuanceBalance != null) {
+            issuanceBalance.setText("" + issuance);
+        }
+        if (start_qty_label != null) {
+            start_qty_label.setText("" + start_Qty);
+        }
+        if (sold_qty_label != null) {
+            sold_qty_label.setText("" + sold_Qty);
+        }
+        if (end_qty_label != null) {
+            end_qty_label.setText("" + end_Qty);
+        }
+        if (transactionCount_label != null) {
+            transactionCount_label.setText("" + transactionCount);
+        }
 
-
-//        recentlyRestocked_restockID.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("restockID"));
-//        recentlyRestocked_itemName.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("itemID"));
-//        recentlyRestocked_Qty.setCellValueFactory(new PropertyValueFactory<Restocks,Integer>("startQty"));
-//        recentlyRestocked.setItems(recentlyRestockedData());
+        if (restockTable != null) {
+            recentlyRestocked_restockID.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("restockID"));
+            recentlyRestocked_itemName.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("itemID"));
+            recentlyRestocked_Qty.setCellValueFactory(new PropertyValueFactory<Restocks, Integer>("startQty"));
+            recentlyRestocked.setItems(recentlyRestockedData());
+        }
 
         //REMOVE COMMENT IF TOP 10 FASTEST AND EXPIRY DATA WITHIN SQL HANDLER IS RESOLVED.
 //        fastestMovement_itemName.setCellValueFactory(new PropertyValueFactory<Item,String>("itemName"));
