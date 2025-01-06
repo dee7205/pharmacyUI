@@ -199,29 +199,25 @@
                <children>
                   <TableView fx:id="restockTable" editable="true" layoutX="14.0" layoutY="47.0" prefHeight="510.0" prefWidth="707.0" style="-fx-border-color: black;">
                      <columns>
-                        <TableColumn fx:id="restockID_col" prefWidth="75.0" text="Restock ID" />
-                        <TableColumn fx:id="restock_itemID_col" prefWidth="75.0" text="Item ID" />
-                        <TableColumn fx:id="restock_beginningQty_col" prefWidth="75.0" text="Beginning Qty." />
-                        <TableColumn fx:id="restock_soldQty_col" prefWidth="75.0" text="Sold Quantity" />
-                        <TableColumn fx:id="restock_restockDate_col" prefWidth="75.0" text="Restock Date" />
-                        <TableColumn fx:id="restock_expirationDate_col" prefWidth="75.0" text="Expiration Date" />
-                        <TableColumn fx:id="restock_wholeSaleCost_col" prefWidth="75.0" text="Wholesale Cost" />
+                        <TableColumn fx:id="restockID_col" prefWidth="68.8000373840332" text="Restock ID" />
+                        <TableColumn fx:id="restock_itemID_col" prefWidth="48.79998779296875" text="Item ID" />
+                        <TableColumn fx:id="restock_itemName_col" prefWidth="180.79994201660156" text="Item Name" />
+                        <TableColumn fx:id="restock_beginningQty_col" prefWidth="60.7999267578125" text="Start Qty." />
+                        <TableColumn fx:id="restock_soldQty_col" prefWidth="64.800048828125" text="Sold Qty." />
+                        <TableColumn fx:id="restock_wholeSaleCost_col" prefWidth="98.4000244140625" text="Wholesale Cost" />
+                        <TableColumn fx:id="restock_restockDate_col" prefWidth="85.60003662109375" text="Restock Date" />
+                        <TableColumn fx:id="restock_expirationDate_col" prefWidth="96.7999267578125" text="Expiration Date" />
                      </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <Button fx:id="addRestockButton" alignment="CENTER" layoutX="732.0" layoutY="426.0" mnemonicParsing="false" onAction="#addRestock" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Restock">
+                  <Button fx:id="addRestockButton" alignment="CENTER" layoutX="731.0" layoutY="400.0" mnemonicParsing="false" onAction="#addRestock" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Add Restock">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
                   </Button>
-                  <Button fx:id="updateRestockButton" alignment="CENTER" layoutX="732.0" layoutY="473.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Update Restock">
-                     <font>
-                        <Font name="Nunito ExtraBold" size="16.0" />
-                     </font>
-                  </Button>
-                  <Button fx:id="deleteRestockButton" alignment="CENTER" layoutX="732.0" layoutY="519.0" mnemonicParsing="false" onAction="#deleteRestock" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Restock">
+                  <Button fx:id="deleteRestockButton" alignment="CENTER" layoutX="731.0" layoutY="451.0" mnemonicParsing="false" onAction="#deleteRestock" prefHeight="36.0" prefWidth="175.0" style="-fx-background-color: C5ACF0; -fx-border-color: #5F2E89; -fx-cursor: hand;" text="Delete Restock">
                      <font>
                         <Font name="Nunito ExtraBold" size="16.0" />
                      </font>
@@ -262,7 +258,6 @@
                         <Font name="AauxNext-Bold" size="15.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="restock_unitCostTextField" editable="false" layoutX="732.0" layoutY="173.0" prefHeight="27.0" prefWidth="79.0" promptText="Cost" style="-fx-border-color: black; -fx-border-radius: 0px;" />
                   <TextField fx:id="restock_unitCostTextField" editable="false" layoutX="732.0" layoutY="173.0" prefHeight="27.0" prefWidth="79.0" promptText="Cost" style="-fx-border-color: black; -fx-border-radius: 0px;" />
                   <DatePicker fx:id="restock_toDatePicker" layoutX="574.0" layoutY="14.0" prefHeight="26.0" prefWidth="100.0" promptText="To" style="-fx-border-color: black;" />
                   <DatePicker fx:id="restock_fromDatePicker" layoutX="452.0" layoutY="14.0" prefHeight="26.0" prefWidth="100.0" promptText="From" style="-fx-border-color: black;" />

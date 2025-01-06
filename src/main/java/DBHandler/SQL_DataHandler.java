@@ -2023,13 +2023,13 @@ public class SQL_DataHandler {
     }
 
     //  Make this method private
-    public boolean reduceRestocks(int itemID, int soldQuantity){
+    private boolean reduceRestocks(int itemID, int soldQuantity){
         if (connection == null)
             prepareConnection();
 
         int result = getRemainingStockQuantity(itemID);
         if (soldQuantity > result){
-            System.out.println("ERROR: Unable to reduce restocks. \nSold quantity is above the current stock: " + soldQuantity);
+            System.out.println("ERROR: Unable to reduce restocks. \nSold quantity is above the current stock: " + result + ", sold quantity: " + soldQuantity);
             return false;
         }   else if (result == -1){
                 System.out.println("ERROR: Unable to reduce restocks. \nItem under the item id doesn't exist: " + itemID);
@@ -2136,7 +2136,7 @@ public class SQL_DataHandler {
     public Restocks getLatestRestock(){
         String query = """
             SELECT
-                MAX(r.restock_ID) AS "Restock ID",
+                r.restock_ID AS "Restock ID",
                 r.item_ID AS "Item ID",
                 r.start_Qty AS "Start Quantity",
                 r.sold_Qty AS "Sold Quantity",
@@ -2146,7 +2146,8 @@ public class SQL_DataHandler {
                 i.item_Name AS "Item Name"
             FROM Restocks AS r
             JOIN Items AS i ON i.item_ID = r.item_ID
-            GROUP BY r.restock_ID;
+            ORDER BY r.restock_ID DESC
+            LIMIT 1;
         """;
 
         if (connection == null)
@@ -2343,8 +2344,10 @@ public class SQL_DataHandler {
 
             pstmt.setInt(1, itemID);
             ResultSet set = pstmt.executeQuery();
-            if (set.next())
+            if (set.next()){
+                System.out.println("Get remaining stock quantity: " + set.getInt("Total Quantity") + ", item ID: " + itemID);
                 return set.getInt("Total Quantity");
+            }
 
             return -1;
 
@@ -2456,11 +2459,13 @@ public class SQL_DataHandler {
         }
     }
 
-    public int getLatestTransaction(){
+    public int getLatestTransactionID(){
         String query = """
             SELECT
-                MAX(t.transaction_ID) AS "Transaction ID"
-            FROM Transactions AS t;
+                t.transaction_ID AS "Transaction ID"
+            FROM Transactions AS t
+            ORDER BY t.transaction_ID DESC
+            LIMIT 1;
         """;
 
         if (connection == null)
@@ -2933,7 +2938,7 @@ public class SQL_DataHandler {
     public double getOverallIssuanceBalance() {
             String query = """
                     SELECT
-                    SUM(r.sold_Qty * i.unit_cost) as "Sum"
+                    COALESCE(SUM(r.sold_Qty * i.unit_cost), 0) as "Sum"
                     FROM Restocks as r
                     JOIN Items as i ON i.item_ID = r.item_ID;
             """;
