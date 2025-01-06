@@ -148,6 +148,7 @@ public class controller implements Initializable {
     @FXML void deleteItem(ActionEvent e){
         //Gets the item type selected (Can be null if no item is selected)
         int index = itemTable.getSelectionModel().getSelectedIndex();
+        SQL_DataHandler handler = new SQL_DataHandler();
         if (index == -1){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
@@ -158,29 +159,31 @@ public class controller implements Initializable {
         }
 
         Item item = itemTable.getSelectionModel().getTableView().getItems().get(index);
-
+        if (handler.getAffectedRestocks(item) > 0){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to Delete Item.");
+            alert.setContentText("This Item was used in other Tables.");
+            alert.showAndWait();
+            return;
+        }
         //Error handling
         if (item == null){
-            System.out.println("No Item Type Selected.");
+            System.out.println("No Item Selected.");
             return;
         }
 
         else {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirm Item Deletion");
-            alert.setHeaderText("Are you sure you want to delete this item type? \nNumber of Affected Items: " + handler.getAffectedRestocks(item));
-            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
-            Optional<ButtonType> result = alert.showAndWait();
-            //Removes the list of selected items
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                handler.removeRestock(item.getItemID(),SQL_DataHandler.REMOVE_BY_ITEM_ID);
-                handler.removeItem(item.getItemID());
-                itemTable.setItems(initialItemData());
-                search_itemName();
-            }
+            handler.removeRestock(item.getItemID(),SQL_DataHandler.REMOVE_BY_ITEM_ID);
+            handler.removeItem(item.getItemID());
+            itemTable.setItems(initialItemData());
+            search_itemName();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("DELETE ITEM");
+            alert.setHeaderText("DELETE SUCCESSFUL");
+            alert.setContentText("Item Successfully Deleted.");
+            alert.showAndWait();
         }
-
     }
 
     private void itemEditData(){
@@ -544,6 +547,7 @@ public class controller implements Initializable {
     void deleteItemType(ActionEvent event) throws SQLException {
         //Gets the item type selected (Can be null if no item is selected)
         int index = itemTypeTable.getSelectionModel().getSelectedIndex();
+        SQL_DataHandler handler = new SQL_DataHandler();
         if (index == -1){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
@@ -552,31 +556,31 @@ public class controller implements Initializable {
             alert.showAndWait();
             return;
         }
-
         ItemType item = itemTypeTable.getSelectionModel().getTableView().getItems().get(index);
+
+        if (handler.getAffectedItems(item) > 0){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to Delete Item Type.");
+            alert.setContentText("This Item Type was used in other Tables.");
+            alert.showAndWait();
+            return;
+        }
 
         //Error handling
         if (item == null){
             System.out.println("No Item Type Selected.");
             return;
-        }
-
-        else {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Comfirm Item Deletion");
-            alert.setHeaderText("Are you sure you want to delete this item type? \nNumber of Affected Items: " + handler.getAffectedItems(item));
-            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
-
-            Optional<ButtonType> result = alert.showAndWait();
-
-            //Removes the list of selected items
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                handler.removeItemUnitType(item.getItemTypeID(),SQL_DataHandler.REMOVE_ITEM_TYPE);
-                handler.removeItemType(item.getItemTypeName());
-                itemTypeTable.setItems(initialItemTypeData());
-                search_itemType();
-            }
+        } else {
+            handler.removeItemUnitType(item.getItemTypeID(),SQL_DataHandler.REMOVE_ITEM_TYPE);
+            handler.removeItemType(item.getItemTypeName());
+            itemTypeTable.setItems(initialItemTypeData());
+            search_itemType();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("DELETE ITEM TYPE");
+            alert.setHeaderText("DELETE SUCCESSFUL");
+            alert.setContentText("Item Type " + item.getItemTypeName() + " Successfully Deleted.");
+            alert.showAndWait();
         }
     }
 
@@ -773,6 +777,7 @@ public class controller implements Initializable {
     void deletePharmacist(ActionEvent event) {
         //Gets the pharmacist selected (Can be null if no item is selected)
         int index = pharmacistTable.getSelectionModel().getSelectedIndex();
+        SQL_DataHandler handler = new SQL_DataHandler();
         if (index == -1){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
@@ -783,7 +788,14 @@ public class controller implements Initializable {
         }
 
         Pharmacist p = pharmacistTable.getSelectionModel().getTableView().getItems().get(index);
-
+        if (handler.getAffectedTransactions(p) > 0){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to Delete Pharmacist.");
+            alert.setContentText("This Pharmacist was involved in Transactions.");
+            alert.showAndWait();
+            return;
+        }
         //Error handling
         if (p == null){
             System.out.println("No Pharmacist Selected.");
@@ -791,20 +803,15 @@ public class controller implements Initializable {
         }
 
         else {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirm Pharmacist Deletion");
-            alert.setHeaderText("Are you sure you want to delete this Pharmacist? \nNumber of Affected Items: (No Transactions Feature Yet)" );
-            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("DELETE PHARMACIST");
+            alert.setHeaderText("DELETE SUCCESSFUL");
+            alert.setContentText("PHARMACIST Successfully Deleted.");
+            alert.showAndWait();
+            handler.removePharmacist(p.getPharmacistID());
+            pharmacistTable.setItems(initialPharmacistData());
+            search_pharmacist();
 
-            Optional<ButtonType> result = alert.showAndWait();
-
-            //Removes the list of selected items
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                handler.removePharmacist(p.getPharmacistID());
-                pharmacistTable.setItems(initialPharmacistData());
-                search_pharmacist();
-            }
         }
     }
 
@@ -932,6 +939,7 @@ public class controller implements Initializable {
     void deleteUnitType(ActionEvent event) throws SQLException {
         //Gets the unit type selected (Can be null if no item is selected)
         int index = unitTypeTable.getSelectionModel().getSelectedIndex();
+        SQL_DataHandler handler = new SQL_DataHandler();
         if (index == -1){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
@@ -943,25 +951,28 @@ public class controller implements Initializable {
 
         UnitType unit = unitTypeTable.getSelectionModel().getTableView().getItems().get(index);
 
+
+        if (handler.getAffectedItemsForUnit(unit) > 0){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to Delete Unit Type.");
+            alert.setContentText("This Unit Type was used in other Tables.");
+            alert.showAndWait();
+            return;
+        }
         //Error handling
         if (unit == null){
             System.out.println("No Unit Type Selected.");
         } else {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirm Unit Type Deletion");
-            alert.setHeaderText("Are you sure you want to delete this unit type? \nNumber of Affected Items: " + handler.getAffectedItemsForUnit(unit));
-            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
-
-            Optional<ButtonType> result = alert.showAndWait();
-
-            //Removes the list of selected items
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                handler.removeItemUnitType(unit.getUnitTypeID(),SQL_DataHandler.REMOVE_UNIT_TYPE);
-                handler.removeUnitType(unit.getUnitType());
-                unitTypeTable.setItems(initialUnitTypeData());
-                search_unitType();
-            }
+            handler.removeItemUnitType(unit.getUnitTypeID(),SQL_DataHandler.REMOVE_UNIT_TYPE);
+            handler.removeUnitType(unit.getUnitType());
+            unitTypeTable.setItems(initialUnitTypeData());
+            search_unitType();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("DELETE ITEM TYPE");
+            alert.setHeaderText("DELETE SUCCESSFUL");
+            alert.setContentText("Item Type " + unit.getUnitType() + " Successfully Deleted.");
+            alert.showAndWait();
         }
     }
 
@@ -1623,6 +1634,7 @@ public class controller implements Initializable {
     void deleteItemUnitType(ActionEvent event) throws SQLException {
         //Gets the unit type selected (Can be null if no item is selected)
         int index = itemUnitTypeTable.getSelectionModel().getSelectedIndex();
+        SQL_DataHandler handler = new SQL_DataHandler();
         if (index == -1){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("ERROR");
@@ -1631,27 +1643,28 @@ public class controller implements Initializable {
             alert.showAndWait();
             return;
         }
-
         ItemUnitType unit = itemUnitTypeTable.getSelectionModel().getTableView().getItems().get(index);
 
+        if (handler.getAffectedItemsForItemUnit(unit) > 0){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("ERROR");
+            alert.setHeaderText("Unable to Delete Item Unit Type.");
+            alert.setContentText("This Item Unit Type was used in other Tables.");
+            alert.showAndWait();
+            return;
+        }
         //Error handling
         if (unit == null){
             System.out.println("No Item Unit Type Selected.");
         } else {
-            SQL_DataHandler handler = new SQL_DataHandler();
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirm Unit Type Deletion");
-            alert.setHeaderText("Are you sure you want to delete this Item Unit type? \nNumber of Affected Items: " + handler.getAffectedItemsForItemUnit(unit));
-            alert.setContentText("Click OK to Delete or Cancel to Discontinue.");
-
-            Optional<ButtonType> result = alert.showAndWait();
-
-            //Removes the list of selected items
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                handler.removeItemUnitType(unit.getItemUnitTypeID(), SQL_DataHandler.REMOVE_ITEM_UNIT_TYPE);
-                itemUnitTypeTable.setItems(initialItemUnitTypeData());
-                search_ItemUnitType();
-            }
+            handler.removeItemUnitType(unit.getItemUnitTypeID(), SQL_DataHandler.REMOVE_ITEM_UNIT_TYPE);
+            itemUnitTypeTable.setItems(initialItemUnitTypeData());
+            search_ItemUnitType();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("DELETE ITEM UNIT TYPE");
+            alert.setHeaderText("DELETE SUCCESSFUL");
+            alert.setContentText("Item Unit Type Successfully Deleted.");
+            alert.showAndWait();
         }
     }
 

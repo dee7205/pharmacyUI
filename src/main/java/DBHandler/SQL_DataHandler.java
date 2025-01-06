@@ -1244,6 +1244,13 @@ public class SQL_DataHandler {
         Item [] array = new Item[1];
         return getAffectedRestocks(list.toArray(array));
     }
+
+    public int getAffectedTransactions(Pharmacist p){
+        List<Pharmacist> list = new ArrayList<>();
+        list.add(p);
+        Pharmacist [] array = new Pharmacist[1];
+        return getAffectedTransactions(list.toArray(array));
+    }
     /**
      * Gets all the items using a specific itemType
      *
@@ -1278,6 +1285,32 @@ public class SQL_DataHandler {
         return itemCount;
     }
 
+    public int getAffectedTransactions(Pharmacist [] list){
+        if (connection == null)
+            prepareConnection();
+
+        String query = """
+            SELECT 
+                COUNT(t.transaction_ID) AS "Transaction Count"
+            FROM Transactions AS t
+            JOIN Pharmacists AS p ON p.pharmacist_ID = t.pharmacist_ID
+            WHERE t.pharmacist_ID = ?
+        """;
+
+        int itemCount = 0;
+        try(PreparedStatement pstmt = connection.prepareStatement(query)){
+            for (Pharmacist i: list){
+                pstmt.setInt(1, i.getPharmacistID());
+                ResultSet set = pstmt.executeQuery();
+                if (set.next())
+                    itemCount += set.getInt("Transaction Count");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return itemCount;
+    }
 
     public int getAffectedItems(ItemType [] list){
         if (connection == null)
@@ -3040,7 +3073,6 @@ public class SQL_DataHandler {
                 DATEDIFF(r.expiry_Date, r.restock_Date) AS "Days Before Expiry"
                 FROM Restocks AS r
                 JOIN Items AS i ON i.item_ID = r.item_ID
-                WHERE r.expiry_Date >= r.restock_Date AND DATEDIFF(r.expiry_Date, r.restock_Date) <= 30
                 ORDER BY DATEDIFF(r.expiry_Date, r.restock_Date) ASC
                 LIMIT 10;
                 """;
