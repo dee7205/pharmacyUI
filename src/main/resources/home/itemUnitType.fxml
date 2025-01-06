@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.geometry.Rectangle2D?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -221,14 +222,14 @@
                         <Font name="AauxNext-Bold" size="18.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="itemUnitType_itemTypeID_textField" layoutX="694.0" layoutY="116.0" prefHeight="29.0" prefWidth="193.0" promptText="Type item type id here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
                   <Label layoutX="695.0" layoutY="158.0" text="Unit Type ID">
                      <font>
                         <Font name="AauxNext-Bold" size="18.0" />
                      </font>
                   </Label>
-                  <TextField fx:id="itemUnitType_unitTypeID_textField" layoutX="694.0" layoutY="181.0" prefHeight="29.0" prefWidth="193.0" promptText="Type unit type id here..." style="-fx-border-color: black; -fx-border-radius: 0px;" />
                   <TextField fx:id="itemUnitType_searchField" layoutX="14.0" layoutY="12.0" prefHeight="27.0" prefWidth="243.0" promptText="Search" style="-fx-border-color: BLACK;" />
+                  <ComboBox fx:id="itemType_cb" layoutX="695.0" layoutY="119.0" onAction="#itemType_cb_onAction" prefHeight="26.0" prefWidth="193.0" promptText="Choose Item Type..." />
+                  <ComboBox fx:id="unitType_cb" layoutX="696.0" layoutY="186.0" onAction="#unitType_cb_onAction" prefHeight="26.0" prefWidth="193.0" promptText="Choose Unit Type..." />
                </children>
             </AnchorPane>
          </center>

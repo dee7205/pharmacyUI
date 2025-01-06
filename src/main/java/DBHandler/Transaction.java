@@ -7,7 +7,7 @@ public class Transaction {
     private int transactionID, pharmacistID, soldQty;
     private double income;
     private Date transactionDate;
-    private String transactionDateString;
+    private String transactionDateString, pharmacistName;
     private String pharmacist;
 
     public Transaction(){ this(0, 0, "N/A", 0, 0, null); }
@@ -19,6 +19,10 @@ public class Transaction {
     public Transaction(int transactionID, int pharmacistID, String pharmacist, int soldQty, int income, Date transactionDate){
         setTransactionID(transactionID);
         setPharmacistID(pharmacistID);
+
+        Pharmacist person = new SQL_DataHandler().getPharmacist(pharmacistID);
+        setPharmacistName(person.getFirstName() + " " + person.getMiddleName() + " " + person.getLastName());
+
         setIncome(income);
         setSoldQty(soldQty);
         setTransactionDate(transactionDate);
@@ -80,6 +84,14 @@ public class Transaction {
 
     public void setTransactionDateString(String transactionDateString) {
         this.transactionDateString = transactionDateString;
+    }
+
+    public String getPharmacistName() {
+        return pharmacistName;
+    }
+
+    public void setPharmacistName(String pharmacistName) {
+        this.pharmacistName = pharmacistName;
     }
 
     public String [] getInfo(){
