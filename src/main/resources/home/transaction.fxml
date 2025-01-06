@@ -238,8 +238,9 @@
                      </font>
                   </Label>
                   <DatePicker fx:id="transaction_toDatePicker" layoutX="418.0" layoutY="15.0" prefHeight="26.0" prefWidth="100.0" promptText="To" style="-fx-border-color: black;" />
-                  <RadioButton fx:id="pharmacistID_radioboxButton" layoutX="97.0" layoutY="9.0" mnemonicParsing="false" text="Pharmacist ID" />
-                  <RadioButton fx:id="transactionID_radioboxButton" layoutX="97.0" layoutY="30.0" mnemonicParsing="false" text="Transaction ID" />
+                  <RadioButton fx:id="pharmacist_radioboxButton" layoutX="97.0" layoutY="9.0" mnemonicParsing="false" text="Pharmacist" />
+                  <RadioButton fx:id="transaction_radioboxButton" layoutX="97.0" layoutY="30.0" mnemonicParsing="false" text="Transaction No." />
+                  <RadioButton fx:id="itemName_radioboxButton" layoutX="202.0" layoutY="9.0" mnemonicParsing="false" text="Item" />
                </children>
             </AnchorPane>
          </center>

@@ -8,6 +8,7 @@ module org.example.gimatagui {
     requires org.kordamp.bootstrapfx.core;
     requires java.sql;
     requires java.desktop;
+    requires com.google.protobuf;
 
     opens home to javafx.fxml;
     exports home;
