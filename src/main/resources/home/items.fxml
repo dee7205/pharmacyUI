@@ -197,8 +197,8 @@
                <children>
                   <TableView fx:id="itemTable" editable="true" layoutX="14.0" layoutY="54.0" prefHeight="503.0" prefWidth="707.0" style="-fx-border-color: black;">
                      <columns>
-                        <TableColumn fx:id="items_itemID_col" editable="false" prefWidth="45.600006103515625" text="Item ID" />
-                        <TableColumn fx:id="items_itemName_col" prefWidth="224.79997634887695" text="Item Name" />
+                        <TableColumn fx:id="items_itemID_col" editable="false" prefWidth="54.39995193481445" text="Item ID" />
+                        <TableColumn fx:id="items_itemName_col" prefWidth="214.40000915527344" text="Item Name" />
                         <TableColumn fx:id="items_itemUnitType_col" prefWidth="80.80001831054688" text="Item-Unit ID" />
                         <TableColumn fx:id="items_itemUnit_col" editable="false" prefWidth="150.39996337890625" text="Item-Unit Type" />
                         <TableColumn fx:id="items_itemQuantity_col" prefWidth="72.00006103515625" text="Quantity" />
