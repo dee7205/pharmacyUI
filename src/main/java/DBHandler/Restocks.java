@@ -1,4 +1,5 @@
 package DBHandler;
+import java.sql.Date;
 
 public class Restocks {
     int itemID;
@@ -22,7 +23,6 @@ public class Restocks {
         setWholesaleCost(wholesaleCost);
         setRemainingQty(startQty - soldQty);
         setRestockDate(restockDate);
-        setRestockDateString(restockDate.toString());
         setExpiryDate(expiryDate);
         setExpiryDateString(expiryDate.toString());
     }

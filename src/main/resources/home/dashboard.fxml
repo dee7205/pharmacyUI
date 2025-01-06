@@ -336,11 +336,11 @@
                            </font>
                         </Label>
                         <TableView fx:id="expiry" layoutX="7.0" layoutY="34.0" prefHeight="303.0" prefWidth="282.0">
-                          <columns>
-                            <TableColumn fx:id="expiry_restockID" editable="false" prefWidth="70.4000244140625" sortable="false" text="Restock ID" />
+                           <columns>
+                              <TableColumn fx:id="expiry_restockID" editable="false" prefWidth="70.4000244140625" sortable="false" text="Restock ID" />
                               <TableColumn fx:id="expiry_expiryDate" editable="false" minWidth="0.0" prefWidth="126.39996337890625" sortable="false" text="Days Before Expiry" />
                               <TableColumn fx:id="expiry_Status" editable="false" prefWidth="85.5999755859375" sortable="false" text="Status" />
-                          </columns>
+                           </columns>
                         </TableView>
                      </children>
                   </AnchorPane>
@@ -382,19 +382,19 @@
                            </font>
                         </Label>
                         <TableView fx:id="recentlyRestocked" layoutX="8.0" layoutY="53.0" prefHeight="63.0" prefWidth="250.0">
-                          <columns>
-                            <TableColumn fx:id="recentlyRestocked_restockID" prefWidth="73.60003662109375" sortable="false" text="Restock ID" />
-                            <TableColumn fx:id="recentlyRestocked_itemName" prefWidth="94.39996337890625" sortable="false" text="Item ID" />
+                           <columns>
+                              <TableColumn fx:id="recentlyRestocked_restockID" prefWidth="73.60003662109375" sortable="false" text="Restock ID" />
+                              <TableColumn fx:id="recentlyRestocked_itemName" prefWidth="94.39996337890625" sortable="false" text="Item ID" />
                               <TableColumn fx:id="recentlyRestocked_Qty" minWidth="1.5999755859375" prefWidth="78.933349609375" sortable="false" text="Quantity" />
-                          </columns>
+                           </columns>
                         </TableView>
                      </children>
                   </AnchorPane>
                   <TableView fx:id="fastestMovement" layoutX="40.0" layoutY="234.0" prefHeight="314.0" prefWidth="240.0">
-                    <columns>
-                      <TableColumn fx:id="fastestMovement_itemName" prefWidth="150.39999771118164" sortable="false" text="Item Name" />
-                      <TableColumn fx:id="fastestMovement_movement" prefWidth="89.59999084472656" sortType="DESCENDING" sortable="false" text="Movement" />
-                    </columns>
+                     <columns>
+                        <TableColumn fx:id="fastestMovement_itemName" prefWidth="150.39999771118164" sortable="false" text="Item Name" />
+                        <TableColumn fx:id="fastestMovement_movement" prefWidth="89.59999084472656" sortType="DESCENDING" sortable="false" text="Movement" />
+                     </columns>
                   </TableView>
                   <AnchorPane layoutX="741.0" layoutY="221.0" prefHeight="165.0" prefWidth="132.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;">
                      <children>

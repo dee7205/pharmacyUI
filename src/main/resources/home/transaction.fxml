@@ -197,13 +197,14 @@
             <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <children>
                   <TableView fx:id="transactionTable" layoutX="14.0" layoutY="51.0" prefHeight="506.0" prefWidth="546.0">
-                    <columns>
-                      <TableColumn fx:id="transactionNo_col" editable="false" prefWidth="286.0" text="Transaction No." />
-                      <TableColumn fx:id="transaction_pharmacistID_col" editable="false" prefWidth="293.0" text="Pharmacist ID" />
-                        <TableColumn fx:id="transaction_soldQty_col" editable="false" prefWidth="286.0" text="Sold Quantity" />
-                        <TableColumn fx:id="transaction_income_col" editable="false" prefWidth="286.0" text="Income" />
-                        <TableColumn fx:id="transactionDate_col" editable="false" prefWidth="286.0" text="Transaction Date" />
-                    </columns>
+                     <columns>
+                        <TableColumn fx:id="transactionNo_col" editable="false" prefWidth="99.20003032684326" text="Transaction No." />
+                        <TableColumn fx:id="transaction_pharmacistID_col" editable="false" prefWidth="87.19998168945312" text="Pharmacist ID" />
+                        <TableColumn fx:id="transaction_pharmacistName_col" editable="false" prefWidth="135.99998474121094" text="Pharmacist Name" />
+                        <TableColumn fx:id="transaction_soldQty_col" editable="false" prefWidth="60.79998779296875" text="Sold Qty." />
+                        <TableColumn fx:id="transaction_income_col" editable="false" prefWidth="52.79998779296875" text="Income" />
+                        <TableColumn fx:id="transactionDate_col" prefWidth="114.39996337890625" text="Transaction Date" />
+                     </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
@@ -214,7 +215,6 @@
                         <TableColumn fx:id="itemsSold_soldQty_col" editable="false" prefWidth="67.20001220703125" text="Sold Qty" />
                         <TableColumn fx:id="itemsSold_unitCost_col" editable="false" prefWidth="63.2000732421875" text="Unit Cost" />
                         <TableColumn fx:id="itemsSold_income_col" editable="false" prefWidth="59.99993896484375" text="Income" />
-                        <TableColumn fx:id="itemsSold_itemID_col" prefWidth="49.5999755859375" text="Item ID" />
                      </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -240,7 +240,6 @@
                   <DatePicker fx:id="transaction_toDatePicker" layoutX="418.0" layoutY="15.0" prefHeight="26.0" prefWidth="100.0" promptText="To" style="-fx-border-color: black;" />
                   <RadioButton fx:id="pharmacistID_radioboxButton" layoutX="97.0" layoutY="9.0" mnemonicParsing="false" text="Pharmacist ID" />
                   <RadioButton fx:id="transactionID_radioboxButton" layoutX="97.0" layoutY="30.0" mnemonicParsing="false" text="Transaction ID" />
-                  <RadioButton fx:id="itemID_radioboxButton" layoutX="205.0" layoutY="9.0" mnemonicParsing="false" text="Item ID" />
                </children>
             </AnchorPane>
          </center>
