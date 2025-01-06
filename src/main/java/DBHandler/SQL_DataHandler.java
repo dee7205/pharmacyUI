@@ -574,6 +574,8 @@ public class SQL_DataHandler {
                 return false;
             }
 
+            if (unitCost < 0) return false;
+
             ///Add the item to the database
             String firstQuery = "UPDATE Items SET item_name = ? WHERE item_ID = ?";
             String secondQuery = "UPDATE Items SET unit_cost = ? WHERE item_ID = ?";
@@ -2116,6 +2118,8 @@ public class SQL_DataHandler {
     public boolean updateRestock(int restockID, int itemID, int beginningQty, double wholeSaleCost){
         final String query = "UPDATE Restocks SET item_ID = ?, start_Qty = ?, wholesale_cost = ? WHERE restock_ID = ?";
 
+        if (beginningQty < 0 || wholeSaleCost < 0) return false;
+        
         if (connection == null)
             prepareConnection();
 
