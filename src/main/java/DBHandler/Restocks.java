@@ -168,7 +168,8 @@ public class Restocks {
         this.daysBeforeExpiry = daysBeforeExpiry;
         if (daysBeforeExpiry > 90) status = "Good";
         else if (daysBeforeExpiry > 30) status = "Near Expiry";
-        else status = "Short Expiry";
+        else if (daysBeforeExpiry > 0)status = "Short Expiry";
+        else status = "EXPIRED";
     }
 
     public String getStatus() {
