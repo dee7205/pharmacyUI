@@ -328,64 +328,67 @@
                         <Font name="Nunito ExtraBold" size="18.0" />
                      </font>
                   </Label>
-                  <AnchorPane layoutX="297.0" layoutY="201.0" prefHeight="347.0" prefWidth="298.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;">
+                  <AnchorPane layoutX="297.0" layoutY="201.0" prefHeight="233.0" prefWidth="435.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;">
                      <children>
-                        <Label layoutX="49.0" layoutY="3.0" text="Top 10 Expiry Restocks">
+                        <Label layoutX="118.0" text="Top 10 Expiry Restocks">
                            <font>
                               <Font name="Nunito ExtraBold" size="18.0" />
                            </font>
                         </Label>
-                        <TableView fx:id="expiry" layoutX="7.0" layoutY="34.0" prefHeight="303.0" prefWidth="282.0">
+                        <TableView fx:id="expiry" layoutX="7.0" layoutY="34.0" prefHeight="194.0" prefWidth="420.0">
                            <columns>
                               <TableColumn fx:id="expiry_restockID" editable="false" prefWidth="70.4000244140625" sortable="false" text="Restock ID" />
-                              <TableColumn fx:id="expiry_expiryDate" editable="false" minWidth="0.0" prefWidth="126.39996337890625" sortable="false" text="Days Before Expiry" />
-                              <TableColumn fx:id="expiry_Status" editable="false" prefWidth="85.5999755859375" sortable="false" text="Status" />
+                              <TableColumn fx:id="expiry_itemName" editable="false" minWidth="0.0" prefWidth="142.4000244140625" sortable="false" text="Item Name" />
+                              <TableColumn fx:id="expiry_expiryDateReal" editable="false" prefWidth="72.79998779296875" sortable="false" text="Expiry Date" />
+                              <TableColumn fx:id="expiry_expiryDate" prefWidth="59.20001220703125" text="Days Left" />
+                              <TableColumn fx:id="expiry_Status" prefWidth="73.5999755859375" text="Status" />
                            </columns>
                         </TableView>
                      </children>
                   </AnchorPane>
-                  <Label layoutX="617.0" layoutY="273.0" text="Sold Quantity">
+                  <Label layoutX="762.0" layoutY="273.0" text="Sold Quantity">
                      <font>
                         <Font name="Nunito ExtraBold" size="14.0" />
                      </font>
                   </Label>
-                  <Label layoutX="615.0" layoutY="213.0" text="Start Quantity">
+                  <Label layoutX="763.0" layoutY="205.0" text="Start Quantity">
                      <font>
                         <Font name="Nunito ExtraBold" size="14.0" />
                      </font>
                   </Label>
-                  <Label layoutX="619.0" layoutY="335.0" text="End Quantity">
+                  <Label layoutX="767.0" layoutY="333.0" text="End Quantity">
                      <font>
                         <Font name="Nunito ExtraBold" size="14.0" />
                      </font>
                   </Label>
-                  <Label fx:id="start_qty_label" alignment="CENTER" layoutX="617.0" layoutY="232.0" prefHeight="34.0" prefWidth="90.0" text="-1" textAlignment="CENTER">
+                  <Label fx:id="start_qty_label" alignment="CENTER" layoutX="763.0" layoutY="228.0" prefHeight="34.0" prefWidth="90.0" text="-1" textAlignment="CENTER">
                      <font>
                         <Font name="Nunito ExtraBold" size="18.0" />
                      </font>
                   </Label>
-                  <Label fx:id="sold_qty_label" alignment="CENTER" layoutX="616.0" layoutY="290.0" prefHeight="34.0" prefWidth="90.0" text="-1" textAlignment="CENTER">
+                  <Label fx:id="sold_qty_label" alignment="CENTER" layoutX="762.0" layoutY="293.0" prefHeight="34.0" prefWidth="90.0" text="-1" textAlignment="CENTER">
                      <font>
                         <Font name="Nunito ExtraBold" size="18.0" />
                      </font>
                   </Label>
-                  <Label fx:id="end_qty_label" alignment="CENTER" layoutX="616.0" layoutY="353.0" prefHeight="34.0" prefWidth="90.0" text="-1" textAlignment="CENTER">
+                  <Label fx:id="end_qty_label" alignment="CENTER" layoutX="762.0" layoutY="356.0" prefHeight="34.0" prefWidth="90.0" text="-1" textAlignment="CENTER">
                      <font>
                         <Font name="Nunito ExtraBold" size="18.0" />
                      </font>
                   </Label>
-                  <AnchorPane layoutX="606.0" layoutY="409.0" prefHeight="138.0" prefWidth="266.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;">
+                  <AnchorPane layoutX="297.0" layoutY="444.0" prefHeight="104.0" prefWidth="436.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;">
                      <children>
-                        <Label layoutX="12.0" layoutY="9.0" text="Recently Restocked">
+                        <Label layoutX="14.0" text="Recently Restocked">
                            <font>
                               <Font name="Nunito ExtraBold" size="18.0" />
                            </font>
                         </Label>
-                        <TableView fx:id="recentlyRestocked" layoutX="8.0" layoutY="53.0" prefHeight="63.0" prefWidth="250.0">
+                        <TableView fx:id="recentlyRestocked" layoutX="9.0" layoutY="31.0" prefHeight="63.0" prefWidth="417.0">
                            <columns>
                               <TableColumn fx:id="recentlyRestocked_restockID" prefWidth="73.60003662109375" sortable="false" text="Restock ID" />
-                              <TableColumn fx:id="recentlyRestocked_itemName" prefWidth="94.39996337890625" sortable="false" text="Item ID" />
-                              <TableColumn fx:id="recentlyRestocked_Qty" minWidth="1.5999755859375" prefWidth="78.933349609375" sortable="false" text="Quantity" />
+                              <TableColumn fx:id="recentlyRestocked_itemName" prefWidth="210.39996337890625" sortable="false" text="Item Name" />
+                              <TableColumn fx:id="recentlyRestocked_Qty" minWidth="1.5999755859375" prefWidth="39.20001220703125" sortable="false" text="Qty." />
+                              <TableColumn fx:id="recentlyRestocked_date" prefWidth="93.5999755859375" text="Restock Date" />
                            </columns>
                         </TableView>
                      </children>
@@ -396,7 +399,7 @@
                         <TableColumn fx:id="fastestMovement_movement" prefWidth="89.59999084472656" sortType="DESCENDING" sortable="false" text="Movement" />
                      </columns>
                   </TableView>
-                  <AnchorPane layoutX="741.0" layoutY="221.0" prefHeight="165.0" prefWidth="132.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;">
+                  <AnchorPane layoutX="745.0" layoutY="444.0" prefHeight="104.0" prefWidth="132.0" style="-fx-background-color: #C5ACF0; -fx-border-color: black;">
                      <children>
                         <Label layoutX="10.0" layoutY="14.0" text="No. Of Transactions">
                            <font>
